@@ -1,0 +1,33 @@
+{
+  "manifest_version": 3,
+  "name": "Xonier CRM LinkedIn Connector",
+  "version": "1.0.0",
+  "description": "Connect your LinkedIn account to Xonier CRM in 1 click from your Chrome browser.",
+  "permissions": [
+    "cookies",
+    "tabs"
+  ],
+  "host_permissions": [
+    "https://*.linkedin.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "http://localhost/*",
+        "http://127.0.0.1/*",
+        "https://*/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_title": "Xonier CRM LinkedIn Connector",
+    "default_popup": "popup.html"
+  }
+}

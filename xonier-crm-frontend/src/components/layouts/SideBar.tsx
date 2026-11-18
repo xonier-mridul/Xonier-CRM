@@ -36,7 +36,7 @@ import { useFeatures } from "@/src/hooks/useFeatures";
 import { useTranslation } from "react-i18next";
 import { LuTicket } from "react-icons/lu";
 import { ChatNavLink } from "@/src/components/chat/ChatProvider";
-import { FaWhatsapp } from "react-icons/fa";
+import { FaWhatsapp, FaLinkedin } from "react-icons/fa";
 
 
 const SideBar = () => {
@@ -103,7 +103,7 @@ const SideBar = () => {
     if (pathname.startsWith("/leads")) {
       setOpenMenu("sales")
     }
-    if (pathname.startsWith("/pipeline") || pathname.startsWith("/agents")) {
+    if (pathname.startsWith("/pipeline") || pathname.startsWith("/campaigns") || pathname.startsWith("/agents")) {
       setOpenMenu("sales")
     }
     if (pathname.startsWith("/deals")) {
@@ -170,6 +170,7 @@ const SideBar = () => {
         return pathname.startsWith("/enquiry") ||
           pathname.startsWith("/leads") ||
           pathname.startsWith("/pipeline") ||
+          pathname.startsWith("/campaigns") ||
           pathname.startsWith("/agents") ||
           pathname.startsWith("/deals") ||
           pathname.startsWith("/quotations") ||
@@ -782,7 +783,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
               </AnimatePresence>
             </li>}
 
-            {(( hasPermission(PERMISSIONS.readEnquiry) || hasPermission(PERMISSIONS.readLead) || hasPermission(PERMISSIONS.readDeal) || hasPermission(PERMISSIONS.readQuote) || hasPermission(PERMISSIONS.readInvoice))  &&  (hasFeature(FEATURES.SALES)) && !auth.isAdmin) && <li>
+            {(( hasPermission(PERMISSIONS.readCampaign) || hasPermission(PERMISSIONS.readEnquiry) || hasPermission(PERMISSIONS.readLead) || hasPermission(PERMISSIONS.readDeal) || hasPermission(PERMISSIONS.readQuote) || hasPermission(PERMISSIONS.readInvoice))  &&  (hasFeature(FEATURES.SALES)) && !auth.isAdmin) && <li>
               <button
                 onClick={() => toggleMenu("sales")}
                 className={`${isMenuActive("sales")
@@ -814,14 +815,20 @@ const isSuperAdmin = auth.user?.userRole?.some(
                   >
                     {(hasPermission(PERMISSIONS.readCampaign) &&  (hasFeature(FEATURES.CRM))) && <li>
                       <Link
-                        href="/pipeline"
-                        onClick={handleNavClick("/pipeline")}
-                        className={`${isActive("/pipeline")
+                        href="/campaigns"
+                        onClick={handleNavClick("/campaigns")}
+                        className={`${isActive("/campaigns")
                           ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
-                        {t("pipeline") || "Pipeline"}
+                        {t("campaigns", { defaultValue: "Campaigns" })}
+                      </Link>
+                    </li>}
+                    {(hasPermission(PERMISSIONS.readDeal) && hasFeature(FEATURES.CRM)) && <li>
+                      <Link href="/pipeline" onClick={handleNavClick("/pipeline")}
+                        className={`${isActive("/pipeline") ? "dark:text-cyan-300 text-cyan-700 border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300" : "border-l-2 border-transparent"} block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}>
+                        {t("pipeline", { defaultValue: "Pipeline" })}
                       </Link>
                     </li>}
                     {(hasPermission(PERMISSIONS.readLead) && hasPermission(PERMISSIONS.readUser) && hasFeature(FEATURES.CRM)) && <li>
@@ -934,6 +941,18 @@ const isSuperAdmin = auth.user?.userRole?.some(
                   >
                     <FaWhatsapp className="text-lg" />
                     WhatsApp
+                  </Link>
+                </li>
+              )}
+              {!auth.isAdmin && auth.user?.companyId && (
+                <li>
+                  <Link
+                    href="/linkedin"
+                    onClick={handleNavClick("/linkedin")}
+                    className={`${isActive("/linkedin") ? "dark:text-sky-300 text-sky-700 dark:bg-slate-700 bg-sky-50 border-sky-600" : "border-transparent"} flex items-center gap-3 border-l-2 px-4 py-2.5 rounded-md text-sm hover:bg-sky-600/10 transition-all`}
+                  >
+                    <FaLinkedin className="text-lg" />
+                    LinkedIn
                   </Link>
                 </li>
               )}

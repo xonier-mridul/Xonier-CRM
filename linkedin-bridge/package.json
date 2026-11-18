@@ -1,0 +1,17 @@
+{
+  "name": "xonier-linkedin-bridge",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node --env-file=.env src/server.mjs",
+    "test": "node --test test/*.test.mjs",
+    "check": "node --check src/server.mjs && node --check src/chrome_cdp.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "mongodb": "6.20.0",
+    "pino": "9.9.4"
+  }
+}

@@ -72,6 +72,7 @@ from app.routes.mobile_route import router as mobile_router
 from app.routes.call_route import web_router as call_web_router, mobile_router as call_mobile_router
 from app.routes.chat_route import router as chat_router
 from app.routes.whatsapp_route import router as whatsapp_router
+from app.routes.linkedin_route import router as linkedin_router
 from app.routes.gmail_route import router as gmail_router
 from app.routes.mail_route import router as mail_router
 from app.core.chat_runtime import chat_runtime
@@ -221,6 +222,7 @@ app.include_router(follow_up_router, prefix="/api/follow-up", tags=["Follow-ups"
 app.include_router(call_web_router, prefix="/api/call", tags=["Calls"])
 app.include_router(chat_router)
 app.include_router(whatsapp_router)
+app.include_router(linkedin_router)
 app.include_router(gmail_router)
 app.include_router(mail_router)
 app.include_router(organization_router, prefix="/api/organizations", tags=["Organizations"])

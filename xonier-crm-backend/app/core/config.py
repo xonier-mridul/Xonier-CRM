@@ -72,6 +72,10 @@ class EnvSettings(BaseSettings):
     WHATSAPP_BRIDGE_URL: str = "http://127.0.0.1:3101"
     WHATSAPP_BRIDGE_SECRET: str = ""
 
+    # Optional LinkedIn worker (private network only).
+    LINKEDIN_BRIDGE_URL: str = "http://127.0.0.1:3102"
+    LINKEDIN_BRIDGE_SECRET: str = ""
+
     # Team chat. Media/storage integrations are optional until configured.
     CHAT_ENABLED: bool = True
     CHAT_REDIS_URL: str = ""

@@ -1,0 +1,1550 @@
+"use client";
+
+import { useCallback, useEffect, useRef, useState } from "react";
+import axios from "axios";
+import { useSelector } from "react-redux";
+import { RootState } from "@/src/store";
+import api from "@/src/lib/axios";
+import { FaLinkedin } from "react-icons/fa";
+import {
+  ArrowLeft,
+  ArrowRight,
+  CheckCircle2,
+  CornerDownLeft,
+  Download,
+  ExternalLink,
+  Globe,
+  KeyRound,
+  Loader2,
+  MessageSquare,
+  RefreshCw,
+  RotateCw,
+  Search,
+  Send,
+  Unplug,
+  Users,
+  Zap,
+} from "lucide-react";
+
+type Connection = {
+  owner?: string;
+  ownerName?: string;
+  profileName?: string | null;
+  headline?: string | null;
+  handle?: string | null;
+  profileUrl?: string | null;
+  status: string;
+  browserActive?: boolean;
+  lastSyncedAt?: string | null;
+  error?: string | null;
+  streamTicket?: string;
+  bridgeUrl?: string;
+};
+
+type Chat = {
+  threadId: string;
+  conversationUrn?: string;
+  name: string;
+  headline?: string;
+  handle?: string | null;
+  profileUrl?: string | null;
+  preview?: string;
+  timestamp: number;
+};
+
+type Contact = {
+  contactId: string;
+  name: string;
+  headline?: string;
+  handle?: string | null;
+  profileUrl?: string | null;
+};
+
+type Message = {
+  messageId: string;
+  text: string;
+  fromMe: boolean;
+  senderName?: string;
+  timestamp: number;
+  status: number;
+};
+
+type Overview = {
+  admin: boolean;
+  currentUser: string;
+  connections: Connection[];
+};
+
+type SelectMenuOption = {
+  index: number;
+  value: string;
+  text: string;
+};
+
+type BrowserFrame = {
+  image: string;
+  url: string;
+  title: string;
+  width: number;
+  height: number;
+  status: string;
+  profileName?: string | null;
+  handle?: string | null;
+  streamTicket?: string;
+  bridgeUrl?: string;
+  selectMenu?: { value: string; options: SelectMenuOption[] } | null;
+};
+
+const errorMessage = (error: unknown) =>
+  axios.isAxiosError(error)
+    ? error.response?.data?.message || error.response?.data?.error?.message || "LinkedIn service is unavailable. Please try again."
+    : "Unable to complete this action.";
+
+const formatTime = (value: number) =>
+  value ? new Date(value * 1000).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "";
+
+const statusLabel: Record<string, string> = {
+  login_browser: "Sign in via LinkedIn browser below",
+  connected: "Connected",
+  disconnected: "Disconnected",
+  error: "Session needs attention",
+};
+
+const SPECIAL_KEYS = new Set([
+  "Enter",
+  "Backspace",
+  "Tab",
+  "Escape",
+  "ArrowLeft",
+  "ArrowUp",
+  "ArrowRight",
+  "ArrowDown",
+  "Delete",
+  "Home",
+  "End",
+]);
+
+export default function LinkedInPage() {
+  const userId = useSelector((state: RootState) => state.auth.user?._id);
+  return <LinkedInWorkspace key={userId || "anonymous"} />;
+}
+
+function LiveLinkedInBrowser({
+  active,
+  navigateTarget,
+  onNavigateConsumed,
+  onConnected,
+  onSynced,
+  isLoginMode = false,
+  streamTicket,
+  bridgeUrl,
+}: {
+  active: boolean;
+  navigateTarget: string | null;
+  onNavigateConsumed: () => void;
+  onConnected: () => void;
+  onSynced: () => void;
+  isLoginMode?: boolean;
+  streamTicket?: string;
+  bridgeUrl?: string;
+}) {
+  const [frame, setFrame] = useState<BrowserFrame | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [acting, setActing] = useState(false);
+  const [browserError, setBrowserError] = useState("");
+  const [inputText, setInputText] = useState("");
+  const [selectMenu, setSelectMenu] = useState<BrowserFrame["selectMenu"]>(null);
+  const [clickMarker, setClickMarker] = useState<{ xPct: number; yPct: number } | null>(null);
+  const actingRef = useRef(false);
+  const lastInteractionAt = useRef(0);
+  const lastWheelPos = useRef<{ x: number; y: number }>({ x: 640, y: 400 });
+  const ticketRef = useRef(streamTicket || "");
+  const bridgeUrlRef = useRef(bridgeUrl || "");
+  const imgRef = useRef<HTMLImageElement>(null);
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const typingBuffer = useRef("");
+  const typingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const wheelDelta = useRef(0);
+  const wheelTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (streamTicket) ticketRef.current = streamTicket;
+    if (bridgeUrl) bridgeUrlRef.current = bridgeUrl;
+  }, [streamTicket, bridgeUrl]);
+
+  const canDirectStream = () =>
+    typeof window !== "undefined"
+    && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
+    && Boolean(ticketRef.current && bridgeUrlRef.current);
+
+  const applyFrameResponse = useCallback(
+    (data: BrowserFrame & { synced?: unknown }) => {
+      if (data.streamTicket) ticketRef.current = data.streamTicket;
+      if (data.bridgeUrl) bridgeUrlRef.current = data.bridgeUrl;
+      if ("selectMenu" in data) setSelectMenu(data.selectMenu || null);
+      setFrame(data);
+      setBrowserError("");
+      if (isLoginMode && data.status === "connected") {
+        onConnected();
+      }
+      if (data.synced) {
+        onSynced();
+      }
+    },
+    [isLoginMode, onConnected, onSynced],
+  );
+
+  const fetchFrame = useCallback(
+    async (targetUrl?: string | null, signal?: AbortSignal) => {
+      try {
+        let data: BrowserFrame | null = null;
+        if (canDirectStream()) {
+          try {
+            const direct = await axios.get<BrowserFrame>(`${bridgeUrlRef.current}/browser/frame`, {
+              headers: { Authorization: `Bearer ${ticketRef.current}` },
+              params: targetUrl ? { url: targetUrl } : undefined,
+              signal,
+              timeout: 15000,
+            });
+            data = direct.data;
+          } catch (directErr) {
+            if (axios.isCancel(directErr)) throw directErr;
+            if (!axios.isAxiosError(directErr) || !directErr.response || directErr.response.status === 401) {
+              ticketRef.current = "";
+            } else {
+              throw directErr;
+            }
+          }
+        }
+        if (!data) {
+          const res = await api.get<BrowserFrame>("/linkedin/browser/frame", {
+            params: targetUrl ? { url: targetUrl } : undefined,
+            signal,
+          });
+          data = res.data;
+        }
+        if (!signal?.aborted) {
+          applyFrameResponse(data);
+          setLoading(false);
+        }
+      } catch (err) {
+        if (!signal?.aborted && !axios.isCancel(err)) {
+          if (axios.isAxiosError(err) && err.response?.status === 429) {
+            setLoading(false);
+            return;
+          }
+          setBrowserError(errorMessage(err));
+          setLoading(false);
+        }
+      }
+    },
+    [applyFrameResponse],
+  );
+
+  useEffect(() => {
+    if (!active) return;
+    const controller = new AbortController();
+    let cancelled = false;
+    let pending = false;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+
+    const load = async (target?: string | null) => {
+      if (pending) return;
+      pending = true;
+      await fetchFrame(target, controller.signal);
+      pending = false;
+    };
+
+    const scheduleNext = () => {
+      if (cancelled) return;
+      const recentlyActive = Date.now() - lastInteractionAt.current < 8000;
+      const delay = recentlyActive ? 350 : 900;
+      timer = setTimeout(async () => {
+        if (cancelled) return;
+        if (document.visibilityState === "visible" && !actingRef.current) {
+          await load(null);
+        }
+        scheduleNext();
+      }, delay);
+    };
+
+    const boot = navigateTarget
+      ? load(navigateTarget).then(() => onNavigateConsumed())
+      : load(null);
+    void boot.then(scheduleNext);
+
+    return () => {
+      cancelled = true;
+      controller.abort();
+      if (timer) clearTimeout(timer);
+    };
+  }, [active, fetchFrame, navigateTarget, onNavigateConsumed]);
+
+  const sendAction = useCallback(
+    async (payload: Record<string, unknown>) => {
+      lastInteractionAt.current = Date.now();
+      setActing(true);
+      actingRef.current = true;
+      try {
+        let data: (BrowserFrame & { synced?: unknown }) | null = null;
+        if (canDirectStream()) {
+          try {
+            const direct = await axios.post<BrowserFrame & { synced?: unknown }>(
+              `${bridgeUrlRef.current}/browser/action`,
+              payload,
+              { headers: { Authorization: `Bearer ${ticketRef.current}` }, timeout: 25000 },
+            );
+            data = direct.data;
+          } catch (directErr) {
+            if (!axios.isAxiosError(directErr) || !directErr.response || directErr.response.status === 401) {
+              ticketRef.current = "";
+            } else {
+              throw directErr;
+            }
+          }
+        }
+        if (!data) {
+          const res = await api.post<BrowserFrame & { synced?: unknown }>("/linkedin/browser/action", payload);
+          data = res.data;
+        }
+        applyFrameResponse(data);
+      } catch (err) {
+        setBrowserError(errorMessage(err));
+      } finally {
+        setActing(false);
+        actingRef.current = false;
+        setTimeout(() => {
+          if (!actingRef.current) void fetchFrame(null);
+        }, 150);
+      }
+    },
+    [applyFrameResponse, fetchFrame],
+  );
+
+  const flushTyping = useCallback(() => {
+    const text = typingBuffer.current;
+    typingBuffer.current = "";
+    if (text) {
+      void sendAction({ type: "type", text });
+    }
+  }, [sendAction]);
+
+  const handleViewportClick = (event: React.MouseEvent<HTMLImageElement>) => {
+    lastInteractionAt.current = Date.now();
+    viewportRef.current?.focus({ preventScroll: true });
+    if (!imgRef.current || !frame) return;
+    const rect = imgRef.current.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+    const xPct = ((event.clientX - rect.left) / rect.width) * 100;
+    const yPct = ((event.clientY - rect.top) / rect.height) * 100;
+    setClickMarker({ xPct, yPct });
+    setTimeout(() => setClickMarker(null), 450);
+    const x = Math.round(((event.clientX - rect.left) / rect.width) * (frame.width || 1280));
+    const y = Math.round(((event.clientY - rect.top) / rect.height) * (frame.height || 800));
+    void sendAction({ type: "click", x, y });
+  };
+
+  const handlePaste = (event: React.ClipboardEvent<HTMLDivElement>) => {
+    lastInteractionAt.current = Date.now();
+    const pasted = event.clipboardData?.getData("text");
+    if (pasted) {
+      event.preventDefault();
+      if (typingTimer.current) clearTimeout(typingTimer.current);
+      if (typingBuffer.current) flushTyping();
+      void sendAction({ type: "type", text: pasted });
+    }
+  };
+
+  const handleWheel = (event: React.WheelEvent<HTMLDivElement>) => {
+    lastInteractionAt.current = Date.now();
+    if (imgRef.current && frame) {
+      const rect = imgRef.current.getBoundingClientRect();
+      if (rect.width && rect.height) {
+        lastWheelPos.current = {
+          x: Math.max(0, Math.min(frame.width || 1280, Math.round(((event.clientX - rect.left) / rect.width) * (frame.width || 1280)))),
+          y: Math.max(0, Math.min(frame.height || 800, Math.round(((event.clientY - rect.top) / rect.height) * (frame.height || 800)))),
+        };
+      }
+    }
+    wheelDelta.current += event.deltaY;
+    if (wheelTimer.current) clearTimeout(wheelTimer.current);
+    wheelTimer.current = setTimeout(() => {
+      const dy = wheelDelta.current;
+      wheelDelta.current = 0;
+      if (Math.abs(dy) > 5) {
+        void sendAction({
+          type: "scroll",
+          x: lastWheelPos.current.x,
+          y: lastWheelPos.current.y,
+          deltaX: 0,
+          deltaY: Math.round(dy),
+        });
+      }
+    }, 50);
+  };
+
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    lastInteractionAt.current = Date.now();
+    if (event.metaKey || event.ctrlKey || event.altKey) return;
+    if (SPECIAL_KEYS.has(event.key)) {
+      event.preventDefault();
+      if (typingBuffer.current) flushTyping();
+      void sendAction({ type: "key", key: event.key });
+      return;
+    }
+    if (event.key === " ") {
+      event.preventDefault();
+      typingBuffer.current += " ";
+    } else if (event.key.length === 1) {
+      event.preventDefault();
+      typingBuffer.current += event.key;
+    } else {
+      return;
+    }
+    if (typingTimer.current) clearTimeout(typingTimer.current);
+    typingTimer.current = setTimeout(flushTyping, 60);
+  };
+
+  const sendToolbarText = async (pressEnter = false) => {
+    if (!inputText && !pressEnter) return;
+    const value = inputText;
+    setInputText("");
+    if (value) {
+      await sendAction({ type: "type", text: value });
+    }
+    if (pressEnter) {
+      await sendAction({ type: "key", key: "Enter" });
+    }
+  };
+
+  return (
+    <div className="flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-slate-900 dark:border-slate-700">
+      <div className="flex flex-wrap items-center gap-2 border-b border-slate-700 bg-slate-800 px-3 py-2 text-xs text-slate-200">
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            disabled={acting}
+            onClick={() => void sendAction({ type: "back" })}
+            title="Back"
+            className="rounded p-1.5 hover:bg-slate-700 disabled:opacity-40"
+          >
+            <ArrowLeft size={14} />
+          </button>
+          <button
+            type="button"
+            disabled={acting}
+            onClick={() => void sendAction({ type: "forward" })}
+            title="Forward"
+            className="rounded p-1.5 hover:bg-slate-700 disabled:opacity-40"
+          >
+            <ArrowRight size={14} />
+          </button>
+          <button
+            type="button"
+            disabled={acting}
+            onClick={() => void sendAction({ type: "reload" })}
+            title="Reload"
+            className="rounded p-1.5 hover:bg-slate-700 disabled:opacity-40"
+          >
+            <RotateCw size={14} className={acting ? "animate-spin" : ""} />
+          </button>
+        </div>
+
+        <div className="min-w-[180px] flex-1 truncate rounded-md bg-slate-900/90 px-3 py-1.5 font-mono text-[11px] text-slate-300">
+          {frame?.url || "https://www.linkedin.com/..."}
+        </div>
+
+        {!isLoginMode && (
+          <div className="flex flex-wrap items-center gap-1">
+            {[
+              { label: "Feed", url: "https://www.linkedin.com/feed/" },
+              { label: "Messaging", url: "https://www.linkedin.com/messaging/" },
+              { label: "My Network", url: "https://www.linkedin.com/mynetwork/" },
+              { label: "Notifications", url: "https://www.linkedin.com/notifications/" },
+            ].map(item => (
+              <button
+                key={item.label}
+                type="button"
+                disabled={acting}
+                onClick={() => void sendAction({ type: "navigate", url: item.url })}
+                className="rounded-md bg-slate-700 px-2.5 py-1 text-[11px] font-medium hover:bg-sky-700 disabled:opacity-50"
+              >
+                {item.label}
+              </button>
+            ))}
+            <button
+              type="button"
+              disabled={acting}
+              onClick={() => void sendAction({ type: "sync" })}
+              className="rounded-md bg-sky-600 px-2.5 py-1 text-[11px] font-semibold text-white hover:bg-sky-500 disabled:opacity-50"
+            >
+              Sync Inbox
+            </button>
+          </div>
+        )}
+      </div>
+
+      <form
+        onSubmit={e => {
+          e.preventDefault();
+          void sendToolbarText(false);
+        }}
+        className="flex flex-wrap items-center gap-2 border-b border-slate-700 bg-slate-800/70 px-3 py-2"
+      >
+        <input
+          type="text"
+          value={inputText}
+          onChange={e => setInputText(e.target.value)}
+          placeholder="Click any input box below, then type here (or type directly on the screen)..."
+          className="min-w-[200px] flex-1 rounded-md border border-slate-600 bg-slate-900 px-3 py-1.5 text-xs text-white placeholder-slate-400 outline-none focus:border-sky-500"
+        />
+        <button
+          type="submit"
+          disabled={acting || !inputText}
+          className="rounded-md bg-sky-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-sky-500 disabled:opacity-40"
+        >
+          Type Text
+        </button>
+        <button
+          type="button"
+          disabled={acting}
+          onClick={() => void sendToolbarText(true)}
+          className="flex items-center gap-1 rounded-md border border-slate-600 bg-slate-700 px-2.5 py-1.5 text-xs text-slate-100 hover:bg-slate-600 disabled:opacity-40"
+        >
+          <CornerDownLeft size={12} /> Enter
+        </button>
+      </form>
+
+      {selectMenu && selectMenu.options.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2 border-b border-sky-700/60 bg-sky-950/80 px-3 py-2 text-xs text-sky-100">
+          <span className="font-semibold">Dropdown detected:</span>
+          <select
+            value={selectMenu.value}
+            disabled={acting}
+            onChange={e => {
+              const val = e.target.value;
+              setSelectMenu(null);
+              void sendAction({ type: "type", key: "SELECT_OPTION", text: val });
+            }}
+            className="max-w-xs flex-1 rounded-md border border-sky-500 bg-slate-900 px-3 py-1.5 text-xs text-white outline-none"
+          >
+            {selectMenu.options.map(opt => (
+              <option key={`${opt.index}-${opt.value}`} value={opt.value}>
+                {opt.text}
+              </option>
+            ))}
+          </select>
+          <button
+            type="button"
+            onClick={() => setSelectMenu(null)}
+            className="rounded border border-slate-600 px-2 py-1 text-[11px] text-slate-300 hover:bg-slate-800"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
+      {browserError && (
+        <div className="border-b border-amber-500/40 bg-amber-950/70 px-3 py-2 text-xs text-amber-200">
+          {browserError}
+        </div>
+      )}
+
+      <div
+        ref={viewportRef}
+        tabIndex={0}
+        onKeyDown={handleKeyDown}
+        onPaste={handlePaste}
+        onWheel={handleWheel}
+        className="relative flex min-h-[420px] items-center justify-center bg-slate-950 outline-none focus:ring-2 focus:ring-sky-500/60"
+      >
+        {loading && !frame ? (
+          <div className="flex items-center gap-2 py-20 text-sm text-slate-300">
+            <Loader2 className="animate-spin" size={20} /> Starting secure LinkedIn browser session…
+          </div>
+        ) : frame?.image ? (
+          <div className="relative inline-block w-full max-w-[1280px]">
+            <img
+              ref={imgRef}
+              src={frame.image}
+              alt="Interactive LinkedIn Browser"
+              onClick={handleViewportClick}
+              draggable={false}
+              className="h-auto w-full cursor-pointer select-none object-contain"
+            />
+            {clickMarker && (
+              <span
+                style={{ left: `${clickMarker.xPct}%`, top: `${clickMarker.yPct}%` }}
+                className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 h-4 w-4 rounded-full border-2 border-sky-400 bg-sky-400/30 animate-ping"
+              />
+            )}
+          </div>
+        ) : (
+          <div className="py-20 text-sm text-slate-400">Waiting for LinkedIn screen…</div>
+        )}
+      </div>
+      <div className="bg-slate-900 px-3 py-1.5 text-[11px] text-slate-400">
+        Tip: Click inside LinkedIn fields on the screen above to focus them, then type directly or use the text bar above. Scroll with your mouse wheel.
+      </div>
+    </div>
+  );
+}
+
+function LinkedInWorkspace() {
+  const userId = useSelector((state: RootState) => state.auth.user?._id);
+  const [overview, setOverview] = useState<Overview | null>(null);
+  const [connection, setConnection] = useState<Connection>({ status: "disconnected" });
+  const [owner, setOwner] = useState("");
+  const [tab, setTab] = useState<"chats" | "contacts" | "browser">("chats");
+  const [chats, setChats] = useState<Chat[]>([]);
+  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [selected, setSelected] = useState<Chat | null>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [query, setQuery] = useState("");
+  const [text, setText] = useState("");
+  const [consent, setConsent] = useState(false);
+  const [showCookieForm, setShowCookieForm] = useState(false);
+  const [extInstalled, setExtInstalled] = useState(false);
+  const [showExtensionSetup, setShowExtensionSetup] = useState(false);
+  const [waitingForExtLogin, setWaitingForExtLogin] = useState(false);
+  const [liAt, setLiAt] = useState("");
+  const [jsessionId, setJsessionId] = useState("");
+  const [navigateTarget, setNavigateTarget] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [chatsLoaded, setChatsLoaded] = useState(false);
+  const [contactsLoaded, setContactsLoaded] = useState(false);
+  const [error, setError] = useState("");
+  const [connectionError, setConnectionError] = useState("");
+  const [chatError, setChatError] = useState("");
+  const [messageError, setMessageError] = useState("");
+  const [refreshCount, setRefreshCount] = useState(0);
+
+  const sendLock = useRef(false);
+  const sendAttempt = useRef<{ threadId: string; text: string; requestId: string } | null>(null);
+  const generation = useRef(0);
+  const bottom = useRef<HTMLDivElement>(null);
+
+  const own = !owner || owner === overview?.currentUser;
+  const viewedConnection = own ? connection : overview?.connections.find(item => item.owner === owner);
+  const params = owner ? { owner } : {};
+
+  const refreshConnection = useCallback(async (signal?: AbortSignal) => {
+    const [summary, current] = await Promise.all([
+      api.get<Overview>("/linkedin/connections", { signal }),
+      api.get<Connection>("/linkedin/connection", { signal }),
+    ]);
+    if (signal?.aborted) return;
+    setOverview(summary.data);
+    setConnection(current.data);
+    setConnectionError("");
+  }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    let active = true;
+    let pending = false;
+    const run = async () => {
+      if (pending) return;
+      pending = true;
+      try {
+        await refreshConnection(controller.signal);
+      } catch (err) {
+        if (active && !axios.isCancel(err)) setConnectionError(errorMessage(err));
+      } finally {
+        pending = false;
+        if (active) setLoading(false);
+      }
+    };
+    void run();
+    const intervalMs = connection.status === "login_browser" ? 5000 : 15000;
+    const timer = setInterval(() => {
+      if (document.visibilityState === "visible") void run();
+    }, intervalMs);
+    return () => {
+      active = false;
+      controller.abort();
+      clearInterval(timer);
+    };
+  }, [refreshConnection, userId, refreshCount, connection.status]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    let pending = false;
+    const run = async () => {
+      if (pending) return;
+      pending = true;
+      try {
+        const result = await api.get<Chat[]>("/linkedin/chats", {
+          params: owner ? { owner } : {},
+          signal: controller.signal,
+        });
+        if (!controller.signal.aborted) {
+          setChats(result.data);
+          setChatsLoaded(true);
+          setChatError("");
+        }
+      } catch (err) {
+        if (!controller.signal.aborted && !axios.isCancel(err)) setChatError(errorMessage(err));
+      } finally {
+        pending = false;
+      }
+    };
+    void run();
+    const timer = setInterval(() => {
+      if (document.visibilityState === "visible") void run();
+    }, 12000);
+    return () => {
+      controller.abort();
+      clearInterval(timer);
+    };
+  }, [owner, userId, refreshCount]);
+
+  useEffect(() => {
+    if (tab !== "contacts") return;
+    const controller = new AbortController();
+    setContactsLoaded(false);
+    const run = async () => {
+      try {
+        const result = await api.get<Contact[]>("/linkedin/contacts", {
+          params: owner ? { owner } : {},
+          signal: controller.signal,
+        });
+        if (!controller.signal.aborted) {
+          setContacts(result.data);
+          setContactsLoaded(true);
+        }
+      } catch {
+        if (!controller.signal.aborted) setContactsLoaded(true);
+      }
+    };
+    void run();
+    const timer = setInterval(() => {
+      if (document.visibilityState === "visible") void run();
+    }, 15000);
+    return () => {
+      controller.abort();
+      clearInterval(timer);
+    };
+  }, [tab, owner, refreshCount]);
+
+  useEffect(() => {
+    if (!selected) return;
+    const controller = new AbortController();
+    let pending = false;
+    const run = async () => {
+      if (pending) return;
+      pending = true;
+      try {
+        const result = await api.get<Message[]>("/linkedin/messages", {
+          params: { ...(owner ? { owner } : {}), threadId: selected.threadId },
+          signal: controller.signal,
+        });
+        if (!controller.signal.aborted) {
+          setMessages(result.data);
+          setMessageError("");
+        }
+      } catch (err) {
+        if (!controller.signal.aborted && !axios.isCancel(err)) setMessageError(errorMessage(err));
+      } finally {
+        pending = false;
+      }
+    };
+    void run();
+    const timer = setInterval(() => {
+      if (document.visibilityState === "visible") void run();
+    }, 8000);
+    return () => {
+      controller.abort();
+      clearInterval(timer);
+    };
+  }, [selected, owner, refreshCount]);
+
+  useEffect(() => {
+    bottom.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }, [messages.length]);
+
+  useEffect(() => {
+    const checkExt = () => {
+      if (document.documentElement.getAttribute("data-xonier-linkedin-ext") === "1") {
+        setExtInstalled(true);
+        setShowExtensionSetup(false);
+        return true;
+      }
+      return false;
+    };
+    checkExt();
+    window.postMessage({ type: "XONIER_PING_EXT" }, "*");
+
+    const onReady = () => {
+      setExtInstalled(true);
+      setShowExtensionSetup(false);
+    };
+    const onMessage = async (event: MessageEvent) => {
+      if (event.source !== window || !event.data || typeof event.data !== "object") return;
+      if (event.data.type === "XONIER_EXT_PONG" && event.data.installed) {
+        setExtInstalled(true);
+        setShowExtensionSetup(false);
+        return;
+      }
+      if (event.data.type === "XONIER_LINKEDIN_SESSION_RESPONSE") {
+        const payload = event.data as {
+          ok?: boolean;
+          waitingForLogin?: boolean;
+          liAt?: string;
+          jsessionId?: string;
+          cookies?: unknown[];
+          error?: string;
+        };
+        if (payload.waitingForLogin) {
+          setWaitingForExtLogin(true);
+          setBusy(false);
+          return;
+        }
+        if (payload.ok && payload.liAt) {
+          setWaitingForExtLogin(false);
+          setBusy(true);
+          setError("");
+          try {
+            await api.post("/linkedin/connect", {
+              consent: true,
+              mode: "cookie",
+              liAt: payload.liAt,
+              jsessionId: payload.jsessionId || undefined,
+              cookies: Array.isArray(payload.cookies) ? payload.cookies : undefined,
+            });
+            await refreshConnection();
+            setRefreshCount(c => c + 1);
+          } catch (err) {
+            setError(errorMessage(err));
+          } finally {
+            setBusy(false);
+          }
+          return;
+        }
+        setWaitingForExtLogin(false);
+        setBusy(false);
+        if (payload.error) setError(payload.error);
+      }
+    };
+
+    window.addEventListener("xonier-linkedin-ext-ready", onReady);
+    window.addEventListener("message", onMessage);
+    return () => {
+      window.removeEventListener("xonier-linkedin-ext-ready", onReady);
+      window.removeEventListener("message", onMessage);
+    };
+  }, [refreshConnection]);
+
+  const connectWithExtension = () => {
+    const installed = extInstalled || document.documentElement.getAttribute("data-xonier-linkedin-ext") === "1";
+    if (!installed) {
+      setShowExtensionSetup(true);
+      window.postMessage({ type: "XONIER_PING_EXT" }, "*");
+      return;
+    }
+    setExtInstalled(true);
+    setShowExtensionSetup(false);
+    setBusy(true);
+    setError("");
+    window.postMessage({ type: "XONIER_REQUEST_LINKEDIN_SESSION", openTabIfMissing: true }, "*");
+  };
+
+  const connectWithBrowser = async () => {
+    setBusy(true);
+    setError("");
+    try {
+      await api.post("/linkedin/connect", { consent: true, mode: "browser" });
+      await refreshConnection();
+    } catch (err) {
+      setError(errorMessage(err));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const connectWithCookie = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!consent || !liAt.trim()) return;
+    setBusy(true);
+    setError("");
+    try {
+      await api.post("/linkedin/connect", {
+        consent: true,
+        mode: "cookie",
+        liAt: liAt.trim(),
+        jsessionId: jsessionId.trim() || undefined,
+      });
+      setLiAt("");
+      setJsessionId("");
+      setShowCookieForm(false);
+      await refreshConnection();
+      setRefreshCount(c => c + 1);
+    } catch (err) {
+      setError(errorMessage(err));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const disconnect = async () => {
+    if (!window.confirm("Disconnect this LinkedIn account and delete its synced chats and connections from Xonier CRM?")) {
+      return;
+    }
+    setBusy(true);
+    setError("");
+    try {
+      await api.delete("/linkedin/connection", { params });
+      setChats([]);
+      setContacts([]);
+      setSelected(null);
+      setMessages([]);
+      setText("");
+      setTab("chats");
+      generation.current += 1;
+      await refreshConnection();
+    } catch (err) {
+      setError(errorMessage(err));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const syncNow = async () => {
+    if (!own || connection.status !== "connected") return;
+    setSyncing(true);
+    setError("");
+    try {
+      await api.post("/linkedin/sync");
+      setRefreshCount(c => c + 1);
+    } catch (err) {
+      setError(errorMessage(err));
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  const send = async () => {
+    if (!selected || !text.trim() || sendLock.current || !own) return;
+    sendLock.current = true;
+    setSending(true);
+    setError("");
+    const version = generation.current;
+    const threadId = selected.threadId;
+    const value = text.trim();
+    if (sendAttempt.current?.threadId !== threadId || sendAttempt.current.text !== value) {
+      sendAttempt.current = { threadId, text: value, requestId: crypto.randomUUID() };
+    }
+    try {
+      await api.post("/linkedin/messages", sendAttempt.current);
+      sendAttempt.current = null;
+      if (generation.current !== version) return;
+      setText("");
+      const result = await api.get<Message[]>("/linkedin/messages", { params: { threadId } });
+      if (generation.current === version) setMessages(result.data);
+    } catch (err) {
+      if (generation.current === version) setError(errorMessage(err));
+    } finally {
+      sendLock.current = false;
+      setSending(false);
+    }
+  };
+
+  const openInLiveBrowser = (url?: string | null) => {
+    if (!own || connection.status !== "connected") return;
+    setNavigateTarget(url || "https://www.linkedin.com/feed/");
+    setTab("browser");
+  };
+
+  const visibleError =
+    error ||
+    connectionError ||
+    (chatError && `Could not load chats. ${chatError}`) ||
+    (selected && messageError && `Could not load messages. ${messageError}`);
+
+  const canSend = own && connection.status === "connected" && Boolean(selected);
+
+  return (
+    <div className="-m-2 space-y-4 text-slate-800 dark:text-slate-100">
+      <header className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <FaLinkedin size={32} className="text-[#0A66C2]" />
+          <div>
+            <h1 className="text-2xl font-bold">LinkedIn</h1>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              Sign in and run your LinkedIn inbox, connections, and feed right inside Xonier CRM.
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          {own && connection.status === "connected" && (
+            <button
+              type="button"
+              disabled={syncing}
+              onClick={() => void syncNow()}
+              className="flex items-center gap-2 rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-sm font-medium text-sky-700 hover:bg-sky-100 disabled:opacity-50 dark:border-sky-800 dark:bg-sky-950/40 dark:text-sky-300"
+            >
+              <RefreshCw size={15} className={syncing ? "animate-spin" : ""} />
+              {syncing ? "Syncing…" : "Sync LinkedIn"}
+            </button>
+          )}
+          <button
+            onClick={() => {
+              setError("");
+              setRefreshCount(count => count + 1);
+            }}
+            className="rounded-lg border border-slate-200 p-2 dark:border-slate-600"
+            aria-label="Refresh LinkedIn"
+          >
+            <RefreshCw size={18} />
+          </button>
+        </div>
+      </header>
+
+      {visibleError && (
+        <div
+          role="alert"
+          className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-200"
+        >
+          {visibleError}
+        </div>
+      )}
+
+      {overview?.admin && (
+        <section className="flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800">
+          <label htmlFor="linkedin-owner" className="text-sm font-semibold">
+            Company connections
+          </label>
+          <select
+            id="linkedin-owner"
+            value={owner}
+            onChange={event => {
+              generation.current += 1;
+              setOwner(event.target.value);
+              setChats([]);
+              setContacts([]);
+              setChatsLoaded(false);
+              setChatError("");
+              setMessageError("");
+              setSelected(null);
+              setMessages([]);
+              setText("");
+              if (event.target.value && tab === "browser") setTab("chats");
+            }}
+            className="max-w-full rounded-lg border border-slate-200 bg-transparent px-3 py-2 text-sm dark:border-slate-600"
+          >
+            <option value="">My LinkedIn</option>
+            {overview.connections
+              .filter(item => item.owner !== overview.currentUser)
+              .map(item => (
+                <option key={item.owner} value={item.owner}>
+                  {item.ownerName || `Agent …${item.owner?.slice(-6)}`}
+                  {item.profileName ? ` (${item.profileName})` : ""} · {statusLabel[item.status] || item.status}
+                </option>
+              ))}
+          </select>
+          <p className="text-xs text-slate-500">
+            You can view connected agents’ synced chats & connections. Replies use your own LinkedIn.
+          </p>
+        </section>
+      )}
+
+      <section className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-800">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="font-semibold">
+              {own ? "My LinkedIn" : "Agent LinkedIn"}
+              {viewedConnection?.profileName ? ` · ${viewedConnection.profileName}` : ""}
+              {viewedConnection?.handle ? ` (@${viewedConnection.handle})` : ""}
+            </h2>
+            {viewedConnection?.headline && (
+              <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{viewedConnection.headline}</p>
+            )}
+            <p className="mt-1 text-sm text-sky-700 dark:text-sky-300">
+              {loading ? "Checking connection…" : statusLabel[viewedConnection?.status || "disconnected"] || viewedConnection?.status}
+            </p>
+          </div>
+          {(viewedConnection?.owner || connection.status === "login_browser") && (
+            <button
+              disabled={busy}
+              onClick={() => void disconnect()}
+              className="flex items-center gap-2 rounded-lg border border-red-200 px-3 py-2 text-sm text-red-600 disabled:opacity-50"
+            >
+              <Unplug size={16} />
+              Disconnect
+            </button>
+          )}
+        </div>
+
+        {own && connection.status !== "connected" && (
+          <div className="mt-5 space-y-5">
+            {connection.status === "login_browser" ? (
+              <div className="space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-sky-50 px-4 py-3 text-sm text-sky-900 dark:bg-sky-950/30 dark:text-sky-200">
+                  <span>
+                    Sign in to your LinkedIn account directly below. Once login completes, your inbox & connections will sync automatically.
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => void refreshConnection()}
+                    className="font-semibold underline"
+                  >
+                    Check status
+                  </button>
+                </div>
+                <LiveLinkedInBrowser
+                  active={true}
+                  isLoginMode={true}
+                  navigateTarget={null}
+                  onNavigateConsumed={() => {}}
+                  onConnected={() => {
+                    void refreshConnection();
+                    setRefreshCount(c => c + 1);
+                  }}
+                  onSynced={() => setRefreshCount(c => c + 1)}
+                  streamTicket={connection.streamTicket}
+                  bridgeUrl={connection.bridgeUrl}
+                />
+              </div>
+            ) : (
+              <div className="grid gap-6 md:grid-cols-[1.2fr_1fr]">
+                <div className="space-y-4 text-sm">
+                  <h3 className="text-lg font-semibold">Connect your LinkedIn inside Xonier CRM</h3>
+                  <ol className="list-decimal space-y-2 pl-5 text-slate-600 dark:text-slate-300">
+                    <li>Keep your LinkedIn account signed in on your regular Chrome browser (no Inspect or copy-paste needed).</li>
+                    <li>Click <strong>1-Click Auto-Connect from Chrome</strong> to securely link your active LinkedIn session.</li>
+                    <li>Use your LinkedIn Inbox, Connections, and Live LinkedIn Feed right inside Xonier CRM.</li>
+                  </ol>
+                  <label className="flex items-start gap-2">
+                    <input
+                      type="checkbox"
+                      checked={consent}
+                      onChange={event => setConsent(event.target.checked)}
+                      className="mt-1"
+                    />
+                    <span>I agree to sync my LinkedIn conversations and connections into Xonier CRM.</span>
+                  </label>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <button
+                      type="button"
+                      disabled={!consent || busy || loading}
+                      onClick={() => connectWithExtension()}
+                      className="flex items-center gap-2 rounded-lg bg-[#0A66C2] px-4 py-2.5 font-semibold text-white hover:bg-[#004182] disabled:opacity-50"
+                    >
+                      {busy ? <Loader2 size={16} className="animate-spin" /> : <Zap size={16} />}
+                      {busy
+                        ? "Connecting LinkedIn…"
+                        : extInstalled
+                          ? "1-Click Auto-Connect from Chrome"
+                          : "1-Click Auto-Connect (Chrome Extension)"}
+                    </button>
+                    <button
+                      disabled={!consent || busy || loading}
+                      onClick={() => void connectWithBrowser()}
+                      className="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2.5 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-700"
+                    >
+                      <Globe size={14} />
+                      Sign in with Live Browser
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowCookieForm(prev => !prev)}
+                      className="flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-2.5 text-xs font-medium text-slate-600 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700"
+                    >
+                      <KeyRound size={14} />
+                      {showCookieForm ? "Hide Cookie Login" : "Manual li_at Cookie"}
+                    </button>
+                  </div>
+
+                  {extInstalled && (
+                    <p className="flex items-center gap-1.5 text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                      <CheckCircle2 size={14} /> Xonier LinkedIn Connector extension detected — ready for 1-click connect.
+                    </p>
+                  )}
+
+                  {waitingForExtLogin && (
+                    <div className="rounded-xl border border-sky-200 bg-sky-50 p-3.5 text-xs text-sky-900 dark:border-sky-800 dark:bg-sky-950/40 dark:text-sky-200">
+                      LinkedIn opened in a new Chrome tab — sign in there once, and Xonier CRM will connect automatically as soon as you log in.
+                    </div>
+                  )}
+
+                  {showExtensionSetup && !extInstalled && (
+                    <div className="space-y-2.5 rounded-xl border border-sky-200 bg-sky-50/70 p-4 text-xs text-slate-700 dark:border-sky-800 dark:bg-sky-950/30 dark:text-slate-200">
+                      <p className="font-semibold text-sky-900 dark:text-sky-200">
+                        One-time 30-second setup for 1-Click LinkedIn Auto-Connect:
+                      </p>
+                      <ol className="list-decimal space-y-1.5 pl-4">
+                        <li>
+                          Download and unzip{" "}
+                          <a
+                            href="/xonier-linkedin-connector.zip"
+                            download="xonier-linkedin-connector.zip"
+                            className="inline-flex items-center gap-1 font-semibold text-[#0A66C2] underline"
+                          >
+                            <Download size={12} /> Xonier LinkedIn Connector (.zip)
+                          </a>
+                        </li>
+                        <li>
+                          Open <code>chrome://extensions</code> in Chrome, enable <strong>Developer mode</strong> (top-right), click <strong>Load unpacked</strong>, and pick the unzipped folder.
+                        </li>
+                        <li>Click <strong>Check Again</strong> below (or refresh this page) and click Auto-Connect.</li>
+                      </ol>
+                      <div className="flex flex-wrap items-center gap-2 pt-1">
+                        <a
+                          href="/xonier-linkedin-connector.zip"
+                          download="xonier-linkedin-connector.zip"
+                          className="inline-flex items-center gap-1.5 rounded-lg bg-[#0A66C2] px-3 py-1.5 font-semibold text-white hover:bg-[#004182]"
+                        >
+                          <Download size={13} /> Download Extension (.zip)
+                        </a>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (document.documentElement.getAttribute("data-xonier-linkedin-ext") === "1") {
+                              setExtInstalled(true);
+                              setShowExtensionSetup(false);
+                              connectWithExtension();
+                            } else {
+                              window.postMessage({ type: "XONIER_PING_EXT" }, "*");
+                            }
+                          }}
+                          className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
+                        >
+                          Check Extension Again
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {connection.error && <p className="text-red-600">{connection.error}</p>}
+                </div>
+
+                {showCookieForm && (
+                  <form
+                    onSubmit={e => void connectWithCookie(e)}
+                    className="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm dark:border-slate-700 dark:bg-slate-900"
+                  >
+                    <h4 className="font-semibold">Instant Session Cookie Login (SSO Accounts)</h4>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      Useful if you sign into LinkedIn with Google or Apple. Open LinkedIn in your browser → DevTools → Application → Cookies → copy <code>li_at</code>.
+                    </p>
+                    <input
+                      type="password"
+                      value={liAt}
+                      onChange={e => setLiAt(e.target.value)}
+                      placeholder="Paste li_at cookie value"
+                      required
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs outline-none dark:border-slate-700 dark:bg-slate-800"
+                    />
+                    <input
+                      type="text"
+                      value={jsessionId}
+                      onChange={e => setJsessionId(e.target.value)}
+                      placeholder="Optional JSESSIONID (e.g. ajax:...)"
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs outline-none dark:border-slate-700 dark:bg-slate-800"
+                    />
+                    <button
+                      type="submit"
+                      disabled={!consent || busy || !liAt.trim()}
+                      className="w-full rounded-lg bg-slate-800 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-700 disabled:opacity-50 dark:bg-sky-600"
+                    >
+                      {busy ? "Verifying cookie…" : "Connect with Cookie"}
+                    </button>
+                  </form>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+      </section>
+
+      <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 px-4 py-2.5 dark:border-slate-700">
+          <div className="flex items-center gap-1 rounded-lg bg-slate-100 p-1 text-sm font-medium dark:bg-slate-900">
+            <button
+              type="button"
+              onClick={() => setTab("chats")}
+              className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 ${
+                tab === "chats" ? "bg-white text-[#0A66C2] shadow-sm dark:bg-slate-700 dark:text-sky-300" : "text-slate-500"
+              }`}
+            >
+              <MessageSquare size={15} /> Chats
+            </button>
+            <button
+              type="button"
+              onClick={() => setTab("contacts")}
+              className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 ${
+                tab === "contacts" ? "bg-white text-[#0A66C2] shadow-sm dark:bg-slate-700 dark:text-sky-300" : "text-slate-500"
+              }`}
+            >
+              <Users size={15} /> Connections
+            </button>
+            {own && connection.status === "connected" && (
+              <button
+                type="button"
+                onClick={() => setTab("browser")}
+                className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 ${
+                  tab === "browser" ? "bg-white text-[#0A66C2] shadow-sm dark:bg-slate-700 dark:text-sky-300" : "text-slate-500"
+                }`}
+              >
+                <Globe size={15} /> Live LinkedIn
+              </button>
+            )}
+          </div>
+          {viewedConnection?.lastSyncedAt && (
+            <span className="text-xs text-slate-400">
+              Last synced: {new Date(viewedConnection.lastSyncedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+            </span>
+          )}
+        </div>
+
+        {tab === "browser" && own && connection.status === "connected" ? (
+          <div className="p-4">
+            <LiveLinkedInBrowser
+              active={tab === "browser"}
+              navigateTarget={navigateTarget}
+              onNavigateConsumed={() => setNavigateTarget(null)}
+              onConnected={() => void refreshConnection()}
+              onSynced={() => setRefreshCount(c => c + 1)}
+              streamTicket={connection.streamTicket}
+              bridgeUrl={connection.bridgeUrl}
+            />
+          </div>
+        ) : tab === "contacts" ? (
+          <div className="flex h-[580px] flex-col">
+            <div className="border-b border-slate-200 p-3 dark:border-slate-700">
+              <label className="flex items-center gap-2 rounded-lg bg-slate-50 px-3 py-2 dark:bg-slate-900">
+                <Search size={16} />
+                <input
+                  placeholder="Search connections by name, headline, or handle"
+                  value={query}
+                  onChange={e => setQuery(e.target.value)}
+                  className="w-full bg-transparent text-sm outline-none"
+                />
+              </label>
+            </div>
+            <div className="flex-1 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-700">
+              {(() => {
+                const q = query.trim().toLowerCase();
+                const list = contacts.filter(
+                  c => !q || `${c.name} ${c.headline ?? ""} ${c.handle ?? ""}`.toLowerCase().includes(q),
+                );
+                if (!list.length) {
+                  return (
+                    <p className="p-8 text-center text-sm text-slate-500">
+                      {!contactsLoaded
+                        ? "Loading connections…"
+                        : viewedConnection?.status === "connected"
+                          ? "No matching connections yet. Click Sync LinkedIn above to fetch your network."
+                          : "Connect LinkedIn to view synced connections."}
+                    </p>
+                  );
+                }
+                return list.map(c => {
+                  const matchedChat = chats.find(ch => ch.handle && c.handle && ch.handle === c.handle);
+                  return (
+                    <div key={c.contactId} className="flex flex-wrap items-center justify-between gap-3 px-5 py-3.5 hover:bg-slate-50 dark:hover:bg-slate-700/40">
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate font-semibold">{c.name}</p>
+                        {c.headline && <p className="mt-0.5 truncate text-xs text-slate-500 dark:text-slate-400">{c.headline}</p>}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {matchedChat && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              generation.current += 1;
+                              setSelected(matchedChat);
+                              setMessages([]);
+                              setTab("chats");
+                            }}
+                            className="rounded-lg border border-sky-200 bg-sky-50 px-3 py-1.5 text-xs font-medium text-sky-700 hover:bg-sky-100 dark:border-sky-800 dark:bg-sky-950/40 dark:text-sky-300"
+                          >
+                            Open Chat
+                          </button>
+                        )}
+                        {own && connection.status === "connected" && c.profileUrl && (
+                          <button
+                            type="button"
+                            onClick={() => openInLiveBrowser(c.profileUrl)}
+                            className="flex items-center gap-1 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium hover:bg-slate-100 dark:border-slate-600 dark:hover:bg-slate-700"
+                          >
+                            <ExternalLink size={12} /> Open in Live Browser
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                });
+              })()}
+            </div>
+          </div>
+        ) : (
+          <div className="grid h-[580px] md:grid-cols-[310px_1fr]">
+            <aside className={`${selected ? "hidden md:flex" : "flex"} min-h-0 flex-col border-r border-slate-200 dark:border-slate-700`}>
+              <label className="m-3 flex items-center gap-2 rounded-lg bg-slate-50 px-3 py-2 dark:bg-slate-900">
+                <Search size={16} />
+                <input
+                  aria-label="Search chats"
+                  placeholder="Search conversations"
+                  value={query}
+                  onChange={event => setQuery(event.target.value)}
+                  className="w-full bg-transparent text-sm outline-none"
+                />
+              </label>
+              <div className="flex-1 overflow-y-auto">
+                {(() => {
+                  const q = query.trim().toLowerCase();
+                  const filtered = chats.filter(
+                    chat => !q || `${chat.name} ${chat.headline ?? ""} ${chat.preview ?? ""}`.toLowerCase().includes(q),
+                  );
+                  if (!filtered.length) {
+                    return (
+                      <p className="p-5 text-center text-sm text-slate-500">
+                        {chatError
+                          ? "Chats could not load. Refresh to retry."
+                          : !chatsLoaded
+                            ? "Loading chats…"
+                            : viewedConnection?.status === "connected"
+                              ? "No conversations synced yet. Click Sync LinkedIn or open Messaging in Live LinkedIn."
+                              : "Connect LinkedIn to see synced conversations."}
+                      </p>
+                    );
+                  }
+                  return filtered.map(chat => (
+                    <button
+                      key={chat.threadId}
+                      onClick={() => {
+                        generation.current += 1;
+                        setSelected(chat);
+                        setMessageError("");
+                        setMessages([]);
+                        setText("");
+                      }}
+                      className={`block w-full border-b border-slate-100 p-4 text-left dark:border-slate-700 ${
+                        selected?.threadId === chat.threadId
+                          ? "bg-sky-50 dark:bg-sky-950/40"
+                          : "hover:bg-slate-50 dark:hover:bg-slate-700"
+                      }`}
+                    >
+                      <div className="flex justify-between gap-2">
+                        <span className="truncate font-medium">{chat.name}</span>
+                        <span className="shrink-0 text-xs text-slate-400">{formatTime(chat.timestamp)}</span>
+                      </div>
+                      {chat.headline && (
+                        <p className="truncate text-[11px] text-slate-400">{chat.headline}</p>
+                      )}
+                      <p className="mt-1 truncate text-xs text-slate-500 dark:text-slate-400">
+                        {chat.preview || "Open conversation"}
+                      </p>
+                    </button>
+                  ));
+                })()}
+              </div>
+            </aside>
+
+            <div className={`${selected ? "flex" : "hidden md:flex"} min-h-0 min-w-0 flex-col`}>
+              {selected ? (
+                <>
+                  <div className="flex items-center gap-3 border-b border-slate-200 p-4 dark:border-slate-700">
+                    <button
+                      onClick={() => {
+                        generation.current += 1;
+                        setSelected(null);
+                      }}
+                      className="text-sm text-[#0A66C2] md:hidden"
+                    >
+                      Back
+                    </button>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="truncate font-semibold">{selected.name}</h3>
+                      {selected.headline && (
+                        <p className="truncate text-xs text-slate-500 dark:text-slate-400">{selected.headline}</p>
+                      )}
+                    </div>
+                    {own && connection.status === "connected" && (
+                      <button
+                        type="button"
+                        onClick={() => openInLiveBrowser(`https://www.linkedin.com/messaging/thread/${selected.threadId}/`)}
+                        className="flex items-center gap-1 rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-medium hover:bg-slate-50 dark:border-slate-600 dark:hover:bg-slate-700"
+                      >
+                        <Globe size={13} /> Open in Live Browser
+                      </button>
+                    )}
+                    {!own && <span className="ml-auto text-xs text-slate-500">Admin view</span>}
+                  </div>
+
+                  <div className="flex-1 space-y-3 overflow-y-auto bg-slate-50/70 p-4 dark:bg-slate-900/40">
+                    {messages.map(message => (
+                      <div key={message.messageId} className={`flex ${message.fromMe ? "justify-end" : "justify-start"}`}>
+                        <div
+                          className={`max-w-[85%] rounded-xl px-4 py-2 ${
+                            message.fromMe
+                              ? "bg-sky-100 text-slate-900 dark:bg-sky-900 dark:text-slate-100"
+                              : "border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800"
+                          }`}
+                        >
+                          <p className="whitespace-pre-wrap break-words text-sm">{message.text}</p>
+                          <p className="mt-1 text-right text-[10px] text-slate-500 dark:text-slate-400">
+                            {formatTime(message.timestamp)}
+                            {message.fromMe ? " · Sent" : ""}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                    <div ref={bottom} />
+                  </div>
+
+                  <form
+                    onSubmit={event => {
+                      event.preventDefault();
+                      void send();
+                    }}
+                    className="flex items-center gap-2 border-t border-slate-200 p-3 dark:border-slate-700"
+                  >
+                    <input
+                      aria-label="LinkedIn message"
+                      maxLength={4096}
+                      disabled={!canSend || sending}
+                      value={text}
+                      onChange={event => setText(event.target.value)}
+                      placeholder={
+                        !own
+                          ? "Admin view: replies are sent by the account owner"
+                          : connection.status !== "connected"
+                            ? "Reconnect LinkedIn to reply"
+                            : "Write a LinkedIn message"
+                      }
+                      className="min-w-0 flex-1 rounded-lg bg-slate-50 px-3 py-3 text-sm outline-none disabled:opacity-60 dark:bg-slate-900"
+                    />
+                    <button
+                      aria-label="Send message"
+                      disabled={!canSend || !text.trim() || sending}
+                      className="rounded-lg bg-[#0A66C2] p-3 text-white hover:bg-[#004182] disabled:opacity-40"
+                    >
+                      {sending ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
+                    </button>
+                  </form>
+                </>
+              ) : (
+                <div className="m-auto p-8 text-center text-slate-500">
+                  <FaLinkedin size={48} className="mx-auto mb-4 text-[#0A66C2]" />
+                  <p>Select a LinkedIn conversation to read or reply.</p>
+                  <p className="mt-2 text-xs">
+                    You can also open the <strong>Live LinkedIn</strong> tab to browse your feed, send connection requests, or post updates right from Xonier CRM.
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </section>
+
+      <p className="text-xs text-slate-500 dark:text-slate-400">
+        LinkedIn integration uses a private browser session inside Xonier CRM. Avoid high-volume automated messaging to keep your LinkedIn account in good standing.
+      </p>
+    </div>
+  );
+}
