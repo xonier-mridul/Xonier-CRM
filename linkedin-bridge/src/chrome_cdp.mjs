@@ -2,6 +2,12 @@ import { spawn } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { mkdir, rm } from 'node:fs/promises';
 import path from 'node:path';
+import {
+  buildMessagesGraphqlUrl,
+  extractProfileId,
+  extractThreadId,
+  parseLinkedInMessagingPayload,
+} from './messaging_parser.mjs';
 
 const CHROME_PATHS = [
   process.env.CHROME_PATH,
@@ -74,8 +80,39 @@ export function normalizeCookiesForCdp(cookies) {
   return out;
 }
 
+function safeDecode(value) {
+  try {
+    return decodeURIComponent(String(value || ''));
+  } catch {
+    return String(value || '');
+  }
+}
+
+function normalizeLinkedInApiPath(rawUrl) {
+  try {
+    const parsed = new URL(rawUrl, 'https://www.linkedin.com');
+    return parsed.pathname + parsed.search;
+  } catch {
+    return String(rawUrl || '');
+  }
+}
+
+function isTrackableMessagingUrl(url) {
+  if (typeof url !== 'string') return false;
+  if (/\/voyager\/api\/voyagerMessagingGraphQL\/graphql/i.test(url)) {
+    if (/queryId=messenger(?:MailboxCounts|Presence|Typing|SeenReceipt|Badging|Unread)/i.test(url)) {
+      return false;
+    }
+    return true;
+  }
+  return (
+    /\/voyager\/api\/messaging\/conversations/i.test(url)
+    || /\/voyager\/api\/voyagerMessagingDashMessenger(?:Conversations|Messages)/i.test(url)
+  );
+}
+
 export class ChromeSession {
-  constructor(sid) {
+  constructor(sid, options = {}) {
     this.sid = sid;
     this.proc = null;
     this.userDataDir = null;
@@ -87,6 +124,169 @@ export class ChromeSession {
     this.lastUsedAt = Date.now();
     this.lastClickedPoint = null;
     this.userAgent = null;
+    this.onMessagingData = typeof options.onMessagingData === 'function' ? options.onMessagingData : null;
+    this.selfIdentity = { memberUrn: '', profileId: '', handle: '', profileName: '' };
+    this.trackedRequests = new Map();
+    this.pendingCaptures = new Set();
+    this.pendingRawMessagingPayloads = [];
+    this.capturedChats = new Map();
+    this.capturedMessages = new Map();
+    this.capturedMessagingApi = {
+      conversationsUrl: null,
+      conversationsAccept: null,
+      messagesUrl: null,
+      messagesQueryId: null,
+      messagesAccept: null,
+      mailboxUrn: null,
+    };
+  }
+
+  setSelfIdentity(identity = {}) {
+    if (!identity || typeof identity !== 'object') return;
+    const memberUrn = String(identity.memberUrn || this.selfIdentity.memberUrn || '').trim();
+    const profileId = String(
+      identity.profileId
+      || extractProfileId(identity.memberUrn)
+      || this.selfIdentity.profileId
+      || extractProfileId(memberUrn)
+      || '',
+    ).trim();
+    const handle = String(identity.handle || this.selfIdentity.handle || '').trim();
+    const profileName = String(identity.profileName || this.selfIdentity.profileName || '').trim();
+
+    this.selfIdentity = { memberUrn, profileId, handle, profileName };
+
+    if ((profileId || handle) && this.pendingRawMessagingPayloads.length > 0) {
+      const queued = this.pendingRawMessagingPayloads.splice(0, this.pendingRawMessagingPayloads.length);
+      for (const raw of queued) {
+        this.ingestMessagingPayload(raw);
+      }
+    }
+  }
+
+  _mergeChat(chat) {
+    if (!chat?.threadId) return;
+    const existing = this.capturedChats.get(chat.threadId);
+    if (!existing) {
+      while (this.capturedChats.size >= 200) {
+        const firstKey = this.capturedChats.keys().next().value;
+        this.capturedChats.delete(firstKey);
+      }
+      this.capturedChats.set(chat.threadId, { ...chat });
+      return;
+    }
+    this.capturedChats.set(chat.threadId, {
+      threadId: chat.threadId,
+      conversationUrn:
+        (String(chat.conversationUrn || '').startsWith('urn:li:msg_conversation:') ? chat.conversationUrn : null)
+        || (String(existing.conversationUrn || '').startsWith('urn:li:msg_conversation:') ? existing.conversationUrn : null)
+        || chat.conversationUrn
+        || existing.conversationUrn
+        || chat.threadId,
+      name: (chat.name && chat.name !== 'LinkedIn Conversation' ? chat.name : null) || existing.name || 'LinkedIn Conversation',
+      headline: chat.headline || existing.headline || '',
+      handle: chat.handle || existing.handle || null,
+      profileUrl: chat.profileUrl || existing.profileUrl || null,
+      preview: (chat.timestamp || 0) >= (existing.timestamp || 0)
+        ? (chat.preview || existing.preview || '')
+        : (existing.preview || chat.preview || ''),
+      timestamp: Math.max(chat.timestamp || 0, existing.timestamp || 0),
+    });
+  }
+
+  _mergeMessage(msg) {
+    if (!msg?.threadId || !msg?.messageId) return;
+    const key = `${msg.threadId}:${msg.messageId}`;
+    if (!this.capturedMessages.has(key)) {
+      while (this.capturedMessages.size >= 1000) {
+        const firstKey = this.capturedMessages.keys().next().value;
+        this.capturedMessages.delete(firstKey);
+      }
+    }
+    this.capturedMessages.set(key, { ...msg });
+  }
+
+  _recordMessagingRequest(params) {
+    const request = params?.request;
+    const urlStr = String(request?.url || '');
+    if (!isTrackableMessagingUrl(urlStr)) return;
+
+    const decoded = safeDecode(urlStr);
+    const mailboxMatch = decoded.match(/urn:li:fsd_profile:[0-9A-Za-z_-]+/);
+    if (mailboxMatch?.[0]) {
+      this.capturedMessagingApi.mailboxUrn = mailboxMatch[0];
+    }
+
+    const reqHeaders = request?.headers || {};
+    const acceptKey = Object.keys(reqHeaders).find(k => k.toLowerCase() === 'accept');
+    const acceptHeader = acceptKey ? String(reqHeaders[acceptKey] || '').trim() : null;
+
+    const queryIdMatch = urlStr.match(/[?&]queryId=([^&]+)/i);
+    const queryId = queryIdMatch ? safeDecode(queryIdMatch[1]) : '';
+    const hasSyncToken = /syncToken:[^,)\s]+/i.test(decoded);
+
+    if (/^messengerConversations/i.test(queryId)) {
+      if (!hasSyncToken || !this.capturedMessagingApi.conversationsUrl) {
+        this.capturedMessagingApi.conversationsUrl = normalizeLinkedInApiPath(urlStr);
+        if (acceptHeader) this.capturedMessagingApi.conversationsAccept = acceptHeader;
+      }
+    } else if (/^messengerMessages/i.test(queryId)) {
+      this.capturedMessagingApi.messagesQueryId = queryId;
+      if (/conversationUrn:/i.test(decoded) && (!hasSyncToken || !this.capturedMessagingApi.messagesUrl)) {
+        this.capturedMessagingApi.messagesUrl = normalizeLinkedInApiPath(urlStr);
+        if (acceptHeader) this.capturedMessagingApi.messagesAccept = acceptHeader;
+      }
+    }
+
+    if (params?.requestId) {
+      while (this.trackedRequests.size >= 200) {
+        const oldestKey = this.trackedRequests.keys().next().value;
+        this.trackedRequests.delete(oldestKey);
+      }
+      this.trackedRequests.set(params.requestId, {
+        url: urlStr,
+        method: String(request?.method || 'GET').toUpperCase(),
+      });
+    }
+  }
+
+  ingestMessagingPayload(json) {
+    if (!json || typeof json !== 'object') {
+      return { chats: [], messages: [] };
+    }
+    if (!this.selfIdentity.profileId && !this.selfIdentity.handle) {
+      if (this.pendingRawMessagingPayloads.length >= 10) {
+        this.pendingRawMessagingPayloads.shift();
+      }
+      this.pendingRawMessagingPayloads.push(json);
+      return { chats: [], messages: [] };
+    }
+
+    const parsed = parseLinkedInMessagingPayload(json, this.selfIdentity);
+    for (const chat of parsed.chats) this._mergeChat(chat);
+    for (const message of parsed.messages) this._mergeMessage(message);
+
+    if ((parsed.chats.length || parsed.messages.length) && this.onMessagingData) {
+      try {
+        Promise.resolve(this.onMessagingData(parsed)).catch(() => {});
+      } catch {
+        // Ignore downstream listener errors
+      }
+    }
+    return parsed;
+  }
+
+  async captureNetworkBody(requestId) {
+    if (!requestId || this.closed) return;
+    const bodyRes = await this.send('Network.getResponseBody', { requestId }, 6000);
+    if (!bodyRes?.body) return;
+    const raw = bodyRes.base64Encoded
+      ? Buffer.from(bodyRes.body, 'base64').toString('utf8')
+      : bodyRes.body;
+    const trimmed = String(raw || '').trim();
+    if (!trimmed || (trimmed[0] !== '{' && trimmed[0] !== '[')) return;
+    const json = JSON.parse(trimmed);
+    this.ingestMessagingPayload(json);
   }
 
   enqueue(fn) {
@@ -191,6 +391,7 @@ export class ChromeSession {
       entry.reject(new Error('Target switched'));
     }
     this.pending.clear();
+    this.trackedRequests.clear();
     this.latestFrameImage = null;
     this.latestFrameTs = 0;
     this.currentUrl = target.url || this.currentUrl || '';
@@ -228,6 +429,33 @@ export class ChromeSession {
           if (msg.params?.url && this.ws === ws) {
             this.currentUrl = msg.params.url;
           }
+        } else if (msg.method === 'Network.requestWillBeSent') {
+          if (this.ws === ws) {
+            this._recordMessagingRequest(msg.params);
+          }
+        } else if (msg.method === 'Network.responseReceived') {
+          if (this.ws === ws) {
+            const reqId = msg.params?.requestId;
+            const status = Number(msg.params?.response?.status || 0);
+            if (reqId && this.trackedRequests.has(reqId) && (status < 200 || status >= 300)) {
+              this.trackedRequests.delete(reqId);
+            }
+          }
+        } else if (msg.method === 'Network.loadingFailed') {
+          if (this.ws === ws && msg.params?.requestId) {
+            this.trackedRequests.delete(msg.params.requestId);
+          }
+        } else if (msg.method === 'Network.loadingFinished') {
+          if (this.ws === ws) {
+            const reqId = msg.params?.requestId;
+            if (reqId && this.trackedRequests.has(reqId)) {
+              this.trackedRequests.delete(reqId);
+              const captureTask = this.captureNetworkBody(reqId)
+                .catch(() => {})
+                .finally(() => this.pendingCaptures.delete(captureTask));
+              this.pendingCaptures.add(captureTask);
+            }
+          }
         }
       } catch {
         // Ignore malformed CDP frames
@@ -247,7 +475,10 @@ export class ChromeSession {
     if (previous) { try { previous.close(); } catch {} }
 
     await this.send('Page.enable');
-    await this.send('Network.enable');
+    await this.send('Network.enable', {
+      maxResourceBufferSize: 10 * 1024 * 1024,
+      maxTotalBufferSize: 30 * 1024 * 1024,
+    }).catch(() => this.send('Network.enable'));
     await this.send('Runtime.enable');
     await this.send('Page.bringToFront').catch(() => {});
     await this.send('Emulation.setFocusEmulationEnabled', { enabled: true }).catch(() => {});
@@ -606,7 +837,7 @@ export class ChromeSession {
   async extractLinkedInProfile() {
     return this.enqueue(async () => {
       await this.syncTargets();
-      return this.evaluate(`(async () => {
+      const profile = await this.evaluate(`(async () => {
         if (!location.hostname.endsWith('linkedin.com') || /^\\/(checkpoint|login|uas|signup)/i.test(location.pathname)) {
           return { authenticated: false, transient: true, url: location.href };
         }
@@ -624,13 +855,13 @@ export class ChromeSession {
           if (!res.ok) return { authenticated: false, status: res.status, url: location.href };
           const payload = await res.json();
           const included = Array.isArray(payload.included) ? payload.included : [];
-          const profile = included.find(x => x && (x.firstName || x.publicIdentifier)) || payload.data?.miniProfile || payload.miniProfile || {};
-          const first = profile.firstName || '';
-          const last = profile.lastName || '';
+          const prof = included.find(x => x && (x.firstName || x.publicIdentifier)) || payload.data?.miniProfile || payload.miniProfile || {};
+          const first = prof.firstName || '';
+          const last = prof.lastName || '';
           const profileName = (first + ' ' + last).trim() || null;
-          const handle = profile.publicIdentifier || null;
-          const headline = profile.occupation || profile.headline || null;
-          const entityUrn = profile.entityUrn || payload.data?.plainId || null;
+          const handle = prof.publicIdentifier || null;
+          const headline = prof.occupation || prof.headline || null;
+          const entityUrn = prof.entityUrn || payload.data?.plainId || null;
           return {
             authenticated: true,
             profileName,
@@ -644,16 +875,352 @@ export class ChromeSession {
           return { authenticated: false, error: String(err), url: location.href };
         }
       })()`);
+      if (profile?.authenticated) {
+        this.setSelfIdentity(profile);
+      }
+      return profile;
     });
+  }
+
+  async _fetchInPageJson(url, accept = 'application/vnd.linkedin.normalized+json+2.1') {
+    const args = JSON.stringify({ url, accept });
+    return this.evaluate(`(async () => {
+      const { url, accept } = ${args};
+      if (!location.hostname.endsWith('linkedin.com') || /^\\/(checkpoint|login|uas|signup)/i.test(location.pathname)) {
+        return { ok: false, blocked: true };
+      }
+      const match = document.cookie.match(/JSESSIONID="?([^";]+)"?/);
+      const csrf = match ? match[1] : '';
+      try {
+        const res = await fetch(url, {
+          credentials: 'include',
+          headers: {
+            'csrf-token': csrf,
+            'x-restli-protocol-version': '2.0.0',
+            'accept': accept
+          }
+        });
+        if (!res.ok) return { ok: false, status: res.status };
+        return { ok: true, json: await res.json() };
+      } catch {
+        return { ok: false };
+      }
+    })()`).catch(() => ({ ok: false }));
+  }
+
+  async _extractAndIngestCodeIslands() {
+    const blobs = await this.evaluate(`(() => {
+      if (!location.hostname.endsWith('linkedin.com') || /^\\/(checkpoint|login|uas|signup)/i.test(location.pathname)) {
+        return [];
+      }
+      const out = [];
+      for (const code of document.querySelectorAll('code')) {
+        const text = (code.textContent || '').trim();
+        if (!text || text[0] !== '{' || text.length > 1500000) continue;
+        if (!/(msg_conversation|fs_conversation|messenger\\.Conversation|messenger\\.Message)/.test(text)) continue;
+        try {
+          out.push(JSON.parse(text));
+        } catch {}
+        if (out.length >= 20) break;
+      }
+      return out;
+    })()`).catch(() => []);
+    for (const blob of Array.isArray(blobs) ? blobs : []) {
+      this.ingestMessagingPayload(blob);
+    }
+  }
+
+  async _extractMessagingDomFallback() {
+    const selfInfoJson = JSON.stringify({ profileName: this.selfIdentity.profileName || '' });
+    const domResult = await this.evaluate(`(() => {
+      if (!location.hostname.endsWith('linkedin.com') || !/^\\/messaging/i.test(location.pathname)) {
+        return { chats: [], messages: [] };
+      }
+      const { profileName: selfName } = ${selfInfoJson};
+      const clean = s => String(s || '').replace(/\\s+/g, ' ').trim();
+      const nowSec = Math.floor(Date.now() / 1000);
+      const activeMatch = location.pathname.match(/\\/messaging\\/thread\\/([^/?#]+)/);
+      const activeThreadId = activeMatch?.[1] ? decodeURIComponent(activeMatch[1]) : '';
+
+      const chats = [];
+      const seenThreads = new Set();
+      const cards = document.querySelectorAll('li.msg-conversation-listitem, [data-control-name="view_message"]');
+      for (const card of cards) {
+        const link = card.querySelector('a[href*="/messaging/thread/"]');
+        const href = link?.getAttribute('href') || '';
+        const hrefMatch = href.match(/\\/messaging\\/thread\\/([^/?#]+)/);
+        const isActive = Boolean(
+          card.classList.contains('active')
+          || card.querySelector('[aria-selected="true"], .msg-conversation-listitem__link--active')
+        );
+        const threadId = (hrefMatch?.[1] ? decodeURIComponent(hrefMatch[1]) : '') || (isActive ? activeThreadId : '');
+        if (!threadId || seenThreads.has(threadId)) continue;
+        seenThreads.add(threadId);
+
+        const nameEl = card.querySelector('.msg-conversation-listitem__participant-names, .msg-conversation-card__participant-names, h3, [class*="participant-names"]');
+        const snippetEl = card.querySelector('.msg-conversation-card__message-snippet, .msg-conversation-card__message-snippet-body, p');
+        const profileLink = card.querySelector('a[href*="/in/"]');
+        const profileUrl = profileLink?.href || null;
+        const handleMatch = profileUrl?.match(/\\/in\\/([^/?#]+)/i);
+
+        chats.push({
+          threadId,
+          conversationUrn: threadId,
+          name: clean(nameEl?.textContent) || 'LinkedIn Conversation',
+          headline: '',
+          handle: handleMatch?.[1] ? decodeURIComponent(handleMatch[1]) : null,
+          profileUrl,
+          preview: clean(snippetEl?.textContent).slice(0, 180),
+          timestamp: nowSec - chats.length,
+        });
+      }
+
+      const messages = [];
+      if (activeThreadId) {
+        const headerTitle = clean(document.querySelector('.msg-entity-lockup__entity-title, .msg-thread__link-to-profile, h2.msg-overlay-bubble-header__title')?.textContent);
+        const headerProfileLink = document.querySelector('.msg-thread a[href*="/in/"]')?.href || null;
+        const headerHandleMatch = headerProfileLink?.match(/\\/in\\/([^/?#]+)/i);
+        if (!seenThreads.has(activeThreadId) && headerTitle) {
+          chats.unshift({
+            threadId: activeThreadId,
+            conversationUrn: activeThreadId,
+            name: headerTitle,
+            headline: '',
+            handle: headerHandleMatch?.[1] ? decodeURIComponent(headerHandleMatch[1]) : null,
+            profileUrl: headerProfileLink,
+            preview: '',
+            timestamp: nowSec,
+          });
+        }
+
+        const items = document.querySelectorAll('.msg-s-message-list__event, li.msg-s-message-list-item');
+        let idx = 0;
+        for (const item of items) {
+          const bodyEl = item.querySelector('.msg-s-event-listitem__body, p.msg-s-event-listitem__body');
+          const text = clean(bodyEl?.textContent);
+          if (!text) continue;
+          const group = item.closest('.msg-s-message-list__event') || item;
+          const senderName = clean(group.querySelector('.msg-s-message-group__name')?.textContent);
+          const fromMe = Boolean(
+            selfName && senderName && senderName.toLowerCase() === selfName.toLowerCase()
+          );
+          messages.push({
+            threadId: activeThreadId,
+            messageId: 'dom-' + activeThreadId.slice(0, 24) + '-' + idx + '-' + text.slice(0, 12),
+            text: text.slice(0, 16000),
+            fromMe,
+            senderName: senderName || (fromMe ? selfName || 'You' : headerTitle || ''),
+            timestamp: nowSec + idx,
+            status: 3,
+          });
+          idx += 1;
+        }
+      }
+
+      return { chats, messages };
+    })()`).catch(() => ({ chats: [], messages: [] }));
+
+    if (domResult?.chats?.length || domResult?.messages?.length) {
+      for (const chat of domResult.chats || []) this._mergeChat(chat);
+      for (const message of domResult.messages || []) this._mergeMessage(message);
+      if (this.onMessagingData) {
+        try {
+          Promise.resolve(this.onMessagingData({
+            chats: domResult.chats || [],
+            messages: domResult.messages || [],
+          })).catch(() => {});
+        } catch {}
+      }
+    }
+  }
+
+  async _fetchThreadMessagesUnlocked(threadId, conversationUrn = null) {
+    await this.syncTargets();
+    const cachedChat = this.capturedChats.get(threadId);
+    const urnCandidate =
+      (conversationUrn && String(conversationUrn).startsWith('urn:li:msg_conversation:') ? String(conversationUrn).trim() : null)
+      || (cachedChat?.conversationUrn && String(cachedChat.conversationUrn).startsWith('urn:li:msg_conversation:') ? cachedChat.conversationUrn : null);
+
+    const mailboxUrn =
+      this.capturedMessagingApi.mailboxUrn
+      || (this.selfIdentity.profileId ? `urn:li:fsd_profile:${this.selfIdentity.profileId}` : '');
+
+    const fullConvUrn = urnCandidate || (mailboxUrn ? `urn:li:msg_conversation:(${mailboxUrn},${threadId})` : '');
+
+    const countForThread = () => {
+      let n = 0;
+      for (const m of this.capturedMessages.values()) {
+        if (m.threadId === threadId) n += 1;
+      }
+      return n;
+    };
+
+    const beforeCount = countForThread();
+
+    if (fullConvUrn) {
+      const gqlUrl = buildMessagesGraphqlUrl(this.capturedMessagingApi, fullConvUrn);
+      if (gqlUrl) {
+        const res = await this._fetchInPageJson(gqlUrl, this.capturedMessagingApi.messagesAccept || 'application/graphql');
+        if (res?.blocked) return { ok: false, transient: true, messages: [] };
+        if (res?.ok && res.json) {
+          this.ingestMessagingPayload(res.json);
+        }
+      }
+    }
+
+    if (countForThread() <= beforeCount) {
+      const legacyUrl = `/voyager/api/messaging/conversations/${encodeURIComponent(threadId)}/events`;
+      const legacyRes = await this._fetchInPageJson(legacyUrl, 'application/vnd.linkedin.normalized+json+2.1');
+      if (legacyRes?.blocked) return { ok: false, transient: true, messages: [] };
+      if (legacyRes?.ok && legacyRes.json) {
+        this.ingestMessagingPayload(legacyRes.json);
+      }
+    }
+
+    return {
+      ok: true,
+      messages: [...this.capturedMessages.values()]
+        .filter(m => m.threadId === threadId)
+        .sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0)),
+    };
+  }
+
+  async fetchThreadMessages(threadId, conversationUrn = null) {
+    return this.enqueue(() => this._fetchThreadMessagesUnlocked(threadId, conversationUrn));
   }
 
   async syncConversationsAndConnections() {
     return this.enqueue(async () => {
-      return this.evaluate(`(async () => {
+      await this.syncTargets();
+
+      // 1. Check safety guard & resolve self profile so we can identify outgoing messages
+      const meCheck = await this.evaluate(`(async () => {
         if (!location.hostname.endsWith('linkedin.com') || /^\\/(checkpoint|login|uas|signup)/i.test(location.pathname)) {
-          return { ok: false, transient: true };
+          return { blocked: true, url: location.href, pathname: location.pathname };
         }
-        const humanDelay = (min = 700, span = 600) => new Promise(r => setTimeout(r, min + Math.floor(Math.random() * span)));
+        const match = document.cookie.match(/JSESSIONID="?([^";]+)"?/);
+        const csrf = match ? match[1] : '';
+        const headers = {
+          'csrf-token': csrf,
+          'x-restli-protocol-version': '2.0.0',
+          'accept': 'application/vnd.linkedin.normalized+json+2.1'
+        };
+        try {
+          const meRes = await fetch('/voyager/api/me', { credentials: 'include', headers });
+          if (meRes.ok) {
+            const meJson = await meRes.json();
+            const meProf = (meJson.included || []).find(x => x && (x.firstName || x.publicIdentifier)) || meJson.miniProfile || {};
+            return {
+              blocked: false,
+              url: location.href,
+              pathname: location.pathname,
+              memberUrn: String(meProf.entityUrn || ''),
+              handle: String(meProf.publicIdentifier || ''),
+              profileName: ((meProf.firstName || '') + ' ' + (meProf.lastName || '')).trim(),
+            };
+          }
+        } catch {}
+        return { blocked: false, url: location.href, pathname: location.pathname };
+      })()`).catch(() => ({ blocked: true }));
+
+      if (meCheck?.blocked) {
+        return { ok: false, transient: true };
+      }
+      if (meCheck?.memberUrn || meCheck?.handle || meCheck?.profileName) {
+        this.setSelfIdentity(meCheck);
+      }
+
+      // 2. If a Messenger GraphQL conversations query URL was already captured, replay it cleanly
+      if (this.capturedMessagingApi.conversationsUrl) {
+        const gqlConv = await this._fetchInPageJson(
+          this.capturedMessagingApi.conversationsUrl,
+          this.capturedMessagingApi.conversationsAccept || 'application/graphql',
+        );
+        if (gqlConv?.ok && gqlConv.json) {
+          this.ingestMessagingPayload(gqlConv.json);
+        }
+      }
+
+      // 3. If still no chats captured, navigate gently to /messaging/ to trigger LinkedIn's native GraphQL traffic
+      if (this.capturedChats.size === 0) {
+        const onMessaging = /^\/messaging/i.test(meCheck?.pathname || '');
+        if (onMessaging) {
+          await this._extractAndIngestCodeIslands();
+          if (this.capturedChats.size === 0) {
+            await this.send('Page.reload', {}).catch(() => {});
+          }
+        } else {
+          this.currentUrl = 'https://www.linkedin.com/messaging/';
+          await this.send('Page.navigate', { url: 'https://www.linkedin.com/messaging/' }).catch(() => {});
+        }
+
+        if (this.capturedChats.size === 0) {
+          for (let attempt = 0; attempt < 17; attempt += 1) {
+            await sleep(350);
+            if (/\/(checkpoint|login|uas|signup)/i.test(this.currentUrl || '')) {
+              return { ok: false, transient: true };
+            }
+            if (this.capturedChats.size > 0) {
+              await sleep(900);
+              await Promise.allSettled([...this.pendingCaptures]);
+              break;
+            }
+          }
+          await Promise.allSettled([...this.pendingCaptures]);
+        }
+      }
+
+      if (/\/(checkpoint|login|uas|signup)/i.test(this.currentUrl || '')) {
+        return { ok: false, transient: true };
+      }
+
+      // 4. SSR <code> JSON islands fallback
+      if (this.capturedChats.size === 0) {
+        await this._extractAndIngestCodeIslands();
+      }
+
+      // 5. Legacy inbox fallback
+      if (this.capturedChats.size === 0) {
+        const legacyRes = await this._fetchInPageJson(
+          '/voyager/api/messaging/conversations?keyVersion=LEGACY_INBOX',
+          'application/vnd.linkedin.normalized+json+2.1',
+        );
+        if (legacyRes?.ok && legacyRes.json) {
+          this.ingestMessagingPayload(legacyRes.json);
+        }
+      }
+
+      // 6. Read-only /messaging/ DOM fallback
+      if (this.capturedChats.size === 0) {
+        await this._extractMessagingDomFallback();
+      }
+
+      // 7. Fetch latest messages for top 5 chats that have fewer than 2 messages cached (human-paced)
+      const topChats = [...this.capturedChats.values()]
+        .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))
+        .slice(0, 5);
+      for (const chat of topChats) {
+        let msgCount = 0;
+        for (const msg of this.capturedMessages.values()) {
+          if (msg.threadId === chat.threadId) msgCount += 1;
+        }
+        if (msgCount >= 2) continue;
+        await sleep(750 + Math.floor(Math.random() * 500));
+        await this._fetchThreadMessagesUnlocked(chat.threadId, chat.conversationUrn).catch(() => {});
+      }
+
+      // 8. Connections (human-paced delay)
+      await sleep(700 + Math.floor(Math.random() * 600));
+      const selfIdentityJson = JSON.stringify({
+        selfUrn: this.selfIdentity.memberUrn || '',
+        selfProfileId: this.selfIdentity.profileId || '',
+        selfHandle: (this.selfIdentity.handle || '').toLowerCase(),
+      });
+      const contacts = await this.evaluate(`(async () => {
+        if (!location.hostname.endsWith('linkedin.com') || /^\\/(checkpoint|login|uas|signup)/i.test(location.pathname)) {
+          return [];
+        }
+        const { selfUrn, selfProfileId, selfHandle } = ${selfIdentityJson};
         const match = document.cookie.match(/JSESSIONID="?([^";]+)"?/);
         const csrf = match ? match[1] : '';
         const headers = {
@@ -671,138 +1238,13 @@ export class ChromeSession {
           return map;
         };
         const resolve = (map, val) => (typeof val === 'string' ? map.get(val) : val) || null;
-        const extractThreadId = (urn) => {
+        const extractId = (urn) => {
           const s = String(urn || '');
           const paren = s.match(/,([^)]+)\\)/);
           if (paren) return paren[1];
           const parts = s.split(':');
           return parts[parts.length - 1] || s;
         };
-
-        // 1. Self profile to identify outgoing messages
-        let selfUrn = '';
-        let selfHandle = '';
-        try {
-          const meRes = await fetch('/voyager/api/me', { credentials: 'include', headers });
-          if (meRes.ok) {
-            const meJson = await meRes.json();
-            const meProf = (meJson.included || []).find(x => x && (x.firstName || x.publicIdentifier)) || meJson.miniProfile || {};
-            selfUrn = String(meProf.entityUrn || '');
-            selfHandle = String(meProf.publicIdentifier || '');
-          }
-        } catch {}
-
-        // 2. Conversations
-        await humanDelay();
-        const chats = [];
-        const messages = [];
-        try {
-          const convRes = await fetch('/voyager/api/messaging/conversations?keyVersion=LEGACY_INBOX', { credentials: 'include', headers });
-          if (convRes.ok) {
-            const convJson = await convRes.json();
-            const map = buildIndex(convJson.included);
-            const rawList = Array.isArray(convJson.data?.elements)
-              ? convJson.data.elements.map(e => resolve(map, e) || e)
-              : Array.isArray(convJson.elements)
-                ? convJson.elements
-                : (convJson.included || []).filter(x => String(x?.entityUrn || '').includes('fs_conversation'));
-
-            const seenThreads = new Set();
-            for (const conv of rawList) {
-              if (!conv) continue;
-              const convUrn = String(conv.entityUrn || conv['*conversation'] || '');
-              const threadId = extractThreadId(convUrn);
-              if (!threadId || seenThreads.has(threadId)) continue;
-              seenThreads.add(threadId);
-
-              const partRefs = conv['*participants'] || conv.participants || [];
-              const otherProfiles = [];
-              for (const ref of partRefs) {
-                const pObj = resolve(map, ref) || ref;
-                const member = resolve(map, pObj?.['*messagingMember'] || pObj?.messagingMember || pObj) || pObj;
-                const mini = resolve(map, member?.['*miniProfile'] || member?.miniProfile || member?.['com.linkedin.voyager.messaging.MessagingMember']?.['*miniProfile'] || member?.['com.linkedin.voyager.messaging.MessagingMember']?.miniProfile) || member;
-                if (mini && (mini.firstName || mini.publicIdentifier)) {
-                  const urn = String(mini.entityUrn || '');
-                  const handle = String(mini.publicIdentifier || '');
-                  if ((selfUrn && urn === selfUrn) || (selfHandle && handle === selfHandle)) continue;
-                  otherProfiles.push(mini);
-                }
-              }
-              const primary = otherProfiles[0] || {};
-              const name = ((primary.firstName || '') + ' ' + (primary.lastName || '')).trim() || 'LinkedIn Conversation';
-              const headline = primary.occupation || primary.headline || '';
-              const handle = primary.publicIdentifier || null;
-              const profileUrl = handle ? 'https://www.linkedin.com/in/' + handle + '/' : null;
-
-              let preview = '';
-              let timestamp = Number(conv.lastActivityAt || 0);
-              const eventRefs = conv['*events'] || conv.events || [];
-              for (const evRef of eventRefs) {
-                const ev = resolve(map, evRef) || evRef;
-                if (!ev) continue;
-                const ec = ev.eventContent?.['com.linkedin.voyager.messaging.event.MessageEvent'] || ev.eventContent || {};
-                const bodyText = ec.attributedBody?.text || ec.body || '';
-                if (bodyText) preview = String(bodyText).slice(0, 180);
-                if (ev.createdAt && Number(ev.createdAt) > timestamp) timestamp = Number(ev.createdAt);
-              }
-
-              chats.push({
-                threadId,
-                conversationUrn: convUrn || threadId,
-                name,
-                headline,
-                handle,
-                profileUrl,
-                preview,
-                timestamp: timestamp > 1e12 ? Math.floor(timestamp / 1000) : timestamp || Math.floor(Date.now() / 1000),
-              });
-            }
-
-            // Fetch latest events for top 5 chats with human pacing
-            for (const chat of chats.slice(0, 5)) {
-              try {
-                await humanDelay(800, 400);
-                const evRes = await fetch('/voyager/api/messaging/conversations/' + encodeURIComponent(chat.threadId) + '/events', { credentials: 'include', headers });
-                if (!evRes.ok) continue;
-                const evJson = await evRes.json();
-                const evMap = buildIndex(evJson.included);
-                const events = Array.isArray(evJson.data?.elements)
-                  ? evJson.data.elements.map(e => resolve(evMap, e) || e)
-                  : Array.isArray(evJson.elements)
-                    ? evJson.elements
-                    : (evJson.included || []).filter(x => String(x?.entityUrn || '').includes('fs_event'));
-
-                for (const ev of events) {
-                  if (!ev) continue;
-                  const ec = ev.eventContent?.['com.linkedin.voyager.messaging.event.MessageEvent'] || ev.eventContent || {};
-                  const text = String(ec.attributedBody?.text || ec.body || '').trim();
-                  if (!text) continue;
-                  const fromObj = resolve(evMap, ev['*from'] || ev.from) || ev.from || {};
-                  const fromMember = resolve(evMap, fromObj['*messagingMember'] || fromObj.messagingMember || fromObj) || fromObj;
-                  const fromMini = resolve(evMap, fromMember?.['*miniProfile'] || fromMember?.miniProfile || fromMember?.['com.linkedin.voyager.messaging.MessagingMember']?.['*miniProfile'] || fromMember?.['com.linkedin.voyager.messaging.MessagingMember']?.miniProfile) || fromMember;
-                  const senderUrn = String(fromMini?.entityUrn || '');
-                  const senderHandle = String(fromMini?.publicIdentifier || '');
-                  const fromMe = Boolean((selfUrn && senderUrn === selfUrn) || (selfHandle && senderHandle === selfHandle));
-                  const tsRaw = Number(ev.createdAt || Date.now());
-                  const ts = tsRaw > 1e12 ? Math.floor(tsRaw / 1000) : tsRaw;
-                  const messageId = extractThreadId(ev.entityUrn || ev.backendUrn || (chat.threadId + '-' + ts + '-' + text.slice(0, 16)));
-                  messages.push({
-                    threadId: chat.threadId,
-                    messageId,
-                    text: text.slice(0, 16000),
-                    fromMe,
-                    senderName: ((fromMini?.firstName || '') + ' ' + (fromMini?.lastName || '')).trim() || (fromMe ? 'You' : chat.name),
-                    timestamp: ts,
-                    status: 3,
-                  });
-                }
-              } catch {}
-            }
-          }
-        } catch {}
-
-        // 3. Connections
-        await humanDelay();
         const contacts = [];
         try {
           let connRes = await fetch('/voyager/api/relationships/dash/connections?decorationId=com.linkedin.voyager.dash.deco.web.mynetwork.ConnectionListWithProfile-16&count=100&q=search&sortType=RECENTLY_ADDED', { credentials: 'include', headers });
@@ -818,9 +1260,16 @@ export class ChromeSession {
               const name = ((prof.firstName || '') + ' ' + (prof.lastName || '')).trim();
               const handle = prof.publicIdentifier ? String(prof.publicIdentifier) : null;
               const urn = String(prof.entityUrn || prof.objectUrn || handle || '');
-              const contactId = handle || extractThreadId(urn);
+              const profId = extractId(urn);
+              const contactId = handle || profId;
               if (!contactId || !name || seenContacts.has(contactId)) return;
-              if ((selfUrn && urn === selfUrn) || (selfHandle && handle === selfHandle)) return;
+              if (
+                (selfUrn && urn === selfUrn)
+                || (selfProfileId && profId === selfProfileId)
+                || (selfHandle && handle && handle.toLowerCase() === selfHandle)
+              ) {
+                return;
+              }
               seenContacts.add(contactId);
               contacts.push({
                 contactId,
@@ -840,17 +1289,40 @@ export class ChromeSession {
             }
           }
         } catch {}
+        return contacts;
+      })()`).catch(() => []);
 
-        return { ok: true, chats, messages, contacts };
-      })()`);
+      return {
+        ok: true,
+        chats: [...this.capturedChats.values()],
+        messages: [...this.capturedMessages.values()],
+        contacts: Array.isArray(contacts) ? contacts : [],
+      };
     });
   }
 
   async sendMessage(threadId, text, conversationUrn = null) {
     return this.enqueue(async () => {
-      const payloadArgs = JSON.stringify({ threadId, text, conversationUrn });
-      return this.evaluate(`(async () => {
-        const { threadId, text, conversationUrn } = ${payloadArgs};
+      await this.syncTargets();
+      const mailboxFromArg = String(conversationUrn || '').match(/urn:li:fsd_profile:[^,)]+/)?.[0] || '';
+      const mailboxUrn =
+        mailboxFromArg
+        || this.capturedMessagingApi.mailboxUrn
+        || (this.selfIdentity.profileId ? `urn:li:fsd_profile:${this.selfIdentity.profileId}` : '')
+        || null;
+      const fullConversationUrn =
+        conversationUrn && String(conversationUrn).startsWith('urn:li:msg_conversation:')
+          ? String(conversationUrn).trim()
+          : mailboxUrn
+            ? `urn:li:msg_conversation:(${mailboxUrn},${threadId})`
+            : null;
+
+      const payloadArgs = JSON.stringify({ threadId, text, fullConversationUrn, mailboxUrn });
+      const sent = await this.evaluate(`(async () => {
+        if (!location.hostname.endsWith('linkedin.com') || /^\\/(checkpoint|login|uas|signup)/i.test(location.pathname)) {
+          return { ok: false, transient: true };
+        }
+        const { threadId, text, fullConversationUrn, mailboxUrn } = ${payloadArgs};
         const match = document.cookie.match(/JSESSIONID="?([^";]+)"?/);
         const csrf = match ? match[1] : '';
         const headers = {
@@ -859,6 +1331,36 @@ export class ChromeSession {
           'content-type': 'application/json',
           'accept': 'application/json'
         };
+
+        let lastStatus = 0;
+        if (fullConversationUrn && fullConversationUrn.startsWith('urn:li:msg_conversation:')) {
+          const dashRes = await fetch('/voyager/api/voyagerMessagingDashMessengerMessages?action=createMessage', {
+            method: 'POST',
+            credentials: 'include',
+            headers,
+            body: JSON.stringify({
+              message: {
+                body: { attributes: [], text },
+                renderContentUnions: [],
+                conversationUrn: fullConversationUrn,
+                originToken: crypto.randomUUID()
+              },
+              ...(mailboxUrn ? { mailboxUrn } : {}),
+              dedupeByClientGeneratedToken: false
+            })
+          });
+          lastStatus = dashRes.status;
+          if (dashRes.ok) {
+            const dashData = await dashRes.json().catch(() => ({}));
+            const rawId =
+              dashData?.value?.entityUrn
+              || dashData?.value?.backendUrn
+              || dashData?.data?.value?.entityUrn
+              || crypto.randomUUID();
+            return { ok: true, rawId: String(rawId), timestamp: Math.floor(Date.now() / 1000) };
+          }
+        }
+
         const res = await fetch('/voyager/api/messaging/conversations/' + encodeURIComponent(threadId) + '/events?action=create', {
           method: 'POST',
           credentials: 'include',
@@ -877,30 +1379,19 @@ export class ChromeSession {
         if (res.ok) {
           const data = await res.json().catch(() => ({}));
           const rawId = data?.value?.eventUrn || data?.value?.backendEventUrn || crypto.randomUUID();
-          return { ok: true, messageId: String(rawId), timestamp: Math.floor(Date.now() / 1000) };
+          return { ok: true, rawId: String(rawId), timestamp: Math.floor(Date.now() / 1000) };
         }
-        if (conversationUrn && String(conversationUrn).startsWith('urn:li:')) {
-          const dashRes = await fetch('/voyager/api/voyagerMessagingDashMessengerMessages?action=createMessage', {
-            method: 'POST',
-            credentials: 'include',
-            headers,
-            body: JSON.stringify({
-              message: {
-                body: { attributes: [], text },
-                renderContentUnions: [],
-                conversationUrn,
-                originToken: crypto.randomUUID()
-              },
-              mailboxUrn: conversationUrn.match(/urn:li:fsd_profile:[^,)]+/)?.[0] || undefined
-            })
-          });
-          if (dashRes.ok) {
-            const dashData = await dashRes.json().catch(() => ({}));
-            return { ok: true, messageId: String(dashData?.value?.entityUrn || crypto.randomUUID()), timestamp: Math.floor(Date.now() / 1000) };
-          }
-        }
-        return { ok: false, status: res.status };
-      })()`);
+        return { ok: false, status: res.status || lastStatus };
+      })()`).catch(() => ({ ok: false }));
+
+      if (sent?.ok) {
+        return {
+          ok: true,
+          messageId: extractThreadId(sent.rawId) || String(sent.rawId),
+          timestamp: sent.timestamp || Math.floor(Date.now() / 1000),
+        };
+      }
+      return sent;
     });
   }
 

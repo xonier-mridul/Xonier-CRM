@@ -67,7 +67,7 @@ const locks = new Map();
 const rates = new Map();
 
 const fail = (status, message) => Object.assign(new Error(message), { status });
-const safeThreadId = id => typeof id === 'string' && id.length >= 2 && id.length <= 240 && /^[0-9A-Za-z_.:(),~-]+$/.test(id);
+const safeThreadId = id => typeof id === 'string' && id.length >= 2 && id.length <= 240 && /^[0-9A-Za-z_.:(),~=-]+$/.test(id);
 
 async function serialized(sid, fn) {
   const previous = locks.get(sid) || Promise.resolve();
@@ -181,6 +181,122 @@ async function checkSessionAccess(sid) {
   return false;
 }
 
+async function persistMessagingData(sid, { chats: chatList = [], messages: messageList = [] } = {}) {
+  if (Array.isArray(chatList) && chatList.length) {
+    const chatOps = [];
+    for (const c of chatList) {
+      if (!c?.threadId || !safeThreadId(c.threadId)) continue;
+      const setFields = {};
+      const setOnInsertFields = { sid, threadId: c.threadId };
+
+      const convUrn = c.conversationUrn || c.threadId;
+      if (String(convUrn).startsWith('urn:li:msg_conversation:')) {
+        setFields.conversationUrn = convUrn;
+      } else {
+        setOnInsertFields.conversationUrn = convUrn;
+      }
+
+      if (c.name && c.name !== 'LinkedIn Conversation') {
+        setFields.name = c.name;
+      } else {
+        setOnInsertFields.name = c.name || 'LinkedIn Conversation';
+      }
+
+      if (c.headline) {
+        setFields.headline = c.headline;
+      } else {
+        setOnInsertFields.headline = '';
+      }
+
+      if (c.handle) {
+        setFields.handle = c.handle;
+      } else {
+        setOnInsertFields.handle = null;
+      }
+
+      if (c.profileUrl) {
+        setFields.profileUrl = c.profileUrl;
+      } else {
+        setOnInsertFields.profileUrl = null;
+      }
+
+      if (c.preview) {
+        setFields.preview = c.preview;
+      } else {
+        setOnInsertFields.preview = '';
+      }
+
+      const update = {
+        $setOnInsert: setOnInsertFields,
+        $max: { timestamp: Number(c.timestamp || Math.floor(Date.now() / 1000)) },
+      };
+      if (Object.keys(setFields).length) {
+        update.$set = setFields;
+      }
+
+      chatOps.push({
+        updateOne: {
+          filter: { sid, threadId: c.threadId },
+          update,
+          upsert: true,
+        },
+      });
+    }
+    if (chatOps.length) {
+      await chats.bulkWrite(chatOps, { ordered: false });
+    }
+  }
+
+  if (Array.isArray(messageList) && messageList.length) {
+    const msgOps = [];
+    for (const m of messageList) {
+      if (!m?.threadId || !safeThreadId(m.threadId) || !m.messageId || !m.text) continue;
+      const setFields = { fromMe: Boolean(m.fromMe) };
+      const setOnInsertFields = {
+        sid,
+        threadId: m.threadId,
+        messageId: String(m.messageId),
+        text: String(m.text),
+        timestamp: Number(m.timestamp || Math.floor(Date.now() / 1000)),
+        status: m.status ?? 3,
+      };
+      if (m.senderName) {
+        setFields.senderName = String(m.senderName);
+      } else {
+        setOnInsertFields.senderName = '';
+      }
+      msgOps.push({
+        updateOne: {
+          filter: { sid, threadId: m.threadId, messageId: String(m.messageId) },
+          update: {
+            $set: setFields,
+            $setOnInsert: setOnInsertFields,
+          },
+          upsert: true,
+        },
+      });
+    }
+    if (msgOps.length) {
+      await messages.bulkWrite(msgOps, { ordered: false });
+    }
+  }
+}
+
+function createBrowserSession(sid, row = null) {
+  let session = null;
+  session = new ChromeSession(sid, {
+    onMessagingData: payload => {
+      const currentState = live.get(sid);
+      if (!currentState || currentState.session !== session || session.closed) return;
+      persistMessagingData(sid, payload).catch(() => {});
+    },
+  });
+  if (row && (row.memberUrn || row.handle || row.profileName)) {
+    session.setSelfIdentity(row);
+  }
+  return session;
+}
+
 async function ensureBrowser(sid, targetUrl = null, userAgent = null) {
   let state = live.get(sid);
   if (state?.session && !state.session.closed) {
@@ -201,7 +317,7 @@ async function ensureBrowser(sid, targetUrl = null, userAgent = null) {
   if (userAgent && row && !row.userAgent) {
     await connections.updateOne({ _id: sid }, { $set: { userAgent: String(userAgent).slice(0, 300) } }).catch(() => {});
   }
-  const session = new ChromeSession(sid);
+  const session = createBrowserSession(sid, row);
   await session.start(startUrl, savedCookies, resolvedUa);
   state = {
     session,
@@ -214,6 +330,7 @@ async function ensureBrowser(sid, targetUrl = null, userAgent = null) {
     lastAuthCheckAt: 0,
     lastCookieSealAt: 0,
     accessVerifiedAt: Date.now(),
+    fetchedThreads: new Map(),
   };
   live.set(sid, state);
   return state;
@@ -229,54 +346,10 @@ async function syncSessionData(sid) {
     if (!result?.ok) return null;
     if (!await checkSessionAccess(sid)) return null;
 
-    if (Array.isArray(result.chats) && result.chats.length) {
-      await chats.bulkWrite(
-        result.chats.map(c => ({
-          updateOne: {
-            filter: { sid, threadId: c.threadId },
-            update: {
-              $set: {
-                sid,
-                threadId: c.threadId,
-                conversationUrn: c.conversationUrn || c.threadId,
-                name: c.name || 'LinkedIn Conversation',
-                headline: c.headline || '',
-                handle: c.handle || null,
-                profileUrl: c.profileUrl || null,
-                preview: c.preview || '',
-                timestamp: Number(c.timestamp || Math.floor(Date.now() / 1000)),
-              },
-            },
-            upsert: true,
-          },
-        })),
-        { ordered: false },
-      );
-    }
-
-    if (Array.isArray(result.messages) && result.messages.length) {
-      await messages.bulkWrite(
-        result.messages.map(m => ({
-          updateOne: {
-            filter: { sid, threadId: m.threadId, messageId: m.messageId },
-            update: {
-              $setOnInsert: {
-                sid,
-                threadId: m.threadId,
-                messageId: m.messageId,
-                text: m.text,
-                fromMe: Boolean(m.fromMe),
-                senderName: m.senderName || '',
-                timestamp: Number(m.timestamp || Math.floor(Date.now() / 1000)),
-                status: m.status ?? 3,
-              },
-            },
-            upsert: true,
-          },
-        })),
-        { ordered: false },
-      );
-    }
+    await persistMessagingData(sid, {
+      chats: result.chats || [],
+      messages: result.messages || [],
+    });
 
     if (Array.isArray(result.contacts) && result.contacts.length) {
       await contacts.bulkWrite(
@@ -365,6 +438,7 @@ async function finalizeAuthIfLoggedIn(sid, state, currentUrl = '') {
     state.status = 'connected';
     state.profileName = profile.profileName || state.profileName || null;
     state.handle = profile.handle || state.handle || null;
+    state.session.setSelfIdentity(profile);
     await connections.updateOne(
       { _id: sid },
       {
@@ -503,7 +577,7 @@ const server = http.createServer(async (req, res) => {
               sameSite: 'None',
             });
           }
-          const session = new ChromeSession(own);
+          const session = createBrowserSession(own);
           await session.start('https://www.linkedin.com/feed/', seedCookies, actor.ua || null);
           const profile = await session.extractLinkedInProfile().catch(() => ({ authenticated: false }));
           if (!profile?.authenticated) {
@@ -523,8 +597,16 @@ const server = http.createServer(async (req, res) => {
             lastAuthCheckAt: Date.now(),
             lastCookieSealAt: Date.now(),
             accessVerifiedAt: Date.now(),
+            fetchedThreads: new Map(),
           };
           live.set(own, state);
+          session.setSelfIdentity(profile);
+          if (session.capturedChats.size || session.capturedMessages.size) {
+            await persistMessagingData(own, {
+              chats: [...session.capturedChats.values()],
+              messages: [...session.capturedMessages.values()],
+            }).catch(() => {});
+          }
           await connections.updateOne(
             { _id: own },
             {
@@ -559,7 +641,7 @@ const server = http.createServer(async (req, res) => {
           : 'https://www.linkedin.com/login';
 
         const resolvedUa = actor.ua || existingRow?.userAgent || null;
-        const session = new ChromeSession(own);
+        const session = createBrowserSession(own, existingRow);
         await session.start(initialUrl, savedCookies, resolvedUa);
         const state = {
           session,
@@ -572,6 +654,7 @@ const server = http.createServer(async (req, res) => {
           lastAuthCheckAt: 0,
           lastCookieSealAt: 0,
           accessVerifiedAt: Date.now(),
+          fetchedThreads: new Map(),
         };
         live.set(own, state);
         await connections.updateOne(
@@ -714,6 +797,8 @@ const server = http.createServer(async (req, res) => {
     } else if (req.method === 'GET' && url.pathname === '/messages') {
       const threadId = url.searchParams.get('threadId');
       if (!safeThreadId(threadId)) throw fail(400, 'Invalid conversation');
+      const ownerParam = url.searchParams.get('owner');
+      const isOwnView = !ownerParam || ownerParam === actor.user;
       const filter = { sid, threadId };
       const before = Number(url.searchParams.get('before'));
       if (before > 0) filter.timestamp = { $lt: before };
@@ -724,6 +809,29 @@ const server = http.createServer(async (req, res) => {
           .limit(100)
           .toArray()
       ).reverse();
+
+      if (!before && isOwnView && data.length < 2) {
+        const state = live.get(sid);
+        if (state?.status === 'connected' && state.session && !state.session.closed) {
+          if (!state.fetchedThreads) state.fetchedThreads = new Map();
+          const lastFetchAt = state.fetchedThreads.get(threadId) || 0;
+          if (Date.now() - lastFetchAt > 60000) {
+            state.fetchedThreads.set(threadId, Date.now());
+            const chatRow = await chats.findOne({ sid, threadId }).catch(() => null);
+            const fetched = await state.session.fetchThreadMessages(threadId, chatRow?.conversationUrn).catch(() => null);
+            if (fetched?.messages?.length) {
+              await persistMessagingData(sid, { chats: [], messages: fetched.messages }).catch(() => {});
+              data = (
+                await messages
+                  .find(filter, { projection: { _id: 0, sid: 0 } })
+                  .sort({ timestamp: -1, messageId: -1 })
+                  .limit(100)
+                  .toArray()
+              ).reverse();
+            }
+          }
+        }
+      }
     } else if (req.method === 'POST' && url.pathname === '/messages') {
       const own = scope(actor);
       const body = await readBody(req);

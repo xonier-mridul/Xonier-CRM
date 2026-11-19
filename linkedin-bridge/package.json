@@ -5,7 +5,7 @@
   "scripts": {
     "start": "node --env-file=.env src/server.mjs",
     "test": "node --test test/*.test.mjs",
-    "check": "node --check src/server.mjs && node --check src/chrome_cdp.mjs"
+    "check": "node --check src/server.mjs && node --check src/chrome_cdp.mjs && node --check src/messaging_parser.mjs"
   },
   "engines": {
     "node": ">=22"

@@ -692,10 +692,12 @@ function LinkedInWorkspace() {
   const [navigateTarget, setNavigateTarget] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const [syncNotice, setSyncNotice] = useState("");
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(true);
   const [chatsLoaded, setChatsLoaded] = useState(false);
   const [contactsLoaded, setContactsLoaded] = useState(false);
+  const [messagesLoading, setMessagesLoading] = useState(false);
   const [error, setError] = useState("");
   const [connectionError, setConnectionError] = useState("");
   const [chatError, setChatError] = useState("");
@@ -815,9 +817,11 @@ function LinkedInWorkspace() {
     if (!selected) return;
     const controller = new AbortController();
     let pending = false;
+    let initial = true;
     const run = async () => {
       if (pending) return;
       pending = true;
+      if (initial) setMessagesLoading(true);
       try {
         const result = await api.get<Message[]>("/linkedin/messages", {
           params: { ...(owner ? { owner } : {}), threadId: selected.threadId },
@@ -831,6 +835,10 @@ function LinkedInWorkspace() {
         if (!controller.signal.aborted && !axios.isCancel(err)) setMessageError(errorMessage(err));
       } finally {
         pending = false;
+        if (initial && !controller.signal.aborted) {
+          setMessagesLoading(false);
+          initial = false;
+        }
       }
     };
     void run();
@@ -1022,8 +1030,22 @@ function LinkedInWorkspace() {
     if (!own || connection.status !== "connected") return;
     setSyncing(true);
     setError("");
+    setSyncNotice("");
     try {
-      await api.post("/linkedin/sync");
+      const res = await api.post<{
+        synced?: boolean;
+        chatsCount?: number;
+        messagesCount?: number;
+        contactsCount?: number;
+      }>("/linkedin/sync");
+      const chatsCount = res.data?.chatsCount ?? 0;
+      const messagesCount = res.data?.messagesCount ?? 0;
+      const contactsCount = res.data?.contactsCount ?? 0;
+      setSyncNotice(
+        chatsCount === 0
+          ? `Synced 0 conversations and ${contactsCount} connections. Open Live LinkedIn → Messaging to capture your inbox directly.`
+          : `Synced ${chatsCount} conversations, ${messagesCount} messages, and ${contactsCount} connections.`,
+      );
       setRefreshCount(c => c + 1);
     } catch (err) {
       setError(errorMessage(err));
@@ -1037,6 +1059,7 @@ function LinkedInWorkspace() {
     sendLock.current = true;
     setSending(true);
     setError("");
+    setSyncNotice("");
     const version = generation.current;
     const threadId = selected.threadId;
     const value = text.trim();
@@ -1099,6 +1122,7 @@ function LinkedInWorkspace() {
           <button
             onClick={() => {
               setError("");
+              setSyncNotice("");
               setRefreshCount(count => count + 1);
             }}
             className="rounded-lg border border-slate-200 p-2 dark:border-slate-600"
@@ -1108,6 +1132,22 @@ function LinkedInWorkspace() {
           </button>
         </div>
       </header>
+
+      {syncNotice && !visibleError && (
+        <div
+          role="status"
+          className="flex items-center justify-between gap-2 rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-900 dark:border-sky-800 dark:bg-sky-950/30 dark:text-sky-200"
+        >
+          <span>{syncNotice}</span>
+          <button
+            type="button"
+            onClick={() => setSyncNotice("")}
+            className="text-xs font-medium opacity-70 hover:opacity-100"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
 
       {visibleError && (
         <div
@@ -1361,7 +1401,10 @@ function LinkedInWorkspace() {
           <div className="flex items-center gap-1 rounded-lg bg-slate-100 p-1 text-sm font-medium dark:bg-slate-900">
             <button
               type="button"
-              onClick={() => setTab("chats")}
+              onClick={() => {
+                setTab("chats");
+                setRefreshCount(c => c + 1);
+              }}
               className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 ${
                 tab === "chats" ? "bg-white text-[#0A66C2] shadow-sm dark:bg-slate-700 dark:text-sky-300" : "text-slate-500"
               }`}
@@ -1573,23 +1616,33 @@ function LinkedInWorkspace() {
                   </div>
 
                   <div className="flex-1 space-y-3 overflow-y-auto bg-slate-50/70 p-4 dark:bg-slate-900/40">
-                    {messages.map(message => (
-                      <div key={message.messageId} className={`flex ${message.fromMe ? "justify-end" : "justify-start"}`}>
-                        <div
-                          className={`max-w-[85%] rounded-xl px-4 py-2 ${
-                            message.fromMe
-                              ? "bg-sky-100 text-slate-900 dark:bg-sky-900 dark:text-slate-100"
-                              : "border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800"
-                          }`}
-                        >
-                          <p className="whitespace-pre-wrap break-words text-sm">{message.text}</p>
-                          <p className="mt-1 text-right text-[10px] text-slate-500 dark:text-slate-400">
-                            {formatTime(message.timestamp)}
-                            {message.fromMe ? " · Sent" : ""}
-                          </p>
-                        </div>
+                    {messagesLoading && messages.length === 0 ? (
+                      <div className="flex items-center justify-center gap-2 py-16 text-sm text-slate-500">
+                        <Loader2 size={16} className="animate-spin" /> Loading messages…
                       </div>
-                    ))}
+                    ) : messages.length === 0 ? (
+                      <p className="py-16 text-center text-sm text-slate-500">
+                        No messages synced for this conversation yet.
+                      </p>
+                    ) : (
+                      messages.map(message => (
+                        <div key={message.messageId} className={`flex ${message.fromMe ? "justify-end" : "justify-start"}`}>
+                          <div
+                            className={`max-w-[85%] rounded-xl px-4 py-2 ${
+                              message.fromMe
+                                ? "bg-sky-100 text-slate-900 dark:bg-sky-900 dark:text-slate-100"
+                                : "border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800"
+                            }`}
+                          >
+                            <p className="whitespace-pre-wrap break-words text-sm">{message.text}</p>
+                            <p className="mt-1 text-right text-[10px] text-slate-500 dark:text-slate-400">
+                              {formatTime(message.timestamp)}
+                              {message.fromMe ? " · Sent" : ""}
+                            </p>
+                          </div>
+                        </div>
+                      ))
+                    )}
                     <div ref={bottom} />
                   </div>
 
