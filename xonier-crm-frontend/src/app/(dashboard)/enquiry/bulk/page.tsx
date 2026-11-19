@@ -302,7 +302,8 @@ const page = (): JSX.Element => {
     const isXLSX = file.name.endsWith(".xlsx") || file.name.endsWith(".xls");
 
     if (!isCSV && !isXLSX) {
-      return alert("Only CSV or XLSX files are allowed");
+      toast.error("Only CSV or XLSX files are allowed");
+      return;
     }
 
     const { headers, rows } = isXLSX

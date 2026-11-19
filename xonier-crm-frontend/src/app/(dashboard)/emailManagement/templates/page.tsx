@@ -12,6 +12,7 @@ import { usePermissions } from "@/src/hooks/usePermissions";
 import { PERMISSIONS } from "@/src/constants/enum";
 import { MailService } from "@/src/services/communication/mail.service";
 import { useTranslation } from "react-i18next";
+import { Trash2, X } from "lucide-react";
 
 type Template = {
   id: string;
@@ -254,28 +255,59 @@ const Page = (): JSX.Element => {
       )}
 
       {showDeleteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl w-[400px]">
-            <h2 className="text-lg font-semibold text-red-600">
-              {t("delete_template")}
-            </h2>
+        <div
+          onClick={() => !isDeleting && setShowDeleteModal(false)}
+          role="presentation"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/30 dark:bg-slate-950/55 backdrop-blur-[2px] p-4"
+        >
+          <div
+            role="alertdialog"
+            aria-modal="true"
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-[420px] overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-[0_24px_64px_-16px_rgba(15,23,42,0.22)] ring-1 ring-slate-950/[0.04] dark:border-slate-800 dark:bg-slate-900 dark:ring-white/[0.06]"
+          >
+            <div className="px-6 pt-6 pb-5">
+              <div className="flex items-start gap-4">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-rose-50 text-rose-600 ring-1 ring-inset ring-rose-500/20 dark:bg-rose-500/10 dark:text-rose-400 dark:ring-rose-500/25">
+                  <Trash2 className="h-[18px] w-[18px]" strokeWidth={1.9} />
+                </div>
+                <div className="min-w-0 flex-1 pt-0.5">
+                  <div className="flex items-start justify-between gap-3">
+                    <h2 className="text-[15.5px] font-semibold leading-6 tracking-[-0.015em] text-slate-900 dark:text-slate-50">
+                      {t("delete_template")}
+                    </h2>
+                    <button
+                      type="button"
+                      disabled={isDeleting}
+                      onClick={() => setShowDeleteModal(false)}
+                      aria-label={t("cancel")}
+                      className="-mr-1.5 -mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:text-slate-500 dark:hover:bg-slate-800 dark:hover:text-slate-200 transition-colors cursor-pointer disabled:opacity-50"
+                    >
+                      <X className="h-4 w-4" strokeWidth={2} />
+                    </button>
+                  </div>
+                  <p className="mt-1.5 text-[13.5px] leading-[1.55] text-slate-500 dark:text-slate-400">
+                    {t("are_you_sure_you_want_to_delete_this_template")}
+                  </p>
+                </div>
+              </div>
+            </div>
 
-            <p className="mt-2 text-sm text-gray-500">
-              {t("are_you_sure_you_want_to_delete_this_template")}
-            </p>
-
-            <div className="flex justify-end gap-3 mt-6">
+            <div className="flex items-center justify-end gap-2.5 border-t border-slate-100 bg-slate-50/70 px-6 py-3.5 dark:border-slate-800/80 dark:bg-slate-950/40">
               <button
+                type="button"
+                disabled={isDeleting}
                 onClick={() => setShowDeleteModal(false)}
-                className="px-4 py-2 border rounded-md"
+                className="px-3.5 py-2 rounded-lg text-[13px] font-medium text-slate-700 bg-white border border-slate-200/90 shadow-[0_1px_2px_rgba(15,23,42,0.04)] hover:bg-slate-50 hover:border-slate-300 dark:bg-slate-800/90 dark:text-slate-200 dark:border-slate-700 dark:hover:bg-slate-800 transition-all duration-150 cursor-pointer disabled:opacity-50"
               >
                 {t("cancel")}
               </button>
 
               <button
+                type="button"
                 onClick={handleDelete}
                 disabled={isDeleting}
-                className="px-4 py-2 bg-red-600 text-white rounded-md"
+                className="inline-flex items-center justify-center px-4 py-2 rounded-lg text-[13px] font-medium text-white bg-rose-600 hover:bg-rose-700 active:bg-rose-800 shadow-[0_1px_2px_rgba(225,29,72,0.28),inset_0_1px_0_rgba(255,255,255,0.14)] transition-all duration-150 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isDeleting ? "Deleting..." : "Delete"}
               </button>

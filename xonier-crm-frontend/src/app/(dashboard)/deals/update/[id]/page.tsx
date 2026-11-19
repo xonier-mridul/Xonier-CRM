@@ -219,7 +219,11 @@ const handleChecked = (e: ChangeEvent<HTMLInputElement>) => {
   const handleChange = (e: ChangeEvent<change>) => {
     const { name, value, type } = e.target;
     if (type === "number") {
-      setFormData({ ...formData, [name]: Number(value) });
+      if (value === "" && (name === "dealProbability" || name === "forecastProbability")) {
+        setFormData({ ...formData, [name]: null });
+      } else {
+        setFormData({ ...formData, [name]: Number(value) });
+      }
     } else {
       setFormData({ ...formData, [name]: value });
     }

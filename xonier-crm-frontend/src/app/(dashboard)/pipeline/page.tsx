@@ -1,7 +1,7 @@
 "use client" 
 
 import { Suspense } from "react";
-import PipelineContent from "@/src/components/pages/pipeline/PipelineContent";
+import SalesPipeline from "@/src/components/pages/pipeline/SalesPipeline";
 import { useTranslation } from "react-i18next";
 import { usePermissions } from "@/src/hooks/usePermissions";
 import { useFeatures } from "@/src/hooks/useFeatures";
@@ -12,13 +12,13 @@ const page = () => {
   const { hasPermission } = usePermissions();
   const { hasFeature } = useFeatures();
 
-  if (!hasPermission(PERMISSIONS.readCampaign) || !hasFeature(FEATURES.CRM)) {
+  if (!hasPermission(PERMISSIONS.readDeal) || !hasFeature(FEATURES.CRM)) {
     return <div className="p-6">{t("You do not have access to the pipeline.", { defaultValue: "You do not have access to the pipeline." })}</div>;
   }
 
   return (
     <Suspense fallback={<div>{t("loading") || "Loading..."}</div>}>
-      <PipelineContent />
+      <SalesPipeline />
     </Suspense>
   );
 };

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
+import { AlertCircle, AlertTriangle, CheckCircle2, X } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -119,35 +120,37 @@ export function MarkFinalModal({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/30 dark:bg-slate-950/55 backdrop-blur-[2px] p-4"
+      role="presentation"
       onClick={(e) => {
         if (e.target === e.currentTarget) onCancel();
       }}
     >
-       <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xl overflow-hidden">
-
+      <div
+        role="dialog"
+        aria-modal="true"
+        className="w-full max-w-md overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-[0_24px_64px_-16px_rgba(15,23,42,0.22)] ring-1 ring-slate-950/[0.04] dark:border-slate-800 dark:bg-slate-900 dark:ring-white/[0.06]"
+      >
         {/* Header */}
-        <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center gap-3">
-          <div
-            className="w-9 h-9 rounded-xl flex items-center justify-center  bg-green-500 text-white text-sm font-bold flex-shrink-0"
-            
-          >
-            ✓
+        <div className="px-6 pt-5 pb-4 border-b border-slate-100 dark:border-slate-800/80 flex items-start gap-3.5">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 ring-1 ring-inset ring-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-400 dark:ring-emerald-500/25">
+            <CheckCircle2 className="h-[18px] w-[18px]" strokeWidth={1.9} />
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-gray-900 dark:text-white">
+          <div className="flex-1 min-w-0 pt-0.5">
+            <p className="text-[15.5px] font-semibold leading-6 tracking-[-0.015em] text-slate-900 dark:text-slate-50">
               {t("mark_as")} <span>{statusName}</span>
             </p>
-            <p className="text-xs text-gray-400 dark:text-gray-500 truncate">
+            <p className="text-[12.5px] text-slate-500 dark:text-slate-400 truncate">
               {taskTitle}
             </p>
           </div>
           <button
             type="button"
             onClick={onCancel}
-            className="text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition text-lg leading-none ml-2"
+            aria-label={t("cancel")}
+            className="-mr-1.5 -mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:text-slate-500 dark:hover:bg-slate-800 dark:hover:text-slate-200 transition-colors cursor-pointer"
           >
-            ×
+            <X className="h-4 w-4" strokeWidth={2} />
           </button>
         </div>
 
@@ -155,9 +158,9 @@ export function MarkFinalModal({
         <div className="px-6 py-5 space-y-5">
 
           {/* Info banner */}
-          <div className="flex items-start gap-2.5 px-3.5 py-3 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800">
-            <span className="text-amber-500 mt-0.5 flex-shrink-0">⚠️</span>
-            <p className="text-xs text-amber-700 dark:text-amber-400 leading-relaxed">
+          <div className="flex items-start gap-2.5 px-3.5 py-3 rounded-xl bg-amber-50/70 dark:bg-amber-500/[0.07] border border-amber-200/80 dark:border-amber-500/25">
+            <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" strokeWidth={1.9} />
+            <p className="text-[12.5px] text-amber-800 dark:text-amber-300 leading-relaxed">
               {t("marking_this_task_as")} <strong>{statusName}</strong> {t("is_a_final_action_please_fill_in_the_completion_details")}
             </p>
           </div>
@@ -229,8 +232,8 @@ export function MarkFinalModal({
 
           {/* Error */}
           {err && (
-            <div className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-rose-50 dark:bg-rose-900/20 border border-rose-100 dark:border-rose-800">
-              <span className="text-rose-500 flex-shrink-0">⚠️</span>
+            <div className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-rose-50/80 dark:bg-rose-500/[0.08] border border-rose-200/80 dark:border-rose-500/25">
+              <AlertCircle className="h-4 w-4 text-rose-600 dark:text-rose-400 shrink-0" strokeWidth={2} />
               <p className="text-xs text-rose-600 dark:text-rose-400 font-medium">
                 {err}
               </p>
@@ -239,12 +242,12 @@ export function MarkFinalModal({
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-100 dark:border-gray-700 flex items-center justify-end gap-3">
+        <div className="px-6 py-3.5 bg-slate-50/70 dark:bg-slate-950/40 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-end gap-2.5">
           <button
             type="button"
             onClick={onCancel}
             disabled={submitting}
-            className="px-5 py-2.5 rounded-xl text-sm font-semibold text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition disabled:opacity-50"
+            className="px-3.5 py-2 rounded-lg text-[13px] font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800/90 border border-slate-200/90 dark:border-slate-700 shadow-[0_1px_2px_rgba(15,23,42,0.04)] cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-150 disabled:opacity-50"
           >
             {t("cancel")}
           </button>
@@ -252,10 +255,9 @@ export function MarkFinalModal({
             type="button"
             onClick={handleConfirm}
             disabled={submitting}
-            className="flex items-center gap-2 bg-cyan-500 hover:bg-cyan-600 cursor-pointer px-6 py-2.5 rounded-xl text-sm font-bold text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            
+            className="inline-flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 dark:bg-indigo-600 dark:hover:bg-indigo-500 cursor-pointer px-4 py-2 rounded-lg text-[13px] font-medium text-white shadow-[0_1px_2px_rgba(15,23,42,0.22),inset_0_1px_0_rgba(255,255,255,0.12)] transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {submitting ? "Saving…" : "✓ Confirm & Mark Final"}
+            {submitting ? "Saving…" : "Confirm & Mark Final"}
           </button>
         </div>
       </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { JSX, useState, useEffect, useCallback, WheelEvent } from "react";
+import { ClipboardList, Sunrise, MoonStar, LockKeyhole, PencilLine, Target, Lightbulb, Hourglass, CircleCheck, RotateCw, ArrowRight, TriangleAlert, Timer, Sparkles, Smile, Meh, Moon, Frown } from "lucide-react";
 import { toast } from "react-toastify";
 import { TaskReportService } from "@/src/services/taskReport.service";
 
@@ -17,6 +18,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/src/store"; 
 import { useTranslation } from "react-i18next";
 import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
+import AchievementCelebration from "@/src/components/ui/AchievementCelebration";
 
 const PRIORITIES = ["low", "medium", "high", "critical"] as const;
 
@@ -74,7 +76,7 @@ const COMPLETED_STATUSES: TaskItemStatus[] = [
 
 function FieldLabel({ children, required }: { children: React.ReactNode; required?: boolean }) {
   return (
-    <label className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5">
+    <label className="block text-[10px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wide mb-1.5">
       {children}
       {required && <span className="text-rose-400 ml-0.5">*</span>}
     </label>
@@ -103,15 +105,29 @@ function TextArea({
 }: {
   value: string; onChange?: (v: string) => void; placeholder?: string; rows?: number; disabled?: boolean;
 }) {
+  const textStyle = "w-full min-w-0 rounded-xl border px-4 py-2.5 text-sm leading-6 whitespace-pre-wrap [overflow-wrap:anywhere]";
+  if (disabled) {
+    return (
+      <div className={`${textStyle} border-slate-200 bg-slate-50/70 text-slate-700 dark:border-slate-700 dark:bg-slate-800/40 dark:text-slate-200`}>
+        {value || <span className="text-slate-500">{placeholder}</span>}
+      </div>
+    );
+  }
+
   return (
-    <textarea
-      value={value}
-      onChange={e => onChange?.(e.target.value)}
-      placeholder={placeholder}
-      rows={rows}
-      disabled={disabled}
-      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600/70 bg-white dark:bg-slate-800/60 text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-400/40 focus:border-indigo-400 dark:focus:border-indigo-500 transition-all duration-200 resize-none disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-50 dark:disabled:bg-slate-800/30"
-    />
+    <div className="relative grid min-w-0">
+      <div aria-hidden="true" className={`${textStyle} invisible border-transparent [grid-area:1/1]`}
+        style={{ minHeight: `calc(${rows * 1.5}rem + 1.25rem + 2px)` }}>
+        {value || placeholder}{"\u200b"}
+      </div>
+      <textarea
+        value={value}
+        onChange={e => onChange?.(e.target.value)}
+        placeholder={placeholder}
+        rows={rows}
+        className={`${textStyle} absolute inset-0 h-full resize-none overflow-hidden border-slate-200 bg-white text-slate-800 placeholder-slate-400 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/30 dark:border-slate-600 dark:bg-slate-800/60 dark:text-slate-100`}
+      />
+    </div>
   );
 }
 
@@ -142,7 +158,7 @@ function PriorityBadge({ value }: { value: string }) {
   const style = PRIORITY_STYLES[value] ?? PRIORITY_STYLES.low;
   const dot = PRIORITY_DOT[value] ?? "bg-gray-400";
   return (
-    <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold border capitalize ${style}`}>
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-medium border capitalize ${style}`}>
       <span className={`w-1.5 h-1.5 rounded-full ${dot}`} />
       {t(`${value}`)}
     </span>
@@ -165,9 +181,9 @@ function PrioritySelector({
           type="button"
           onClick={() => onChange(p)}
           disabled={disabled}
-          className={`px-3 py-1.5 rounded-lg text-[11px] font-bold border capitalize transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed
+          className={`px-3 py-1.5 rounded-lg text-[11px] font-medium border capitalize transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed
             ${value === p
-              ? PRIORITY_STYLES[p] + " scale-105 shadow-sm"
+              ? PRIORITY_STYLES[p] + ""
               : "bg-white dark:bg-slate-800 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 hover:text-slate-600 dark:hover:text-slate-400"
             }`}
         >
@@ -183,28 +199,28 @@ function MorningReadonlyCard({ item, index }: {
 }) {
   const { t } = useTranslation();
   return (
-    <div className="group relative bg-gradient-to-br from-white to-slate-50/80 dark:from-slate-800/80 dark:to-slate-800/40 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 p-4 hover:border-indigo-200 dark:hover:border-indigo-700/50 hover:shadow-md hover:shadow-slate-200/60 dark:hover:shadow-slate-900/40 transition-all duration-300">
+    <div className="group relative bg-gradient-to-br from-white to-slate-50/80 dark:from-slate-800/80 dark:to-slate-800/40 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 p-4 hover:border-indigo-200 dark:hover:border-indigo-700/50 transition-all duration-300">
       <div className="absolute left-0 top-4 bottom-4 w-0.5 bg-gradient-to-b from-amber-400 to-orange-500 rounded-r-full" />
       <div className="flex items-start gap-3 pl-3">
-        <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 text-white flex items-center justify-center text-xs font-extrabold shrink-0 mt-0.5 shadow-sm">
+        <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 text-white flex items-center justify-center text-xs font-semibold shrink-0 mt-0.5">
           {index + 1}
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap mb-1">
-            <span className="text-sm font-bold text-slate-800 dark:text-slate-100">{item.title}</span>
+            <span className="text-sm font-medium text-slate-800 dark:text-slate-100">{item.title}</span>
             {item.priority && <PriorityBadge value={item.priority} />}
             {item.linkedTaskId && (
-              <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800">
+              <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-medium bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800">
                 {item.linkedTaskId}
               </span>
             )}
           </div>
           {item.description && (
-            <p className="text-xs text-slate-500 dark:text-slate-400 mb-2 leading-relaxed">{item.description}</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mb-2 whitespace-pre-wrap break-words leading-relaxed">{item.description}</p>
           )}
           {item.estimatedHours && (
             <span className="inline-flex items-center gap-1.5 text-[11px] text-slate-400 font-medium bg-slate-100 dark:bg-slate-700/50 px-2.5 py-1 rounded-lg">
-              <span>⏱</span> {t("estimated")} <b className="text-slate-600 dark:text-slate-300">{item.estimatedHours}h</b>
+              <span><Timer size={16} className="inline-block shrink-0 align-text-bottom" aria-hidden="true" /></span> {t("estimated")} <b className="text-slate-600 dark:text-slate-300">{item.estimatedHours}h</b>
             </span>
           )}
         </div>
@@ -221,15 +237,15 @@ function MorningEditCard({ item, index, onChange, onRemove }: {
 }) {
   const { t } = useTranslation();
   return (
-    <div className="relative bg-white dark:bg-slate-900/50 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 p-5 shadow-sm hover:shadow-md hover:shadow-slate-200/60 dark:hover:shadow-slate-900/40 transition-all duration-300 group">
+    <div className="relative bg-white dark:bg-slate-900/50 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 p-5 transition-all duration-300 group">
       <div className="absolute left-0 top-4 bottom-4 w-0.5 bg-gradient-to-b from-indigo-400 to-violet-500 rounded-r-full" />
       
       <div className="flex items-center justify-between mb-4 pl-3">
         <div className="flex items-center gap-2.5">
-          <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-indigo-400 to-violet-500 text-white flex items-center justify-center text-[11px] font-extrabold shadow-sm">
+          <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-indigo-400 to-violet-500 text-white flex items-center justify-center text-[11px] font-semibold">
             {index + 1}
           </div>
-          <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">{t("task")}</span>
+          <span className="text-[10px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wide">{t("task")}</span>
         </div>
         <button
           type="button"
@@ -280,20 +296,20 @@ function EveningTaskCard({ item, index, onChange, onRemove, bucket, readOnly }: 
   const { t } = useTranslation();
   const isCompleted = bucket === "completed";
 
-  const STATUS_OPTIONS: { value: TaskItemStatus; label: string; icon: string; activeClass: string }[] = [
-    { value: "completed" as TaskItemStatus, label: t("completed"), icon: "✅", activeClass: "bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-700" },
-    { value: "in_progress" as TaskItemStatus, label: t("in_progress"), icon: "🔄", activeClass: "bg-blue-50 text-blue-700 border-blue-300 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-700" },
-    { value: "carried_forward" as TaskItemStatus, label: t("carried_forward"), icon: "⏭", activeClass: "bg-violet-50 text-violet-700 border-violet-300 dark:bg-violet-900/30 dark:text-violet-400 dark:border-violet-700" },
-    { value: "blocked" as TaskItemStatus, label: t("blocked"), icon: "🚧", activeClass: "bg-rose-50 text-rose-700 border-rose-300 dark:bg-rose-900/30 dark:text-rose-400 dark:border-rose-700" },
-    { value: "pending" as TaskItemStatus, label: t("pending"), icon: "⏳", activeClass: "bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-700" },
+  const STATUS_OPTIONS: { value: TaskItemStatus; label: string; icon: React.ReactNode; activeClass: string }[] = [
+    { value: "completed" as TaskItemStatus, label: t("completed"), icon: <CircleCheck size={16} className="inline-block shrink-0 align-text-bottom" aria-hidden="true" />, activeClass: "bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-700" },
+    { value: "in_progress" as TaskItemStatus, label: t("in_progress"), icon: <RotateCw size={16} className="inline-block shrink-0 align-text-bottom" aria-hidden="true" />, activeClass: "bg-blue-50 text-blue-700 border-blue-300 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-700" },
+    { value: "carried_forward" as TaskItemStatus, label: t("carried_forward"), icon: <ArrowRight size={16} className="inline-block shrink-0 align-text-bottom" aria-hidden="true" />, activeClass: "bg-violet-50 text-violet-700 border-violet-300 dark:bg-violet-900/30 dark:text-violet-400 dark:border-violet-700" },
+    { value: "blocked" as TaskItemStatus, label: t("blocked"), icon: <TriangleAlert size={16} className="inline-block shrink-0 align-text-bottom" aria-hidden="true" />, activeClass: "bg-rose-50 text-rose-700 border-rose-300 dark:bg-rose-900/30 dark:text-rose-400 dark:border-rose-700" },
+    { value: "pending" as TaskItemStatus, label: t("pending"), icon: <Hourglass size={16} className="inline-block shrink-0 align-text-bottom" aria-hidden="true" />, activeClass: "bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-700" },
   ];
 
   return (
     <div
-      className={`relative bg-white dark:bg-slate-900/50 rounded-2xl border p-5 shadow-sm hover:shadow-md transition-all duration-300 group
+      className={`relative bg-white dark:bg-slate-900/50 rounded-2xl border p-5 transition-all duration-300 group
         ${isCompleted
-          ? "border-emerald-200/80 dark:border-emerald-800/50 hover:border-emerald-300 dark:hover:border-emerald-700/70 hover:shadow-emerald-500/5"
-          : "border-amber-200/80 dark:border-amber-800/50 hover:border-amber-300 dark:hover:border-amber-700/70 hover:shadow-amber-500/5"
+          ? "border-emerald-200/80 dark:border-emerald-800/50 hover:border-emerald-300 dark:hover:border-emerald-700/70"
+          : "border-amber-200/80 dark:border-amber-800/50 hover:border-amber-300 dark:hover:border-amber-700/70"
         }`}
     >
       <div className={`absolute left-0 top-4 bottom-4 w-0.5 rounded-r-full ${isCompleted ? "bg-gradient-to-b from-emerald-400 to-teal-500" : "bg-gradient-to-b from-amber-400 to-orange-500"}`} />
@@ -301,7 +317,7 @@ function EveningTaskCard({ item, index, onChange, onRemove, bucket, readOnly }: 
       <div className="flex items-center justify-between mb-4 pl-3">
         <div className="flex items-center gap-2.5">
           <div
-            className={`w-6 h-6 rounded-lg flex items-center justify-center text-[11px] font-extrabold text-white shadow-sm
+            className={`w-6 h-6 rounded-lg flex items-center justify-center text-[11px] font-semibold text-white shadow-sm
               ${isCompleted
                 ? "bg-gradient-to-br from-emerald-400 to-teal-500"
                 : "bg-gradient-to-br from-amber-400 to-orange-500"
@@ -309,8 +325,8 @@ function EveningTaskCard({ item, index, onChange, onRemove, bucket, readOnly }: 
           >
             {index + 1}
           </div>
-          <span className={`text-[10px] font-bold uppercase tracking-widest ${isCompleted ? "text-emerald-600 dark:text-emerald-500" : "text-amber-600 dark:text-amber-500"}`}>
-            {isCompleted ? `✅ ${t("completed")}` : `⏳ ${t("pending")}`}
+          <span className={`text-[10px] font-medium uppercase tracking-wide ${isCompleted ? "text-emerald-600 dark:text-emerald-500" : "text-amber-600 dark:text-amber-500"}`}>
+            {isCompleted ? <><CircleCheck size={16} className="inline-block shrink-0 align-text-bottom" aria-hidden="true" /> {t("completed")}</> : <><Hourglass size={16} className="inline-block shrink-0 align-text-bottom" aria-hidden="true" /> {t("pending")}</>}
           </span>
         </div>
 
@@ -361,9 +377,9 @@ function EveningTaskCard({ item, index, onChange, onRemove, bucket, readOnly }: 
                   key={opt.value}
                   type="button"
                   onClick={() => onChange("status", opt.value)}
-                  className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold border transition-all duration-200
+                  className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium border transition-all duration-200
                     ${item.status === opt.value
-                      ? opt.activeClass + " scale-105 shadow-sm"
+                      ? opt.activeClass + ""
                       : "bg-white dark:bg-slate-800 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 hover:text-slate-600 dark:hover:text-slate-400"
                     }`}
                 >
@@ -380,7 +396,7 @@ function EveningTaskCard({ item, index, onChange, onRemove, bucket, readOnly }: 
                 const opt = STATUS_OPTIONS.find(o => o.value === item.status);
                 return opt ? (
                   <span
-                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold border ${opt.activeClass}`}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium border ${opt.activeClass}`}
                   >
                     <span>{opt.icon}</span> {opt.label}
                   </span>
@@ -427,7 +443,7 @@ function EveningTaskCard({ item, index, onChange, onRemove, bucket, readOnly }: 
         <div>
           <FieldLabel>
             {t("completion")}{" "}
-            <span className={`font-extrabold normal-case text-xs ml-1 ${isCompleted ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}`}>
+            <span className={`font-semibold normal-case text-xs ml-1 ${isCompleted ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}`}>
               {item.completionPercentage}%
             </span>
           </FieldLabel>
@@ -507,6 +523,7 @@ const TaskReportCreatePage = (): JSX.Element => {
   const [tomorrowPlan, setTomorrowPlan] = useState("");
   const [overallMood, setOverallMood] = useState<WorkMood | "">("");
   const [isFinalSubmitted, setIsFinalSubmitted] = useState(false);
+  const [celebrationStats, setCelebrationStats] = useState<{ completed: number; hours: number } | null>(null);
   const [isEditingMorning, setIsEditingMorning] = useState(false);
   const [err, setErr] = useState<string | string[]>("");
 
@@ -515,12 +532,12 @@ const TaskReportCreatePage = (): JSX.Element => {
 
   const user = useSelector((state: RootState) => state.auth.user);
 
-  const MOODS: { value: WorkMood; emoji: string; label: string; color: string }[] = [
-    { value: "excellent" as WorkMood, emoji: "🚀", label: t("excellent"), color: "border-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 dark:border-emerald-500 text-emerald-700 dark:text-emerald-300" },
-    { value: "good" as WorkMood, emoji: "😊", label: t("good"), color: "border-blue-400 bg-blue-50 dark:bg-blue-900/30 dark:border-blue-500 text-blue-700 dark:text-blue-300" },
-    { value: "neutral" as WorkMood, emoji: "😐", label: t("neutral"), color: "border-slate-400 bg-slate-50 dark:bg-slate-700 dark:border-slate-500 text-slate-700 dark:text-slate-300" },
-    { value: "tired" as WorkMood, emoji: "😴", label: t("tired"), color: "border-amber-400 bg-amber-50 dark:bg-amber-900/30 dark:border-amber-500 text-amber-700 dark:text-amber-300" },
-    { value: "stressed" as WorkMood, emoji: "😰", label: t("stressed"), color: "border-rose-400 bg-rose-50 dark:bg-rose-900/30 dark:border-rose-500 text-rose-700 dark:text-rose-300" },
+  const MOODS: { value: WorkMood; emoji: React.ReactNode; label: string; color: string }[] = [
+    { value: "excellent" as WorkMood, emoji: <Sparkles size={16} className="inline-block shrink-0 align-text-bottom" aria-hidden="true" />, label: t("excellent"), color: "border-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 dark:border-emerald-500 text-emerald-700 dark:text-emerald-300" },
+    { value: "good" as WorkMood, emoji: <Smile size={16} className="inline-block shrink-0 align-text-bottom" aria-hidden="true" />, label: t("good"), color: "border-blue-400 bg-blue-50 dark:bg-blue-900/30 dark:border-blue-500 text-blue-700 dark:text-blue-300" },
+    { value: "neutral" as WorkMood, emoji: <Meh size={16} className="inline-block shrink-0 align-text-bottom" aria-hidden="true" />, label: t("neutral"), color: "border-slate-400 bg-slate-50 dark:bg-slate-700 dark:border-slate-500 text-slate-700 dark:text-slate-300" },
+    { value: "tired" as WorkMood, emoji: <Moon size={16} className="inline-block shrink-0 align-text-bottom" aria-hidden="true" />, label: t("tired"), color: "border-amber-400 bg-amber-50 dark:bg-amber-900/30 dark:border-amber-500 text-amber-700 dark:text-amber-300" },
+    { value: "stressed" as WorkMood, emoji: <Frown size={16} className="inline-block shrink-0 align-text-bottom" aria-hidden="true" />, label: t("stressed"), color: "border-rose-400 bg-rose-50 dark:bg-rose-900/30 dark:border-rose-500 text-rose-700 dark:text-rose-300" },
   ];
 
   const loadReportData = useCallback((report: TaskReport) => {
@@ -806,6 +823,15 @@ const submitEvening = async (finalSubmit: boolean) => {
     }
     if (res?.status === 200) {
       toast.success(t("toast.evening_submitted"));
+      if (finalSubmit) {
+        const loggedHours = Number(
+          valid.reduce((sum, item) => sum + (item.actualHours ?? 0), 0).toFixed(1)
+        );
+        setCelebrationStats({
+          completed: payload.eveningReport.completedItems.length,
+          hours: loggedHours,
+        });
+      }
       await loadReport();
     }
   } catch (error) {
@@ -864,18 +890,18 @@ const submitEvening = async (finalSubmit: boolean) => {
 
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 pb-5 border-b border-slate-200/80 dark:border-slate-700/60">
           <div className="flex items-center gap-3.5">
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-indigo-500 via-indigo-600 to-violet-600 flex items-center justify-center text-xl shadow-lg shadow-indigo-500/25 shrink-0">
-              📝
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-indigo-500 via-indigo-600 to-violet-600 flex items-center justify-center text-white shrink-0">
+              <ClipboardList size={16} className="inline-block shrink-0 align-text-bottom" aria-hidden="true" />
             </div>
             <div>
               <div className="flex items-center gap-2.5 flex-wrap">
-                <h1 className="text-xl sm:text-2xl font-extrabold text-slate-800 dark:text-slate-100 tracking-tight">
+                <h1 className="text-xl sm:text-2xl font-semibold text-slate-800 dark:text-slate-100 tracking-tight">
                   {t("page_title")}
                 </h1>
                 
                 {!isNew && existingReport && (
                   <div className="flex items-center gap-2">
-                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
+                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium ${
                       morningSubmitted
                         ? "bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"
                         : "bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800"
@@ -883,7 +909,7 @@ const submitEvening = async (finalSubmit: boolean) => {
                       <span className={`w-1.5 h-1.5 rounded-full ${morningSubmitted ? "bg-emerald-500" : "bg-amber-400 animate-pulse"}`} />
                       {t("morning")}: {morningSubmitted ? t("status_badge.done") : t("status_badge.pending")}
                     </span>
-                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
+                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium ${
                       eveningSubmitted
                         ? "bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"
                         : morningSubmitted
@@ -891,10 +917,10 @@ const submitEvening = async (finalSubmit: boolean) => {
                         : "bg-slate-100 dark:bg-slate-800 text-slate-400 border border-slate-200 dark:border-slate-700"
                     }`}>
                       <span className={`w-1.5 h-1.5 rounded-full ${eveningSubmitted ? "bg-emerald-500" : morningSubmitted ? "bg-amber-400 animate-pulse" : "bg-slate-300 dark:bg-slate-600"}`} />
-                      {t("evening")}: {eveningSubmitted ? t("status_badge.done") : morningSubmitted ? t("status_badge.pending") : "🔒"}
+                      {t("evening")}: {eveningSubmitted ? t("status_badge.done") : morningSubmitted ? t("status_badge.pending") : <LockKeyhole size={16} className="inline-block shrink-0 align-text-bottom" aria-hidden="true" />}
                     </span>
                     {existingReport.isReviewed && (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800">
                         ✓ {t("manager_reviewed")}
                       </span>
                     )}
@@ -919,7 +945,7 @@ const submitEvening = async (finalSubmit: boolean) => {
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5 p-1.5 bg-slate-100 dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 shadow-inner shrink-0">
+          <div className="flex items-center gap-1.5 p-1.5 bg-slate-100 dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 shrink-0">
             {(["morning", "evening"] as const).map(tab => {
               const isActive = activeTab === tab;
               const isDone = tab === "morning" ? morningSubmitted : eveningSubmitted;
@@ -930,15 +956,15 @@ const submitEvening = async (finalSubmit: boolean) => {
                   type="button"
                   onClick={() => setActiveTab(tab)}
                   disabled={isLocked}
-                  className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed
+                  className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed
                     ${isActive
                       ? tab === "morning"
-                        ? "bg-gradient-to-r from-amber-400 to-orange-500 text-white shadow-md shadow-amber-500/25"
-                        : "bg-gradient-to-r from-indigo-500 to-violet-600 text-white shadow-md shadow-indigo-500/25"
+                        ? "bg-amber-700 text-white"
+                        : "bg-indigo-600 text-white"
                       : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-white dark:hover:bg-slate-700/50"
                     }`}
                 >
-                  <span>{tab === "morning" ? "🌅" : "🌆"}</span>
+                  <span>{tab === "morning" ? <Sunrise size={16} className="inline-block shrink-0 align-text-bottom" aria-hidden="true" /> : <MoonStar size={16} className="inline-block shrink-0 align-text-bottom" aria-hidden="true" />}</span>
                   {tab === "morning" ? t("morning_agenda") : t("evening_report")}
                   {isDone && (
                     <span className={`w-4 h-4 rounded-full flex items-center justify-center ${isActive ? "bg-white/25" : "bg-emerald-500"}`}>
@@ -947,7 +973,7 @@ const submitEvening = async (finalSubmit: boolean) => {
                       </svg>
                     </span>
                   )}
-                  {isLocked && !isDone && <span className="text-[11px]">🔒</span>}
+                  {isLocked && !isDone && <span className="text-[11px]"><LockKeyhole size={16} className="inline-block shrink-0 align-text-bottom" aria-hidden="true" /></span>}
                 </button>
               );
             })}
@@ -961,11 +987,11 @@ const submitEvening = async (finalSubmit: boolean) => {
               <div className="lg:col-span-8 space-y-6">
 
                 {morningSubmitted && !isEditingMorning && (
-                  <div className="flex items-center justify-between gap-3 p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200/80 dark:border-emerald-800/60 shadow-sm">
+                  <div className="flex items-center justify-between gap-3 p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200/80 dark:border-emerald-800/60">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white text-sm shrink-0 shadow-sm">✓</div>
+                      <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white text-sm shrink-0">✓</div>
                       <div>
-                        <p className="text-sm font-bold text-emerald-700 dark:text-emerald-400">{t("morning_submitted")}</p>
+                        <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">{t("morning_submitted")}</p>
                         <p className="text-[11px] text-emerald-600/80 dark:text-emerald-500/70 mt-0.5">
                           {existingReport?.morningAgenda?.submittedAt
                             ? `${t("submitted_at")} ${new Date(existingReport.morningAgenda.submittedAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}`
@@ -978,7 +1004,7 @@ const submitEvening = async (finalSubmit: boolean) => {
                       <button
                         type="button"
                         onClick={() => setIsEditingMorning(true)}
-                        className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-indigo-200 dark:border-indigo-700 bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 text-xs font-bold transition-all shrink-0 shadow-sm"
+                        className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-indigo-200 dark:border-indigo-700 bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 text-xs font-medium transition-all shrink-0"
                       >
                         {t("edit_plan")}
                       </button>
@@ -987,22 +1013,22 @@ const submitEvening = async (finalSubmit: boolean) => {
                 )}
 
                 {morningSubmitted && isEditingMorning && (
-                  <div className="flex items-center gap-3 p-4 rounded-2xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200/80 dark:border-amber-800/60 shadow-sm">
-                    <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white text-sm shrink-0 shadow-sm">✏️</div>
+                  <div className="flex items-center gap-3 p-4 rounded-2xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200/80 dark:border-amber-800/60">
+                    <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white text-sm shrink-0"><PencilLine size={16} className="inline-block shrink-0 align-text-bottom" aria-hidden="true" /></div>
                     <div>
-                      <p className="text-sm font-bold text-amber-700 dark:text-amber-400">{t("editing_morning")}</p>
+                      <p className="text-sm font-medium text-amber-700 dark:text-amber-400">{t("editing_morning")}</p>
                       <p className="text-[11px] text-amber-600/80 dark:text-amber-500/70 mt-0.5">{t("editing_help")}</p>
                     </div>
                   </div>
                 )}
 
-                <div className="bg-white dark:bg-slate-900/50 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 shadow-sm overflow-hidden">
+                <div className="bg-white dark:bg-slate-900/50 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 overflow-hidden">
                   <div className="h-1 bg-gradient-to-r from-amber-400 to-orange-500" />
                   <div className="p-5">
                     <div className="flex items-center gap-2 mb-3">
-                      <span className="text-lg">🎯</span>
+                      <span className="text-lg"><Target size={16} className="inline-block shrink-0 align-text-bottom" aria-hidden="true" /></span>
                       <div>
-                        <h2 className="text-xs font-extrabold text-slate-800 dark:text-slate-100 uppercase tracking-widest">{t("todays_goal")}</h2>
+                        <h2 className="text-xs font-semibold text-slate-800 dark:text-slate-100 uppercase tracking-wide">{t("todays_goal")}</h2>
                         <p className="text-[11px] text-slate-400">{t("goal_help")}</p>
                       </div>
                     </div>
@@ -1023,19 +1049,19 @@ const submitEvening = async (finalSubmit: boolean) => {
                   </div>
                 </div>
 
-                <div className="bg-white dark:bg-slate-900/50 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 shadow-sm p-5 sm:p-6">
+                <div className="bg-white dark:bg-slate-900/50 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 p-5 sm:p-6">
                   <div className="flex items-center justify-between gap-3 mb-5 pb-4 border-b border-slate-100 dark:border-slate-700/60 flex-wrap">
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white text-base shadow-sm">
-                        🌅
+                      <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white text-base">
+                        <Sunrise size={16} className="inline-block shrink-0 align-text-bottom" aria-hidden="true" />
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <h2 className="text-base font-extrabold text-slate-800 dark:text-slate-100">{t("morning_agenda")}</h2>
-                          <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200/60 dark:border-amber-800/60">
+                          <h2 className="text-base font-semibold text-slate-800 dark:text-slate-100">{t("morning_agenda")}</h2>
+                          <span className="px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200/60 dark:border-amber-800/60">
                             {morningItems.length} {morningItems.length === 1 ? t("task") : t("tasks")}
                           </span>
-                          <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
+                          <span className="px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
                             {totalMorningEstHours}h {t("est")}
                           </span>
                         </div>
@@ -1053,7 +1079,7 @@ const submitEvening = async (finalSubmit: boolean) => {
                       <button
                         type="button"
                         onClick={() => setMorningItems(items => [...items, EMPTY_MORNING_ITEM()])}
-                        className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-xs font-bold transition-all shadow-sm active:scale-95"
+                        className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-xs font-medium transition-all"
                       >
                         <span>+</span> {t("add_task")}
                       </button>
@@ -1062,14 +1088,14 @@ const submitEvening = async (finalSubmit: boolean) => {
 
                   {morningItems.length === 0 ? (
                     <div className="py-12 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-700 text-center mb-4">
-                      <span className="text-3xl mb-2 block">📝</span>
+                      <span className="text-3xl mb-2 block"><ClipboardList size={16} className="inline-block shrink-0 align-text-bottom" aria-hidden="true" /></span>
                       <p className="text-sm font-semibold text-slate-600 dark:text-slate-300">{t("no_tasks_planned")}</p>
                       <p className="text-xs text-slate-400 mt-1 mb-4">{t("no_tasks_help")}</p>
                       {!morningReadOnly && (
                         <button
                           type="button"
                           onClick={() => setMorningItems(items => [...items, EMPTY_MORNING_ITEM()])}
-                          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800 text-xs font-bold"
+                          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800 text-xs font-medium"
                         >
                           + {t("add_task")}
                         </button>
@@ -1099,7 +1125,7 @@ const submitEvening = async (finalSubmit: boolean) => {
                     <button
                       type="button"
                       onClick={() => setMorningItems(items => [...items, EMPTY_MORNING_ITEM()])}
-                      className="w-full py-3.5 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-700/80 hover:border-amber-400 dark:hover:border-amber-500 text-slate-500 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-50/30 dark:hover:bg-amber-900/10 text-sm font-bold transition-all flex items-center justify-center gap-2"
+                      className="w-full py-3.5 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-700/80 hover:border-amber-400 dark:hover:border-amber-500 text-slate-500 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-50/30 dark:hover:bg-amber-900/10 text-sm font-medium transition-all flex items-center justify-center gap-2"
                     >
                       <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                         <path d="M7 1v12M1 7h12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
@@ -1112,14 +1138,14 @@ const submitEvening = async (finalSubmit: boolean) => {
 
               <div className="lg:col-span-4 space-y-5 lg:sticky lg:top-6">
 
-                <div className="bg-white dark:bg-slate-900/50 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 shadow-sm overflow-hidden">
+                <div className="bg-white dark:bg-slate-900/50 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 overflow-hidden">
                   <div className="h-1 bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500" />
                   <div className="p-5">
                     <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-xs font-extrabold text-slate-800 dark:text-slate-100 uppercase tracking-wider">
+                      <h3 className="text-xs font-semibold text-slate-800 dark:text-slate-100 uppercase tracking-wider">
                         {t("overview")}
                       </h3>
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
                         morningSubmitted
                           ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"
                           : "bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-800"
@@ -1130,24 +1156,24 @@ const submitEvening = async (finalSubmit: boolean) => {
 
                     <div className="grid grid-cols-2 gap-3 mb-5">
                       <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/30 border border-slate-100 dark:border-slate-700/40 text-center">
-                        <div className="text-2xl font-extrabold text-slate-800 dark:text-slate-100">{morningItems.length}</div>
-                        <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wide mt-0.5">{t("tasks_planned")}</div>
+                        <div className="text-2xl font-semibold text-slate-800 dark:text-slate-100">{morningItems.length}</div>
+                        <div className="text-[10px] text-slate-400 font-medium uppercase tracking-wide mt-0.5">{t("tasks_planned")}</div>
                       </div>
                       <div className="p-3.5 rounded-xl bg-amber-50/60 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-900/40 text-center">
-                        <div className="text-2xl font-extrabold text-amber-500">{totalMorningEstHours}h</div>
-                        <div className="text-[10px] text-amber-600/80 dark:text-amber-400/80 font-bold uppercase tracking-wide mt-0.5">{t("est_hours")}</div>
+                        <div className="text-2xl font-semibold text-amber-500">{totalMorningEstHours}h</div>
+                        <div className="text-[10px] text-amber-600/80 dark:text-amber-400/80 font-medium uppercase tracking-wide mt-0.5">{t("est_hours")}</div>
                       </div>
                     </div>
 
                     {morningItems.length > 0 && (
                       <div className="mb-5 pb-5 border-b border-slate-100 dark:border-slate-700/60">
-                        <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">{t("priority_breakdown")}</div>
+                        <div className="text-[10px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">{t("priority_breakdown")}</div>
                         <div className="flex items-center gap-1.5 flex-wrap">
                           {PRIORITIES.map(p => {
                             const count = morningPriorityCounts[p] || 0;
                             if (count === 0) return null;
                             return (
-                              <span key={p} className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold border capitalize ${PRIORITY_STYLES[p]}`}>
+                              <span key={p} className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-medium border capitalize ${PRIORITY_STYLES[p]}`}>
                                 <span className={`w-1.5 h-1.5 rounded-full ${PRIORITY_DOT[p]}`} />
                                 {count} {t(`${p}`)}
                               </span>
@@ -1161,22 +1187,22 @@ const submitEvening = async (finalSubmit: boolean) => {
                       {morningReadOnly ? (
                         <>
                           <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200/80 dark:border-emerald-800/50 flex items-center gap-2.5 mb-2">
-                            <span className="text-emerald-600 dark:text-emerald-400 font-bold text-sm">✓</span>
+                            <span className="text-emerald-600 dark:text-emerald-400 font-medium text-sm">✓</span>
                             <span className="text-xs text-emerald-700 dark:text-emerald-400 font-semibold">{t("morning_submitted")}</span>
                           </div>
                           {!eveningSubmitted && (
                             <button
                               type="button"
                               onClick={() => setIsEditingMorning(true)}
-                              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 text-xs font-bold transition-all shadow-sm"
+                              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 text-xs font-medium transition-all"
                             >
-                              ✏️ {t("edit_plan")}
+                              <PencilLine size={16} className="inline-block shrink-0 align-text-bottom" aria-hidden="true" /> {t("edit_plan")}
                             </button>
                           )}
                           <button
                             type="button"
                             onClick={() => setActiveTab("evening")}
-                            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 hover:from-indigo-600 hover:to-violet-700 text-white font-bold text-xs transition-all shadow-md shadow-indigo-500/20 active:scale-95"
+                            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 hover:from-indigo-600 hover:to-violet-700 text-white font-medium text-xs transition-all"
                           >
                             {t("goto_evening")} 
                           </button>
@@ -1187,19 +1213,19 @@ const submitEvening = async (finalSubmit: boolean) => {
                             type="button"
                             onClick={updateMorning}
                             disabled={isSubmitting || morningItems.every(i => !i.title.trim())}
-                            className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-sm transition-all shadow-md shadow-amber-500/25 active:scale-95"
+                            className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium text-sm transition-all"
                           >
                             {isSubmitting ? (
                               <><div className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" /> {t("updating")}</>
                             ) : (
-                              <>✏️ {t("update_morning")}</>
+                              <><PencilLine size={16} className="inline-block shrink-0 align-text-bottom" aria-hidden="true" /> {t("update_morning")}</>
                             )}
                           </button>
                           <button
                             type="button"
                             onClick={() => { setIsEditingMorning(false); loadReport(); }}
                             disabled={isSubmitting}
-                            className="w-full py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 text-xs font-bold transition-all"
+                            className="w-full py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 text-xs font-medium transition-all"
                           >
                             {t("cancel")}
                           </button>
@@ -1210,12 +1236,12 @@ const submitEvening = async (finalSubmit: boolean) => {
                             type="button"
                             onClick={submitMorning}
                             disabled={isSubmitting || morningItems.every(i => !i.title.trim())}
-                            className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-sm transition-all shadow-md shadow-amber-500/25 active:scale-95"
+                            className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium text-sm transition-all"
                           >
                             {isSubmitting ? (
                               <><div className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" /> {t("submitting")}</>
                             ) : (
-                              <><span>🌅</span> {t("submit_morning")}</>
+                              <><span><Sunrise size={16} className="inline-block shrink-0 align-text-bottom" aria-hidden="true" /></span> {t("submit_morning")}</>
                             )}
                           </button>
                           <p className="text-[11px] text-slate-400 text-center leading-normal mt-1">
@@ -1227,22 +1253,22 @@ const submitEvening = async (finalSubmit: boolean) => {
                   </div>
                 </div>
 
-                <div className="bg-gradient-to-br from-indigo-50/50 via-white to-violet-50/30 dark:from-slate-800/60 dark:via-slate-800/40 dark:to-slate-800/20 rounded-2xl border border-indigo-100/80 dark:border-indigo-900/40 p-5 shadow-sm">
+                <div className="bg-gradient-to-br from-indigo-50/50 via-white to-violet-50/30 dark:from-slate-800/60 dark:via-slate-800/40 dark:to-slate-800/20 rounded-2xl border border-indigo-100/80 dark:border-indigo-900/40 p-5">
                   <div className="flex items-center gap-2.5 mb-3">
-                    <span className="text-base">💡</span>
-                    <h4 className="text-xs font-bold text-indigo-900 dark:text-indigo-300 uppercase tracking-wider">{t("productivity_tips")}</h4>
+                    <span className="text-base"><Lightbulb size={16} className="inline-block shrink-0 align-text-bottom" aria-hidden="true" /></span>
+                    <h4 className="text-xs font-medium text-indigo-900 dark:text-indigo-300 uppercase tracking-wider">{t("productivity_tips")}</h4>
                   </div>
                   <ul className="space-y-2.5 text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                     <li className="flex items-start gap-2">
-                      <span className="text-amber-500 font-bold">•</span>
+                      <span className="text-amber-500 font-medium">•</span>
                       <span><b>{t("tip1_title")}</b> {t("tip1_text")}</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="text-indigo-500 font-bold">•</span>
+                      <span className="text-indigo-500 font-medium">•</span>
                       <span><b>{t("tip2_title")}</b> {t("tip2_text")}</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="text-emerald-500 font-bold">•</span>
+                      <span className="text-emerald-500 font-medium">•</span>
                       <span><b>{t("tip3_title")}</b> {t("tip3_text")}</span>
                     </li>
                   </ul>
@@ -1256,10 +1282,10 @@ const submitEvening = async (finalSubmit: boolean) => {
               <div className="lg:col-span-8 space-y-6">
 
                 {eveningSubmitted && (
-                  <div className="flex items-center gap-3 p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200/80 dark:border-emerald-800/60 shadow-sm">
-                    <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white text-sm shrink-0 shadow-sm">🔒</div>
+                  <div className="flex items-center gap-3 p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200/80 dark:border-emerald-800/60">
+                    <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white text-sm shrink-0"><LockKeyhole size={16} className="inline-block shrink-0 align-text-bottom" aria-hidden="true" /></div>
                     <div>
-                      <p className="text-sm font-bold text-emerald-700 dark:text-emerald-400">{t("evening_locked")}</p>
+                      <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">{t("evening_locked")}</p>
                       <p className="text-[11px] text-emerald-600/80 dark:text-emerald-500/70 mt-0.5">
                         {existingReport?.eveningReport?.submittedAt
                           ? `${t("submitted_at")} ${new Date(existingReport.eveningReport.submittedAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })} ${t("evening_readonly")}`
@@ -1272,23 +1298,23 @@ const submitEvening = async (finalSubmit: boolean) => {
 
                 {!eveningSubmitted && (
                   <div className="flex items-start gap-2.5 p-3.5 rounded-2xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/60">
-                    <span className="text-base shrink-0 mt-0.5">💡</span>
+                    <span className="text-base shrink-0 mt-0.5"><Lightbulb size={16} className="inline-block shrink-0 align-text-bottom" aria-hidden="true" /></span>
                     <p className="text-xs text-blue-700 dark:text-blue-400 font-medium leading-relaxed">
                       {t("evening_help")}
                     </p>
                   </div>
                 )}
 
-                <div className="bg-white dark:bg-slate-900/50 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 shadow-sm p-5 sm:p-6">
+                <div className="bg-white dark:bg-slate-900/50 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 p-5 sm:p-6">
                   <div className="flex items-center justify-between gap-3 mb-5 pb-4 border-b border-slate-100 dark:border-slate-700/60 flex-wrap">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white text-xs font-extrabold shadow-sm">
+                      <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white text-xs font-semibold">
                         ✓
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <h3 className="text-base font-extrabold text-slate-800 dark:text-slate-100">{t("completed_tasks")}</h3>
-                          <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800/60">
+                          <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100">{t("completed_tasks")}</h3>
+                          <span className="px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800/60">
                             {completedItems.length}
                           </span>
                         </div>
@@ -1300,7 +1326,7 @@ const submitEvening = async (finalSubmit: boolean) => {
                       <button
                         type="button"
                         onClick={() => addEveningItem("completed" as TaskItemStatus)}
-                        className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200/80 dark:border-emerald-700 hover:bg-emerald-100 text-xs font-bold transition-all shadow-sm active:scale-95"
+                        className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200/80 dark:border-emerald-700 hover:bg-emerald-100 text-xs font-medium transition-all"
                       >
                         <span>+</span> {t("add_task")}
                       </button>
@@ -1334,7 +1360,7 @@ const submitEvening = async (finalSubmit: boolean) => {
                     <button
                       type="button"
                       onClick={() => addEveningItem("completed" as TaskItemStatus)}
-                      className="w-full py-3 rounded-2xl border-2 border-dashed border-emerald-200 dark:border-emerald-800/60 text-emerald-600 dark:text-emerald-500 dark:hover:text-emerald-100 hover:border-emerald-400 hover:text-emerald-700 dark:hover:bg-green-200/70  hover:bg-emerald-50/40 text-xs font-bold transition-all duration-200 flex items-center justify-center gap-2"
+                      className="w-full py-3 rounded-2xl border-2 border-dashed border-emerald-200 dark:border-emerald-800/60 text-emerald-600 dark:text-emerald-500 dark:hover:text-emerald-100 hover:border-emerald-400 hover:text-emerald-700 dark:hover:bg-green-200/70  hover:bg-emerald-50/40 text-xs font-medium transition-all duration-200 flex items-center justify-center gap-2"
                     >
                      
                       {t("add_completed_task")}
@@ -1342,16 +1368,16 @@ const submitEvening = async (finalSubmit: boolean) => {
                   )}
                 </div>
 
-                <div className="bg-white dark:bg-slate-900/50 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 shadow-sm p-5 sm:p-6">
+                <div className="bg-white dark:bg-slate-900/50 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 p-5 sm:p-6">
                   <div className="flex items-center justify-between gap-3 mb-5 pb-4 border-b border-slate-100 dark:border-slate-700/60 flex-wrap">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white text-xs font-extrabold shadow-sm">
-                        ⏳
+                      <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white text-xs font-semibold">
+                        <Hourglass size={16} className="inline-block shrink-0 align-text-bottom" aria-hidden="true" />
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <h3 className="text-base font-extrabold text-slate-800 dark:text-slate-100">{t("pending_tasks")}</h3>
-                          <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200/60 dark:border-amber-800/60">
+                          <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100">{t("pending_tasks").replace(/^⏳\s*/u, "")}</h3>
+                          <span className="px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200/60 dark:border-amber-800/60">
                             {pendingItems.length}
                           </span>
                         </div>
@@ -1363,7 +1389,7 @@ const submitEvening = async (finalSubmit: boolean) => {
                       <button
                         type="button"
                         onClick={() => addEveningItem("carried_forward" as TaskItemStatus)}
-                        className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-200/80 dark:border-amber-700 hover:bg-amber-100 text-xs font-bold transition-all shadow-sm active:scale-95"
+                        className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-200/80 dark:border-amber-700 hover:bg-amber-100 text-xs font-medium transition-all"
                       >
                         <span>+</span> {t("add_task")}
                       </button>
@@ -1397,7 +1423,7 @@ const submitEvening = async (finalSubmit: boolean) => {
                     <button
                       type="button"
                       onClick={() => addEveningItem("carried_forward" as TaskItemStatus)}
-                      className="w-full py-3 rounded-2xl border-2 border-dashed border-amber-200 dark:border-amber-800/60 text-amber-600 dark:text-amber-500 dark:hover:bg-amber-200/70 hover:border-amber-400 hover:text-amber-700 hover:bg-amber-50/40 text-xs font-bold transition-all duration-200 flex items-center justify-center gap-2"
+                      className="w-full py-3 rounded-2xl border-2 border-dashed border-amber-200 dark:border-amber-800/60 text-amber-600 dark:text-amber-500 dark:hover:bg-amber-200/70 hover:border-amber-400 hover:text-amber-700 hover:bg-amber-50/40 text-xs font-medium transition-all duration-200 flex items-center justify-center gap-2"
                     >
                      
                       {t("add_pending_task")}
@@ -1408,14 +1434,14 @@ const submitEvening = async (finalSubmit: boolean) => {
 
               <div className="lg:col-span-4 lg:sticky top-6 right-4 self-start space-y-5">
 
-                <div className="bg-white dark:bg-slate-900/50 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 shadow-sm overflow-hidden">
+                <div className="bg-white dark:bg-slate-900/50 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 overflow-hidden">
                   <div className="h-1 bg-gradient-to-r from-indigo-500 via-violet-500 to-indigo-600" />
                   <div className="p-5">
                     <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-xs font-extrabold text-slate-800 dark:text-slate-100 uppercase tracking-wider">
+                      <h3 className="text-xs font-semibold text-slate-800 dark:text-slate-100 uppercase tracking-wider">
                         {t("summary")}
                       </h3>
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
                         eveningSubmitted
                           ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"
                           : "bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800"
@@ -1425,9 +1451,9 @@ const submitEvening = async (finalSubmit: boolean) => {
                     </div>
 
                     <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/30 border border-slate-100 dark:border-slate-700/40 mb-4">
-                      <div className="flex items-center justify-between text-xs font-bold mb-1.5">
+                      <div className="flex items-center justify-between text-xs font-medium mb-1.5">
                         <span className="text-slate-600 dark:text-slate-300">{t("completion_rate")}</span>
-                        <span className="text-indigo-600 dark:text-indigo-400 font-extrabold">{eveningCompletionRate}%</span>
+                        <span className="text-indigo-600 dark:text-indigo-400 font-semibold">{eveningCompletionRate}%</span>
                       </div>
                       <div className="w-full h-2 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
                         <div
@@ -1439,16 +1465,16 @@ const submitEvening = async (finalSubmit: boolean) => {
 
                     <div className="grid grid-cols-3 gap-2 mb-5">
                       <div className="p-2.5 rounded-xl bg-emerald-50/60 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-900/40 text-center">
-                        <div className="text-xl font-extrabold text-emerald-600 dark:text-emerald-400">{completedItems.length}</div>
-                        <div className="text-[9px] text-emerald-700/80 dark:text-emerald-400/80 font-bold uppercase tracking-wide mt-0.5">{t("completed")}</div>
+                        <div className="text-xl font-semibold text-emerald-600 dark:text-emerald-400">{completedItems.length}</div>
+                        <div className="text-[9px] text-emerald-700/80 dark:text-emerald-400/80 font-medium uppercase tracking-wide mt-0.5">{t("completed")}</div>
                       </div>
                       <div className="p-2.5 rounded-xl bg-amber-50/60 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-900/40 text-center">
-                        <div className="text-xl font-extrabold text-amber-500">{pendingItems.length}</div>
-                        <div className="text-[9px] text-amber-700/80 dark:text-amber-400/80 font-bold uppercase tracking-wide mt-0.5">{t("pending")}</div>
+                        <div className="text-xl font-semibold text-amber-500">{pendingItems.length}</div>
+                        <div className="text-[9px] text-amber-700/80 dark:text-amber-400/80 font-medium uppercase tracking-wide mt-0.5">{t("pending")}</div>
                       </div>
                       <div className="p-2.5 rounded-xl bg-indigo-50/60 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-900/40 text-center">
-                        <div className="text-xl font-extrabold text-indigo-600 dark:text-indigo-400">{actualHour}h</div>
-                        <div className="text-[9px] text-indigo-700/80 dark:text-indigo-400/80 font-bold uppercase tracking-wide mt-0.5">{t("actual_hours")}</div>
+                        <div className="text-xl font-semibold text-indigo-600 dark:text-indigo-400">{actualHour}h</div>
+                        <div className="text-[9px] text-indigo-700/80 dark:text-indigo-400/80 font-medium uppercase tracking-wide mt-0.5">{t("actual_hours")}</div>
                       </div>
                     </div>
 
@@ -1464,12 +1490,12 @@ const submitEvening = async (finalSubmit: boolean) => {
                             title={m.label}
                             className={`flex flex-col items-center py-2 rounded-xl border transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed
                               ${overallMood === m.value
-                                ? `${m.color} scale-105 shadow-sm`
+                                ? `${m.color}`
                                 : "border-slate-100 dark:border-slate-700/60 bg-slate-50 dark:bg-slate-900/30 hover:border-slate-300 dark:hover:border-slate-600 hover:scale-105"
                               }`}
                           >
                             <span className="text-xl">{m.emoji}</span>
-                            <span className="text-[8px] font-bold mt-1 truncate max-w-[50px]">{m.label}</span>
+                            <span className="text-[8px] font-medium mt-1 truncate max-w-[50px]">{m.label}</span>
                           </button>
                         ))}
                       </div>
@@ -1505,7 +1531,7 @@ const submitEvening = async (finalSubmit: boolean) => {
                           type="button"
                           onClick={handleEveningSubmit}
                           disabled={isSubmitting || eveningItems.filter(i => i.title.trim()).length === 0}
-                          className="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-sm transition-all duration-200 active:scale-95 shadow-md shadow-emerald-500/25"
+                          className="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium text-sm transition-all duration-200"
                         >
                           {isSubmitting ? (
                             <>
@@ -1514,7 +1540,7 @@ const submitEvening = async (finalSubmit: boolean) => {
                             </>
                           ) : (
                             <>
-                              <span>🌆</span>
+                              <span><MoonStar size={16} className="inline-block shrink-0 align-text-bottom" aria-hidden="true" /></span>
                               {!isFinalSubmitted
                                 ? t("save_evening")
                                 : t("submit_evening")
@@ -1524,8 +1550,8 @@ const submitEvening = async (finalSubmit: boolean) => {
                         </button>
                       ) : (
                         <div className="flex items-center justify-center gap-2 p-3 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
-                          <span className="text-emerald-600 dark:text-emerald-400 text-base">🔒</span>
-                          <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400">
+                          <span className="text-emerald-600 dark:text-emerald-400 text-base"><LockKeyhole size={16} className="inline-block shrink-0 align-text-bottom" aria-hidden="true" /></span>
+                          <span className="text-xs font-medium text-emerald-700 dark:text-emerald-400">
                             {t("report_locked")}
                           </span>
                         </div>
@@ -1534,16 +1560,16 @@ const submitEvening = async (finalSubmit: boolean) => {
                   </div>
                 </div>
 
-                <div className="bg-white dark:bg-slate-900/50 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 shadow-sm p-5 space-y-4">
+                <div className="bg-white dark:bg-slate-900/50 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 p-5 space-y-4">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-base">📝</span>
-                    <h3 className="text-xs font-extrabold text-slate-800 dark:text-slate-100 uppercase tracking-wider">
+                    <span className="text-base"><ClipboardList size={16} className="inline-block shrink-0 align-text-bottom" aria-hidden="true" /></span>
+                    <h3 className="text-xs font-semibold text-slate-800 dark:text-slate-100 uppercase tracking-wider">
                       {t("retrospective")}
                     </h3>
                   </div>
 
                   <div className="p-3.5 rounded-xl bg-emerald-50/40 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-900/30">
-                    <FieldLabel>{t("achievements")}</FieldLabel>
+                    <FieldLabel><Sparkles size={14} className="mr-1.5 inline-block align-text-bottom text-emerald-600" aria-hidden="true" />{t("achievements").replace(/^🏆\s*/u, "")}</FieldLabel>
                     <TextArea
                       value={achievements}
                       onChange={setAchievements}
@@ -1554,7 +1580,7 @@ const submitEvening = async (finalSubmit: boolean) => {
                   </div>
 
                   <div className="p-3.5 rounded-xl bg-rose-50/40 dark:bg-rose-900/10 border border-rose-100 dark:border-rose-900/30">
-                    <FieldLabel>{t("blockers_challenges")}</FieldLabel>
+                    <FieldLabel><TriangleAlert size={14} className="mr-1.5 inline-block align-text-bottom text-rose-600" aria-hidden="true" />{t("blockers_challenges").replace(/^🚧\s*/u, "")}</FieldLabel>
                     <TextArea
                       value={blockers}
                       onChange={setBlockers}
@@ -1581,6 +1607,30 @@ const submitEvening = async (finalSubmit: boolean) => {
 
         </div>
       </div>
+
+      <AchievementCelebration
+        open={celebrationStats !== null}
+        onClose={() => setCelebrationStats(null)}
+        badge="Day Wrapped · Report Locked"
+        title="Evening Report Submitted!"
+        subtitle="Great work today. Your progress has been finalized and recorded."
+        stats={
+          celebrationStats
+            ? [
+                {
+                  label: "Completed",
+                  value: celebrationStats.completed,
+                  icon: "completed",
+                },
+                {
+                  label: "Logged",
+                  value: `${celebrationStats.hours}h`,
+                  icon: "hours",
+                },
+              ]
+            : []
+        }
+      />
     </div>
   );
 };

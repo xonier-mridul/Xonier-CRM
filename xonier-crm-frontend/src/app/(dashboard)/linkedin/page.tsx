@@ -5,6 +5,7 @@ import axios from "axios";
 import { useSelector } from "react-redux";
 import { RootState } from "@/src/store";
 import api from "@/src/lib/axios";
+import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
 import { FaLinkedin } from "react-icons/fa";
 import {
   LiveLinkedInBrowser,
@@ -516,7 +517,13 @@ function LinkedInWorkspace() {
   };
 
   const disconnect = async () => {
-    if (!window.confirm("Disconnect this LinkedIn account and delete its synced chats and connections from Xonier CRM?")) {
+    const { isConfirmed } = await ConfirmPopup({
+      title: "Disconnect LinkedIn?",
+      text: "Disconnect this LinkedIn account and delete its synced chats and connections from Xonier CRM?",
+      btnTxt: "Disconnect",
+      variant: "danger",
+    });
+    if (!isConfirmed) {
       return;
     }
     setBusy(true);

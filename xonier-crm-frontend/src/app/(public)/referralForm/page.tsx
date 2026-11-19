@@ -414,11 +414,11 @@ const Page = () => {
         setShowTable(false)
         resetForm()
         clearDraft()
-        alert(t("leads_submitted_successfully"))
+        toast.success(t("leads_submitted_successfully"))
       }
     } catch (error) {
       console.error('Error submitting leads:', error)
-      alert(t("error_submitting_leads"))
+      toast.error(t("error_submitting_leads"))
     } finally {
       setIsLoading(false)
     }

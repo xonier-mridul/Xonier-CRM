@@ -1,6 +1,7 @@
 from typing import Optional, Dict, Any, List, Tuple, Type
 from motor.motor_asyncio import AsyncIOMotorClientSession
 from beanie import PydanticObjectId
+import asyncio
 import math
 from app.db.models.user_roles_model import UserRoleModel
 from app.db.models.user_model import UserModel
@@ -674,6 +675,94 @@ class BaseRepository:
 
         return [doc.model_dump(mode="json") for doc in items]
 
+    @staticmethod
+    def _collect_links(owners, field):
+        links = []
+        for owner in owners:
+            value = getattr(owner, field, None)
+            if value is None:
+                continue
+            if hasattr(value, "fetch"):
+                links.append(value)
+            elif isinstance(value, list):
+                links.extend(item for item in value if hasattr(item, "fetch"))
+        return links
+
+    @staticmethod
+    def _apply_links(owners, field, resolved, use_dict):
+        def resolve(link):
+            return resolved.get((link.document_class, link.ref.id), link)
+
+        for owner in owners:
+            value = getattr(owner, field, None)
+            if value is None:
+                continue
+            if hasattr(value, "fetch"):
+                new_value = resolve(value)
+            elif isinstance(value, list):
+                new_value = [resolve(item) if hasattr(item, "fetch") else item for item in value]
+            else:
+                continue
+            if use_dict:
+                owner.__dict__[field] = new_value
+            else:
+                setattr(owner, field, new_value)
+
+    async def _fetch_links_batch(self, links):
+        """Resolve many beanie Links with one $in query per target collection."""
+        groups: Dict[Any, Dict[Any, Any]] = {}
+        for link in links:
+            groups.setdefault(link.document_class, {})[link.ref.id] = link
+
+        async def load(doc_cls, ids):
+            docs = await doc_cls.find({"_id": {"$in": ids}}, with_children=True).to_list()
+            return doc_cls, docs
+
+        loaded = await asyncio.gather(*(load(cls, list(ids)) for cls, ids in groups.items()))
+        resolved = {}
+        for doc_cls, docs in loaded:
+            for doc in docs:
+                resolved[(doc_cls, doc.id)] = doc
+        return resolved
+
+    async def _populate_batch(self, docs, populate, use_dict=False, allow_nested=False):
+        """Batch replacement for the per-document `await link.fetch()` loops (N+1 queries)."""
+        if not docs or not populate:
+            return
+
+        top_fields = [f for f in populate if "." not in f]
+        if top_fields:
+            links = []
+            for field in top_fields:
+                links.extend(self._collect_links(docs, field))
+            if links:
+                resolved = await self._fetch_links_batch(links)
+                for field in top_fields:
+                    self._apply_links(docs, field, resolved, use_dict)
+
+        if not allow_nested:
+            return
+
+        for field in populate:
+            if "." not in field:
+                continue
+            parent_field, child_field = field.split(".", 1)
+            owners = []
+            for doc in docs:
+                parent_value = getattr(doc, parent_field, None)
+                if parent_value is None:
+                    continue
+                if isinstance(parent_value, list):
+                    owners.extend(parent_value)
+                else:
+                    owners.append(parent_value)
+            links = self._collect_links(owners, child_field)
+            if not links:
+                continue
+            resolved = await self._fetch_links_batch(links)
+            self._apply_links(owners, child_field, resolved, True)
+
+
     async def get_all(
     self,
     page: int = 1,
@@ -701,28 +790,8 @@ class BaseRepository:
         results = await query.to_list()
 
        
-        for doc in results:
-            for field in populate:
-                value = getattr(doc, field, None)
+        await self._populate_batch(results, populate)
 
-                if value is None:
-                    continue
-
-                if hasattr(value, "fetch"):
-                    fetched = await value.fetch()
-                    setattr(doc, field, fetched)
-
-                elif isinstance(value, list):
-                    fetched_items = []
-                    for item in value:
-                        if hasattr(item, "fetch"):
-                            fetched_items.append(await item.fetch())
-                        else:
-                            fetched_items.append(item)
-
-                    setattr(doc, field, fetched_items)
-
-    
         count = await self.model.find(filters).count()
 
         total_pages = math.ceil(count / limit)
@@ -763,52 +832,7 @@ class BaseRepository:
 
         token = bypass_scope.set(True)
         try:
-            for doc in results:
-                for field in populate:
-
-                    # ── nested field e.g. "features.feature" ──────────
-                    if "." in field:
-                        parent_field, child_field = field.split(".", 1)
-                        parent_value = getattr(doc, parent_field, None)
-
-                        if parent_value is None:
-                            continue
-
-                        if isinstance(parent_value, list):
-                            for item in parent_value:
-                                child_value = getattr(item, child_field, None)
-                                if child_value is None:
-                                    continue
-                                if hasattr(child_value, "fetch"):
-                                    fetched = await child_value.fetch()
-                                    item.__dict__[child_field] = fetched
-                        else:
-                            child_value = getattr(parent_value, child_field, None)
-                            if child_value is not None and hasattr(child_value, "fetch"):
-                                fetched = await child_value.fetch()
-                                parent_value.__dict__[child_field] = fetched
-
-                        continue
-
-                    # ── top-level field ────────────────────────────────
-                    value = getattr(doc, field, None)
-
-                    if value is None:
-                        continue
-
-                    if hasattr(value, "fetch"):
-                        fetched = await value.fetch()
-                        doc.__dict__[field] = fetched
-
-                    elif isinstance(value, list):
-                        fetched_items = []
-                        for item in value:
-                            if hasattr(item, "fetch"):
-                                fetched_items.append(await item.fetch())
-                            else:
-                                fetched_items.append(item)
-                        doc.__dict__[field] = fetched_items
-
+            await self._populate_batch(results, populate, use_dict=True, allow_nested=True)
         finally:
             bypass_scope.reset(token)
 

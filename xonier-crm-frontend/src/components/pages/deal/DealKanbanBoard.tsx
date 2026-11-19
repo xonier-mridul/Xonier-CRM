@@ -69,7 +69,7 @@ const DealKanbanBoard: React.FC<DealKanbanBoardProps> = ({
   canCreateQuote = false,
 }) => {
   const columns = useMemo(() => stages.map(stage => ({
-    id: stage.key, title: stage.name, color: stage.color,
+    id: stage.key, title: stage.name, color: stage.color, probability: stage.probability,
   })), [stages]);
   const currency = useCompanyCurrency();
   const [moving, setMoving] = useState(false);
@@ -230,20 +230,38 @@ const DealKanbanBoard: React.FC<DealKanbanBoardProps> = ({
     <div className="w-full overflow-x-auto pb-4">
       <DragDropContext onDragEnd={handleDragEnd}>
         <div className="flex gap-4 min-h-[70vh] items-start p-2">
-          {columns.map((column) => (
+          {columns.map((column) => {
+            const colDeals = boardData[column.id] || [];
+            const colTotal = colDeals.reduce((sum, d) => sum + (Number(d.amount) || 0), 0);
+            const colWeighted = colDeals.reduce((sum, d) => {
+              const prob = d.forecastProbability ?? d.dealProbability ?? column.probability;
+              return prob == null ? sum : sum + (Number(d.amount) || 0) * Math.max(0, Math.min(100, prob)) / 100;
+            }, 0);
+            return (
             <div key={column.id} className="flex flex-col w-[300px] shrink-0">
               {/* Column Header */}
               <div
-                className={`px-3 py-2.5 rounded-t-lg border-t border-l border-r font-semibold text-sm flex justify-between items-center `}
+                className={`px-3 py-2.5 rounded-t-lg border-t border-l border-r font-semibold text-sm`}
                   style={{ color: column.color, backgroundColor: `${column.color}12`, borderColor: `${column.color}45` }}
               >
-                <span className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: column.color }} />
-                  {column.title}
-                </span>
-                <span className="bg-white/60 px-2 py-0.5 rounded-full text-xs font-bold">
-                  {boardData[column.id]?.length || 0}
-                </span>
+                <div className="flex justify-between items-center gap-2">
+                  <span className="flex items-center gap-2 min-w-0">
+                    <span className="w-2 h-2 shrink-0 rounded-full" style={{ backgroundColor: column.color }} />
+                    <span className="truncate">{column.title}</span>
+                    {column.probability != null && (
+                      <span className="shrink-0 rounded bg-white/70 px-1.5 py-0.5 text-[10px] font-semibold tabular-nums">
+                        {column.probability}%
+                      </span>
+                    )}
+                  </span>
+                  <span className="bg-white/60 px-2 py-0.5 rounded-full text-xs font-bold shrink-0">
+                    {colDeals.length}
+                  </span>
+                </div>
+                <div className="mt-1.5 flex items-center justify-between text-[11px] font-medium opacity-85 tabular-nums">
+                  <span>{formatCurrency(colTotal, currency)} total</span>
+                  <span>{formatCurrency(colWeighted, currency)} weighted</span>
+                </div>
               </div>
 
               <Droppable droppableId={column.id}>
@@ -414,7 +432,8 @@ const DealKanbanBoard: React.FC<DealKanbanBoardProps> = ({
                 )}
               </Droppable>
             </div>
-          ))}
+            );
+          })}
         </div>
       </DragDropContext>
 

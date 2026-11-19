@@ -8,6 +8,7 @@ import { RootState } from "@/src/store";
 import api from "@/src/lib/axios";
 import { FaWhatsapp } from "react-icons/fa";
 import { Loader2, RefreshCw, Send, Unplug, Search } from "lucide-react";
+import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
 
 type Connection = { owner?: string; ownerName?: string; phone?: string; status: string; error?: string; qr?: string; qrExpiresAt?: number };
 type Chat = { jid: string; name: string; preview?: string; timestamp: number; phone?: string | null };
@@ -164,7 +165,13 @@ function WhatsAppInbox() {
     catch (err) { setError(errorMessage(err)); } finally { setBusy(false); }
   };
   const disconnect = async () => {
-    if (!window.confirm("Disconnect this WhatsApp account and delete its copied chats from the CRM? Messages on the phone will remain.")) return;
+    const { isConfirmed } = await ConfirmPopup({
+      title: "Disconnect WhatsApp?",
+      text: "Disconnect this WhatsApp account and delete its copied chats from the CRM? Messages on the phone will remain.",
+      btnTxt: "Disconnect",
+      variant: "danger",
+    });
+    if (!isConfirmed) return;
     setBusy(true); setError("");
     try {
       await api.delete("/whatsapp/connection", { params });

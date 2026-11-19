@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useState } from "react";
 import api from "@/src/lib/axios";
 import { useDealStages } from "@/src/hooks/useLeadStatuses";
 import { toast } from "react-toastify";
+import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
 
 type Kind = "call" | "email" | "meeting" | "task" | "whatsapp" | "other";
 type Rule = { id: string; stageKey: string; kind: Kind; title: string; delayDays: number; enabled: boolean };
@@ -30,7 +31,13 @@ export default function StageAutomationRules() {
     finally { setBusy(false); }
   };
   const remove = async (id: string) => {
-    if (!window.confirm("Delete this automation rule?")) return;
+    const { isConfirmed } = await ConfirmPopup({
+      title: "Delete automation rule?",
+      text: "This rule will no longer trigger when deals enter this stage.",
+      btnTxt: "Delete rule",
+      variant: "danger",
+    });
+    if (!isConfirmed) return;
     setBusy(true);
     try { await api.delete(`/stage-automation/rules/${id}`); await load(); toast.success("Automation rule deleted"); }
     catch { toast.error("Could not delete automation rule"); }

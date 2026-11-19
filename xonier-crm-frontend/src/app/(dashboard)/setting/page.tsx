@@ -17,6 +17,7 @@ import {
 } from "react-icons/fi";
 import { TbSettings, TbPalette, TbAccessible } from "react-icons/tb";
 import ThemeToggle from "@/src/components/common/ThemeToggle";
+import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
 
 /* ------------------------------------------------------------------ */
 /* TYPES                                                               */
@@ -360,8 +361,14 @@ const page = () => {
     }
   };
 
-  const handleReset = () => {
-    if (!confirm(t("confirm_reset_settings"))) return;
+  const handleReset = async () => {
+    const { isConfirmed } = await ConfirmPopup({
+      title: t("reset_all_settings"),
+      text: t("confirm_reset_settings"),
+      btnTxt: t("reset"),
+      variant: "danger",
+    });
+    if (!isConfirmed) return;
     setSettings(DEFAULT_SETTINGS);
   };
 
@@ -839,8 +846,14 @@ const page = () => {
               <SettingRow danger title={t("clear_local_data")} description={t("clear_local_data_desc")}>
                 <button
                   type="button"
-                  onClick={() => {
-                    if (confirm(t("confirm_clear_local_data"))) {
+                  onClick={async () => {
+                    const { isConfirmed } = await ConfirmPopup({
+                      title: t("clear_local_data"),
+                      text: t("confirm_clear_local_data"),
+                      btnTxt: t("clear"),
+                      variant: "danger",
+                    });
+                    if (isConfirmed) {
                       localStorage.clear();
                       location.reload();
                     }

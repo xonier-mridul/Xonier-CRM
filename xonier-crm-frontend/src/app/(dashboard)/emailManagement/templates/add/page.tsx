@@ -8,6 +8,7 @@ import { Template, Variable, CustomVarForm } from "@/src/types/communication/mai
 import RichTextEditor, { RichTextEditorHandle } from "@/src/components/pages/prospect/RichEditor";
 import { toast } from "react-toastify";
 import { useTranslation } from "react-i18next";
+import { Trash2, X } from "lucide-react";
 
 // ─── Default Variables ────────────────────────────────────────────────────────
 const DEFAULT_VARIABLES: Variable[] = [];
@@ -301,44 +302,68 @@ const DeleteConfirmModal = ({
 }) => {
   const { t } = useTranslation();
   return (
-    (
-  <div
-    className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/50 backdrop-blur-sm"
-    onClick={(ev) => { if (ev.target === ev.currentTarget) onClose(); }}
-  >
-    <div className="w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden bg-white dark:bg-gray-900 border border-red-200 dark:border-red-800">
-      <div className="px-6 py-4 bg-gradient-to-r from-red-500 to-red-600 dark:from-red-700 dark:to-red-800">
-        <p className="font-bold text-white text-base">{t("delete_variable")}</p>
-        <p className="text-red-100 text-xs mt-0.5">{t("this_action_cannot_be_undone")}</p>
-      </div>
-      <div className="px-6 py-5 flex flex-col gap-5">
-        <p className="text-sm text-gray-700 dark:text-gray-300">
-          {t("are_you_sure_you_want_to_delete")}{" "}
-          <code className="font-mono bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-1.5 py-0.5 rounded text-gray-900 dark:text-gray-200 font-semibold">
-            {`{{${variable.key}}}`}
-          </code>
-          {t("any_uses_in_the_email_body_will_become_unresolved")}
-        </p>
-        <div className="flex gap-3">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/30 dark:bg-slate-950/55 backdrop-blur-[2px]"
+      role="presentation"
+      onClick={(ev) => { if (ev.target === ev.currentTarget) onClose(); }}
+    >
+      <div
+        role="alertdialog"
+        aria-modal="true"
+        className="w-full max-w-[420px] overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-[0_24px_64px_-16px_rgba(15,23,42,0.22)] ring-1 ring-slate-950/[0.04] dark:border-slate-800 dark:bg-slate-900 dark:ring-white/[0.06]"
+      >
+        <div className="px-6 pt-6 pb-5">
+          <div className="flex items-start gap-4">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-rose-50 text-rose-600 ring-1 ring-inset ring-rose-500/20 dark:bg-rose-500/10 dark:text-rose-400 dark:ring-rose-500/25">
+              <Trash2 className="h-[18px] w-[18px]" strokeWidth={1.9} />
+            </div>
+            <div className="min-w-0 flex-1 pt-0.5">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-[15.5px] font-semibold leading-6 tracking-[-0.015em] text-slate-900 dark:text-slate-50">
+                    {t("delete_variable")}
+                  </p>
+                  <p className="mt-0.5 text-[12px] font-medium text-slate-400 dark:text-slate-500">
+                    {t("this_action_cannot_be_undone")}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={onClose}
+                  aria-label={t("cancel")}
+                  className="-mr-1.5 -mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:text-slate-500 dark:hover:bg-slate-800 dark:hover:text-slate-200 transition-colors cursor-pointer"
+                >
+                  <X className="h-4 w-4" strokeWidth={2} />
+                </button>
+              </div>
+              <p className="mt-2.5 text-[13.5px] leading-[1.55] text-slate-500 dark:text-slate-400">
+                {t("are_you_sure_you_want_to_delete")}{" "}
+                <code className="font-mono bg-slate-100 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 px-1.5 py-0.5 rounded-md text-[12px] text-slate-800 dark:text-slate-200 font-semibold">
+                  {`{{${variable.key}}}`}
+                </code>{" "}
+                {t("any_uses_in_the_email_body_will_become_unresolved")}
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center justify-end gap-2.5 border-t border-slate-100 bg-slate-50/70 px-6 py-3.5 dark:border-slate-800/80 dark:bg-slate-950/40">
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-all"
+            className="px-3.5 py-2 rounded-lg text-[13px] font-medium text-slate-700 bg-white border border-slate-200/90 shadow-[0_1px_2px_rgba(15,23,42,0.04)] hover:bg-slate-50 hover:border-slate-300 dark:bg-slate-800/90 dark:text-slate-200 dark:border-slate-700 dark:hover:bg-slate-800 cursor-pointer transition-all duration-150"
           >
             {t("cancel")}
           </button>
           <button
             type="button"
             onClick={() => { onConfirm(); onClose(); }}
-            className="flex-1 py-2 rounded-lg bg-red-500 hover:bg-red-600 dark:bg-red-700 dark:hover:bg-red-600 text-white text-sm font-bold cursor-pointer transition-all"
+            className="inline-flex items-center justify-center px-4 py-2 rounded-lg text-[13px] font-medium text-white bg-rose-600 hover:bg-rose-700 active:bg-rose-800 shadow-[0_1px_2px_rgba(225,29,72,0.28),inset_0_1px_0_rgba(255,255,255,0.14)] cursor-pointer transition-all duration-150"
           >
             {t("delete")}
           </button>
         </div>
       </div>
     </div>
-  </div>
-)
   );
 };
 

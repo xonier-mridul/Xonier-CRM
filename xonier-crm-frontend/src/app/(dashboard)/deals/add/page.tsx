@@ -27,6 +27,7 @@ const CreateDealPage = () => {
   const [createDate, setCreateDate] = useState(new Date().toISOString().slice(0, 10));
   const [closeDate, setCloseDate] = useState("");
   const [amount, setAmount] = useState("");
+  const [dealProbability, setDealProbability] = useState("");
   const [dealDescription, setDealDescription] = useState("");
   const [closedWonReason, setClosedWonReason] = useState("");
   const [closedLostReason, setClosedLostReason] = useState("");
@@ -44,7 +45,7 @@ const CreateDealPage = () => {
         const normalizedKey = field.key.toLowerCase().replace(/[\s_-]/g, "");
         const normalizedName = field.name.toLowerCase().replace(/[\s_-]/g, "");
         return normalizedKey !== "dealpipeline" && normalizedName !== "dealpipeline" &&
-          !["dealName", "amount", "dealStage", "dealType", "createDate", "closeDate", "dealDescription"].includes(field.key);
+          !["dealName", "amount", "dealStage", "dealType", "createDate", "closeDate", "dealDescription", "dealProbability"].includes(field.key);
       }));
     }).catch(() => setExtraFields([]));
   }, []);
@@ -74,6 +75,7 @@ const CreateDealPage = () => {
         createDate,
         closeDate: closeDate || null,
         amount: Number(amount),
+        dealProbability: dealProbability === "" ? null : Math.max(0, Math.min(100, Number(dealProbability))),
         dealDescription: dealDescription.trim() || null,
         closedWonReason: closedWonReason.trim() || null,
         closedLostReason: closedLostReason.trim() || null,
@@ -138,8 +140,25 @@ const CreateDealPage = () => {
             <div>
               <label className={labelClass} htmlFor="dealStage">Deal stage <span className="text-rose-500">*</span></label>
               <select id="dealStage" className={inputClass} value={dealStage} onChange={(event) => setDealStage(event.target.value)}>
-                {stages.map(stage => <option key={stage.key} value={stage.key}>{stage.name}</option>)}
+                {stages.map(stage => <option key={stage.key} value={stage.key}>{stage.name}{stage.probability != null ? ` (${stage.probability}%)` : ""}</option>)}
               </select>
+            </div>
+            <div>
+              <label className={labelClass} htmlFor="dealProbability">Deal probability (%)</label>
+              <input
+                id="dealProbability"
+                className={inputClass}
+                type="number"
+                min="0"
+                max="100"
+                step="1"
+                value={dealProbability}
+                onChange={(event) => setDealProbability(event.target.value)}
+                placeholder={(() => {
+                  const stageProb = stages.find(stage => stage.key === dealStage)?.probability;
+                  return stageProb != null ? `Stage default (${stageProb}%)` : "0 - 100";
+                })()}
+              />
             </div>
             <div>
               <label className={labelClass} htmlFor="dealType">Deal type <span className="text-rose-500">*</span></label>

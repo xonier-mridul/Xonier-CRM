@@ -11,6 +11,7 @@ import { useMessages } from "./useMessages";
 import ChatComposer from "./ChatComposer";
 import MessageList from "./MessageList";
 import ConversationDialog from "./ConversationDialog";
+import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
 
 function Thread({ cid, parent, close }: { cid: string; parent: ChatMessage; close: () => void }) {
   const timeline = useMessages(cid, parent.id);
@@ -57,12 +58,29 @@ function ConversationView({ conversation, back }: { conversation: Conversation; 
     void chatApi.read(conversation.id, seq).then(() => refresh()).catch(() => {});
   }, [conversation.id, refresh]);
   const invite = async () => {
-    const name = window.prompt("Enter the teammate's name to search:");
+    const promptRes = await ConfirmPopup({
+      title: "Add teammate to conversation",
+      text: "Search for a teammate by name to invite them to this channel.",
+      btnTxt: "Search",
+      variant: "primary",
+      input: {
+        label: "Teammate name",
+        placeholder: "e.g. Alex Morgan",
+        required: true,
+      },
+    });
+    const name = promptRes.isConfirmed ? promptRes.inputValue : undefined;
     if (!name?.trim()) return;
     try {
       const people = (await chatApi.users(name)).filter(p => !conversation.memberIds.includes(p.id));
       if (people.length !== 1) { toast.info(people.length ? "Several teammates match. Enter a more specific name." : "No eligible teammate found."); return; }
-      if (!window.confirm(`Add ${people[0].name} to this conversation? They will be able to read its history.`)) return;
+      const { isConfirmed } = await ConfirmPopup({
+        title: `Add ${people[0].name}?`,
+        text: "They will be added to this conversation and able to read its history.",
+        btnTxt: "Add member",
+        variant: "primary",
+      });
+      if (!isConfirmed) return;
       await chatApi.addMembers(conversation.id, [people[0].id]); await refresh();
     } catch (err) { toast.error(chatError(err)); }
   };
@@ -72,7 +90,7 @@ function ConversationView({ conversation, back }: { conversation: Conversation; 
         <div className="flex min-w-0 items-center gap-3"><button aria-label="Back to conversations" onClick={back} className="md:hidden"><ArrowLeft size={20} /></button><span className="rounded-xl bg-cyan-50 p-2.5 text-cyan-700 dark:bg-cyan-950 dark:text-cyan-300">{conversation.kind === "channel" ? conversation.visibility === "private" ? <Lock size={19} /> : <Hash size={19} /> : conversation.kind === "group" ? <Users size={19} /> : <MessageSquare size={19} />}</span><div className="min-w-0"><h1 className="truncate text-base font-semibold">{conversationName(conversation, uid)}</h1><button onClick={() => setMembers(!members)} className="text-xs text-slate-400">{conversation.memberIds.length} members · {online.length} online</button></div></div>
         <div className="flex items-center gap-1"><button title={capabilities?.calls ? "Start voice call" : "Calling requires LiveKit setup"} aria-label="Start voice call" disabled={!capabilities?.calls} onClick={() => void startCall(conversation.id, "voice")} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 disabled:opacity-25 dark:hover:bg-slate-800"><Phone size={18} /></button><button title="Start video call" aria-label="Start video call" disabled={!capabilities?.calls} onClick={() => void startCall(conversation.id, "video")} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 disabled:opacity-25 dark:hover:bg-slate-800"><Video size={20} /></button><button aria-label="Show members" onClick={() => setMembers(!members)} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"><Info size={19} /></button></div>
       </header>
-      {members && <div className="max-h-52 overflow-auto border-b border-slate-200 bg-slate-50 px-5 py-3 dark:border-slate-700 dark:bg-slate-800"><div className="mb-3 flex items-center justify-between"><p className="text-xs text-slate-400">{conversation.description || "Conversation members"}</p>{conversation.ownerId === uid && conversation.kind !== "dm" && <button onClick={() => void invite()} className="text-xs font-semibold text-cyan-700 dark:text-cyan-300">+ Add member</button>}</div>{conversation.memberIds.map(id => <div key={id} className="flex items-center gap-2 py-1 text-xs"><span className={`h-2 w-2 rounded-full ${online.includes(id) ? "bg-emerald-500" : "bg-slate-300"}`} /><span>{conversation.memberNames[id]}{id === uid ? " (you)" : ""}</span>{id === conversation.ownerId && <span className="text-[10px] text-slate-400">Owner</span>}{conversation.ownerId === uid && id !== uid && conversation.kind !== "dm" && <button onClick={() => { if (window.confirm(`Remove ${conversation.memberNames[id]}?`)) void chatApi.removeMember(conversation.id, id).then(refresh).catch(err => toast.error(chatError(err))); }} className="ml-auto text-red-500">Remove</button>}</div>)}</div>}
+      {members && <div className="max-h-52 overflow-auto border-b border-slate-200 bg-slate-50 px-5 py-3 dark:border-slate-700 dark:bg-slate-800"><div className="mb-3 flex items-center justify-between"><p className="text-xs text-slate-400">{conversation.description || "Conversation members"}</p>{conversation.ownerId === uid && conversation.kind !== "dm" && <button onClick={() => void invite()} className="text-xs font-semibold text-cyan-700 dark:text-cyan-300">+ Add member</button>}</div>{conversation.memberIds.map(id => <div key={id} className="flex items-center gap-2 py-1 text-xs"><span className={`h-2 w-2 rounded-full ${online.includes(id) ? "bg-emerald-500" : "bg-slate-300"}`} /><span>{conversation.memberNames[id]}{id === uid ? " (you)" : ""}</span>{id === conversation.ownerId && <span className="text-[10px] text-slate-400">Owner</span>}{conversation.ownerId === uid && id !== uid && conversation.kind !== "dm" && <button onClick={async () => { const { isConfirmed } = await ConfirmPopup({ title: `Remove ${conversation.memberNames[id]}?`, text: "They will no longer have access to this conversation.", btnTxt: "Remove", variant: "danger" }); if (isConfirmed) void chatApi.removeMember(conversation.id, id).then(refresh).catch(err => toast.error(chatError(err))); }} className="ml-auto text-red-500">Remove</button>}</div>)}</div>}
       {activeCall && <div className="flex items-center justify-between gap-3 border-b border-cyan-100 bg-cyan-50 px-5 py-2 dark:border-cyan-900 dark:bg-cyan-950"><span className="flex items-center gap-2 text-xs text-cyan-800 dark:text-cyan-200"><Headphones size={15} />{activeCall.kind === "video" ? "Video call" : "Voice huddle"} · {activeCall.participants.length} joined</span><button onClick={() => void joinCall(activeCall)} className="rounded-lg bg-cyan-700 px-3 py-1 text-xs text-white">Join call</button></div>}
       <div className="flex items-center gap-2 border-b border-slate-100 px-5 py-2 dark:border-slate-800"><Search size={14} className="text-slate-400" /><input aria-label="Search this conversation" value={searchInput} onChange={e => setSearchInput(e.target.value)} maxLength={100} placeholder="Search this conversation" className="min-w-0 flex-1 bg-transparent text-xs outline-none" />{searchInput && <button aria-label="Clear search" onClick={() => setSearchInput("")}><X size={13} /></button>}<button onClick={() => setHistory(!history)} className="text-xs text-slate-400">{history ? "Messages" : "Call history"}</button></div>
       {history ? <div className="flex-1 overflow-auto p-5"><h2 className="mb-4 text-sm font-semibold">Recent calls</h2>{!callHistory.length && <p className="text-sm text-slate-400">No calls yet.</p>}{callHistory.map(call => <div key={call.id} className="mb-3 flex items-center gap-3 rounded-xl border border-slate-200 p-3 text-sm dark:border-slate-700"><Phone size={17} className="text-cyan-600" /><div><p>{call.creatorName} · {call.kind}</p><p className="text-xs text-slate-400">{new Date(call.createdAt).toLocaleString()} · {call.status}</p></div></div>)}</div> : <>

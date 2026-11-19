@@ -112,7 +112,7 @@ const PipelineContent = () => {
 
   useEffect(() => {
     const handleNav = (e: any) => {
-      if (e.detail?.path === "/pipeline") {
+      if (e.detail?.path === "/campaigns") {
         setSelectedCampaign(null);
         setSelectedPipelineFilter(null);
       }
@@ -299,7 +299,7 @@ const PipelineContent = () => {
           <RefreshCw size={15} className={statsLoading ? "animate-spin" : ""} /> Refresh stats
         </button>
       </div>
-      {statsError && <div role="alert" className="mb-5 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">Unable to load pipeline statistics. Please refresh to try again.</div>}
+      {statsError && <div role="alert" className="mb-5 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">Unable to load campaign statistics. Please refresh to try again.</div>}
 
       {/* 1. TOP KPI CARDS (User preferences) */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">

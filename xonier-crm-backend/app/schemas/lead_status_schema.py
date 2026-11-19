@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Literal, Optional
 from pydantic import BaseModel, Field, field_validator
 
 
@@ -7,6 +7,7 @@ class LeadStatusSchema(BaseModel):
     type: Literal["ongoing", "final"]
     color: str = Field(default="#0891b2", pattern=r"^#[0-9a-fA-F]{6}$")
     order: int = Field(default=0, ge=0, le=10000)
+    probability: Optional[int] = Field(default=None, ge=0, le=100)
 
     @field_validator("name")
     @classmethod

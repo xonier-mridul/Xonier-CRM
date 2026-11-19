@@ -2,7 +2,7 @@ from app.utils.transaction_retry import retry_transaction
 from app.services.lead_status_service import LeadStatusService
 from typing import Dict, Any
 from app.utils.custom_exception import AppException
-from app.services.deal_stage_service import DealStageService
+from app.services.deal_stage_service import DealStageService, stage_key
 from app.services.deal_attention import get_attention_queue
 from app.repositories.deal_repository import DealRepository
 from app.utils.enquiry_id_generator import generate_enquiry_id
@@ -76,7 +76,9 @@ class DealService:
                         lead.organizationId = organization.id if organization else None
                         lead.personId = person.id if person else None
 
-                await DealStageService().validate_key(payload["dealStage"], session)
+                stage_service = DealStageService()
+                await stage_service.validate_key(payload["dealStage"], session)
+                stage_probs = await stage_service.probability_map(session=session)
                 deal_id = generate_enquiry_id("DEAL")
 
                 org_id = (
@@ -97,6 +99,10 @@ class DealService:
                         org_id = person_doc.organizationId
 
                 extra_deal_fields: Dict[str, Any] = {}
+                if payload.get("dealProbability") is None:
+                    default_prob = stage_probs.get(stage_key(payload["dealStage"]))
+                    if default_prob is not None:
+                        extra_deal_fields["dealProbability"] = default_prob
                 if lead:
                     if not payload.get("originalTrafficSource") and getattr(lead, "source", None):
                         extra_deal_fields["originalTrafficSource"] = lead.source
@@ -191,6 +197,15 @@ class DealService:
             if "pipeline" in filters:
                 query.update({"dealPipeline": filters["pipeline"]})
  
+            # Sales pipeline: skip closed deals (the board only shows open stages).
+            if filters.get("pipeline_open") and "stage" not in filters:
+                query.update({"dealStage": {"$nin": [
+                    DEAL_STAGES.WON.value,
+                    DEAL_STAGES.CLOSED_WON.value,
+                    DEAL_STAGES.LOST.value,
+                    "closed_lost",
+                ]}})
+
             if "stage" in filters:
                 stage = filters["stage"]
                 query.update({"dealStage": {"$in": [DEAL_STAGES.WON.value, DEAL_STAGES.CLOSED_WON.value]} if stage == DEAL_STAGES.WON.value else stage})
@@ -404,7 +419,9 @@ class DealService:
                     if not isAdmin and not isCreator and not isManager:
                         raise AppException(403, "Unauthorized, only admin, manager or creator update deal")
                     
-                    await DealStageService().validate_key(payload["dealStage"], session)
+                    stage_service = DealStageService()
+                    await stage_service.validate_key(payload["dealStage"], session)
+                    stage_probs = await stage_service.probability_map(session=session)
                     stage = payload["dealStage"]
                     previous_stage = deal.get("dealStage")
                     is_won_stage = stage in {"won", "closed_won"}
@@ -438,9 +455,20 @@ class DealService:
                             new_payload["forecastProbability"] = 0
                         if "forecastCategory" not in payload or payload.get("forecastCategory") is None:
                             new_payload["forecastCategory"] = FORECAST_CATEGORY.CLOSED.value
-                    elif previous_stage in {"won", "closed_won", "lost"}:
+                    elif previous_stage != stage:
+                        new_stage_prob = stage_probs.get(stage_key(stage))
+                        prev_stage_prob = stage_probs.get(stage_key(previous_stage))
+                        if new_stage_prob is not None and (
+                            payload.get("dealProbability") is None
+                            or (
+                                payload.get("dealProbability") == deal.get("dealProbability")
+                                and deal.get("dealProbability") == prev_stage_prob
+                            )
+                        ):
+                            new_payload["dealProbability"] = new_stage_prob
                         if (
-                            ("forecastCategory" not in payload or payload.get("forecastCategory") is None)
+                            previous_stage in {"won", "closed_won", "lost"}
+                            and ("forecastCategory" not in payload or payload.get("forecastCategory") is None)
                             and deal.get("forecastCategory") == FORECAST_CATEGORY.CLOSED.value
                         ):
                             new_payload["forecastCategory"] = FORECAST_CATEGORY.PIPELINE.value

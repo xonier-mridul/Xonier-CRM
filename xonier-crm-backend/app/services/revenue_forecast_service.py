@@ -9,6 +9,7 @@ from app.db.models.deal_model import DealModel
 from app.db.models.user_model import UserModel
 from app.core.tenant import current_company
 from app.services.deal_service import DealService
+from app.services.deal_stage_service import DealStageService, stage_key
 from app.utils.custom_exception import AppException
 from app.utils.validate_admin import validate_admin_company_admin
 
@@ -25,7 +26,7 @@ def month_key(value: datetime) -> str:
     return value.astimezone(timezone.utc).strftime("%Y-%m")
 
 
-def summarize(deals, owners, first_month, last_month):
+def summarize(deals, owners, first_month, last_month, stage_probabilities=None):
     by_month_owner = defaultdict(lambda: {"dealCount": 0, "amount": 0, "weightedAmount": 0, "missingProbabilityCount": 0})
     undated = {"dealCount": 0, "amount": 0}
     for deal in deals:
@@ -46,6 +47,8 @@ def summarize(deals, owners, first_month, last_month):
         probability = deal.get("forecastProbability")
         if probability is None:
             probability = deal.get("dealProbability")
+        if probability is None and stage_probabilities:
+            probability = stage_probabilities.get(stage_key(deal.get("dealStage")))
         if probability is None:
             row["missingProbabilityCount"] += 1
         else:
@@ -64,12 +67,21 @@ async def revenue_forecast(user, first_month, last_month):
     company = current_company.get()
     if not company or not ObjectId.is_valid(company):
         raise AppException(403, "Select a company to view its revenue forecast")
+    stages = await DealStageService().list()
+    stage_probabilities = {
+        s["key"]: int(s["probability"])
+        for s in stages
+        if s.get("probability") is not None
+    }
+    closed_stages = {"won", "closed_won", "lost", "closed_lost", "delete"} | {
+        s["key"] for s in stages if s.get("type") == "final"
+    }
     last_year, last_number = (int(part) for part in last_month.split("-"))
     next_year, next_month = (last_year + 1, 1) if last_number == 12 else (last_year, last_number + 1)
     lower = datetime(int(first_month[:4]), int(first_month[5:]), 1, tzinfo=timezone.utc)
     upper = datetime(next_year, next_month, 1, tzinfo=timezone.utc)
     query = {"companyId": ObjectId(company), "status": "active", "deletedAt": None,
-             "dealStage": {"$nin": ["won", "closed_won", "lost", "delete"]},
+             "dealStage": {"$nin": list(closed_stages)},
              "$or": [{"closeDate": {"$gte": lower, "$lt": upper}}, {"closeDate": None}]}
     if not validate_admin_company_admin(user["userRole"]):
         members = await DealService().getTeamMem.get_team_members(user["_id"])
@@ -77,11 +89,11 @@ async def revenue_forecast(user, first_month, last_month):
         query["createdBy.$id"] = {"$in": [PydanticObjectId(value) for value in visible_ids]}
     docs = await DealModel.get_pymongo_collection().find(
         DealModel._inject_scope(query),
-        {"amount": 1, "closeDate": 1, "forecastProbability": 1, "dealProbability": 1,
+        {"amount": 1, "closeDate": 1, "dealStage": 1, "forecastProbability": 1, "dealProbability": 1,
          "assignedTo": 1, "createdBy": 1},
     ).to_list(length=None)
     ids = {ref for deal in docs for ref in
            (reference_id(deal.get("assignedTo")), reference_id(deal.get("createdBy"))) if ref}
     users = await UserModel.find({"_id": {"$in": list(ids)}}).to_list() if ids else []
     names = {str(person.id): " ".join(filter(None, [person.firstName, person.lastName])) for person in users}
-    return summarize(docs, names, first_month, last_month)
+    return summarize(docs, names, first_month, last_month, stage_probabilities=stage_probabilities)

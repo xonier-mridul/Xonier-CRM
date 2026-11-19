@@ -39,6 +39,13 @@ import { ChatNavLink } from "@/src/components/chat/ChatProvider";
 import { FaWhatsapp, FaLinkedin } from "react-icons/fa";
 
 
+const SubDot = () => (
+  <span
+    aria-hidden="true"
+    className="h-1.5 w-1.5 shrink-0 rounded-full bg-current opacity-65"
+  />
+);
+
 const SideBar = () => {
   const pathname = usePathname();
   const {t} = useTranslation()
@@ -343,8 +350,9 @@ const isSuperAdmin = auth.user?.userRole?.some(
                         className={`${isActive("/prospects/people")
                           ? "dark:text-cyan-300 text-cyan-700   border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent"
-                          } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
+                          } flex items-center gap-2.5 px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
+                         <SubDot />
                          {t("people")}
 
                         
@@ -359,8 +367,9 @@ const isSuperAdmin = auth.user?.userRole?.some(
                           className={`${isActive("/prospects/company")
                             ? "dark:text-cyan-300 text-cyan-700  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                             : "border-l-2 border-transparent"
-                            } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
+                            } flex items-center gap-2.5 px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                         >
+                         <SubDot />
                          {t("company")}
 
                           
@@ -447,8 +456,9 @@ const isSuperAdmin = auth.user?.userRole?.some(
                         className={`${isActive("/plans")
                           ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent"
-                          } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
+                          } flex items-center gap-2.5 px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
+                        <SubDot />
                         {t("plans")}
                       </Link>
                     </li>}
@@ -459,8 +469,9 @@ const isSuperAdmin = auth.user?.userRole?.some(
                           className={`${isActive("/subscriptions")
                             ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                             : "border-l-2 border-transparent"
-                            } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
+                            } flex items-center gap-2.5 px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                         >
+                          <SubDot />
                           {t("subscriptions")}
                           </Link>
                       </li>
@@ -509,8 +520,9 @@ const isSuperAdmin = auth.user?.userRole?.some(
                         className={`${pathname === "/companies"
                           ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 px-3 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent px-4"
-                          } block  py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
+                          } flex items-center gap-2.5  py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
+                        <SubDot />
                         {t("companies")}
                       </Link>
                     </li>}
@@ -521,8 +533,9 @@ const isSuperAdmin = auth.user?.userRole?.some(
                         className={`${isActive("/companies/create")
                           ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent"
-                          } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
+                          } flex items-center gap-2.5 px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
+                        <SubDot />
                         {t("create_companies")}
                       </Link>
                     </li>}
@@ -533,8 +546,9 @@ const isSuperAdmin = auth.user?.userRole?.some(
                         className={`${isActive("/companies/deleted-companies")
                           ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent"
-                          } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
+                          } flex items-center gap-2.5 px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
+                        <SubDot />
                         {t("deleted_companies")}
                       </Link>
                     </li>}
@@ -582,8 +596,9 @@ const isSuperAdmin = auth.user?.userRole?.some(
                         className={`${isActive("/task")
                           ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent"
-                          } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
+                          } flex items-center gap-2.5 px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
+                        <SubDot />
                         {t("tasks")}
                       </Link>
                     </li>}
@@ -595,8 +610,9 @@ const isSuperAdmin = auth.user?.userRole?.some(
                         className={`${isActive("/category")
                           ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent"
-                          } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
+                          } flex items-center gap-2.5 px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
+                        <SubDot />
                         {t("task_category")}
                       </Link>
                     </li>}
@@ -607,8 +623,9 @@ const isSuperAdmin = auth.user?.userRole?.some(
                         className={`${isActive("/status")
                           ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent"
-                          } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
+                          } flex items-center gap-2.5 px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
+                        <SubDot />
                         {t("task_status")}
                       </Link>
                     </li>}
@@ -620,8 +637,9 @@ const isSuperAdmin = auth.user?.userRole?.some(
                           className={`${isActive("/reports")
                             ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                             : "border-l-2 border-transparent"
-                            } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
+                            } flex items-center gap-2.5 px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                         >
+                          <SubDot />
                           {t("task_reports")}
                         </Link>
                       </li>
@@ -634,8 +652,9 @@ const isSuperAdmin = auth.user?.userRole?.some(
                           className={`${isActive(`/report/create/${USER_ID||"new"}`)
                             ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                             : "border-l-2 border-transparent"
-                            } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
+                            } flex items-center gap-2.5 px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                         >
+                          <SubDot />
                           {t("today's_task")}
                         </Link>
                       </li>
@@ -685,8 +704,9 @@ const isSuperAdmin = auth.user?.userRole?.some(
                         className={`${isActive("/users")
                           ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent"
-                          } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
+                          } flex items-center gap-2.5 px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
+                        <SubDot />
                         {t("users")}
                       </Link>
                     </li>}
@@ -697,8 +717,9 @@ const isSuperAdmin = auth.user?.userRole?.some(
                         className={`${isActive("/roles")
                           ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent"
-                          } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
+                          } flex items-center gap-2.5 px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
+                        <SubDot />
                         {t("roles")}
                       </Link>
                     </li>}
@@ -710,8 +731,9 @@ const isSuperAdmin = auth.user?.userRole?.some(
                           className={`${isActive("/deleteduser")
                             ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                             : "border-l-2 border-transparent"
-                            } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
+                            } flex items-center gap-2.5 px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                         >
+                          <SubDot />
                           {t("deleted_users")}
                           </Link>
                       </li>
@@ -760,8 +782,9 @@ const isSuperAdmin = auth.user?.userRole?.some(
                         className={`${isActive("/teams/categories")
                           ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent"
-                          } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
+                          } flex items-center gap-2.5 px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
+                        <SubDot />
                         {t("teams_categories")}
                       </Link>
                     </li>}
@@ -772,8 +795,9 @@ const isSuperAdmin = auth.user?.userRole?.some(
                         className={`${(isActive("/teams") && !isActive("/teams/categories"))
                           ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent"
-                          } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
+                          } flex items-center gap-2.5 px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
+                        <SubDot />
                         {t("teams")}
                       </Link>
                     </li>}
@@ -813,46 +837,11 @@ const isSuperAdmin = auth.user?.userRole?.some(
                     transition={{ duration: 0.25 }}
                     className="ml-8 mt-1 flex flex-col gap-1 overflow-hidden"
                   >
-                    {(hasPermission(PERMISSIONS.readCampaign) &&  (hasFeature(FEATURES.CRM))) && <li>
-                      <Link
-                        href="/campaigns"
-                        onClick={handleNavClick("/campaigns")}
-                        className={`${isActive("/campaigns")
-                          ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
-                          : "border-l-2 border-transparent"
-                          } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
-                      >
-                        {t("campaigns", { defaultValue: "Campaigns" })}
-                      </Link>
-                    </li>}
                     {(hasPermission(PERMISSIONS.readDeal) && hasFeature(FEATURES.CRM)) && <li>
                       <Link href="/pipeline" onClick={handleNavClick("/pipeline")}
-                        className={`${isActive("/pipeline") ? "dark:text-cyan-300 text-cyan-700 border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300" : "border-l-2 border-transparent"} block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}>
+                        className={`${isActive("/pipeline") ? "dark:text-cyan-300 text-cyan-700 border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300" : "border-l-2 border-transparent"} flex items-center gap-2.5 px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}>
+                        <SubDot />
                         {t("pipeline", { defaultValue: "Pipeline" })}
-                      </Link>
-                    </li>}
-                    {(hasPermission(PERMISSIONS.readLead) && hasPermission(PERMISSIONS.readUser) && hasFeature(FEATURES.CRM)) && <li>
-                      <Link
-                        href="/agents"
-                        onClick={handleNavClick("/agents")}
-                        className={`${isActive("/agents")
-                          ? "dark:text-cyan-300 text-cyan-700 border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
-                          : "border-l-2 border-transparent"
-                          } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
-                      >
-                        {t("agents", { defaultValue: "Agents" })}
-                      </Link>
-                    </li>}
-                  {(hasPermission(PERMISSIONS.readEnquiry)&&  (hasFeature(FEATURES.CRM))) && <li>
-                      <Link
-                        href="/enquiry"
-                        onClick={handleNavClick("/enquiry")}
-                        className={`${isActive("/enquiry")
-                          ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
-                          : "border-l-2 border-transparent"
-                          } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
-                      >
-                        {t("enquiry")}
                       </Link>
                     </li>}
                     {(hasPermission(PERMISSIONS.readLead) &&  (hasFeature(FEATURES.CRM))) && <li>
@@ -862,12 +851,12 @@ const isSuperAdmin = auth.user?.userRole?.some(
                         className={`${isActive("/leads")
                           ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent"
-                          } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
+                          } flex items-center gap-2.5 px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
+                        <SubDot />
                         {t("leads")}
                       </Link>
                     </li>}
-                    
                     {(hasPermission(PERMISSIONS.readDeal) &&  (hasFeature(FEATURES.CRM))) && <li>
                       <Link
                         href="/deals"
@@ -875,19 +864,19 @@ const isSuperAdmin = auth.user?.userRole?.some(
                         className={`${isActive("/deals")
                           ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent"
-                          } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
+                          } flex items-center gap-2.5 px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
+                        <SubDot />
                         {t("deals")}
                       </Link>
                     </li>}
-
                     {(hasPermission(PERMISSIONS.readDeal) && hasFeature(FEATURES.CRM)) && <li>
                       <Link href="/revenue-forecast" onClick={handleNavClick("/revenue-forecast")}
-                        className={`${isActive("/revenue-forecast") ? "text-cyan-700 dark:text-cyan-300 border-l-2 border-cyan-600 bg-cyan-50 dark:bg-slate-700" : "border-l-2 border-transparent"} block rounded-md px-3 py-2 text-sm hover:bg-cyan-600/5`}>
+                        className={`${isActive("/revenue-forecast") ? "text-cyan-700 dark:text-cyan-300 border-l-2 border-cyan-600 bg-cyan-50 dark:bg-slate-700" : "border-l-2 border-transparent"} flex items-center gap-2.5 rounded-md px-3 py-2 text-sm hover:bg-cyan-600/5`}>
+                        <SubDot />
                         Revenue forecast
                       </Link>
                     </li>}
-
                     {(hasPermission(PERMISSIONS.readQuote) &&  (hasFeature(FEATURES.CRM))) && <li>
                       <Link
                         href="/quotations"
@@ -895,8 +884,9 @@ const isSuperAdmin = auth.user?.userRole?.some(
                         className={`${isActive("/quotations")
                           ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent"
-                          } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
+                          } flex items-center gap-2.5 px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
+                        <SubDot />
                         {t("quotations")}
                       </Link>
                     </li>}
@@ -907,9 +897,49 @@ const isSuperAdmin = auth.user?.userRole?.some(
                         className={`${isActive("/invoice")
                           ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent"
-                          } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
+                          } flex items-center gap-2.5 px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
+                        <SubDot />
                         {t("invoice")}
+                      </Link>
+                    </li>}
+                    {(hasPermission(PERMISSIONS.readCampaign) &&  (hasFeature(FEATURES.CRM))) && <li>
+                      <Link
+                        href="/campaigns"
+                        onClick={handleNavClick("/campaigns")}
+                        className={`${isActive("/campaigns")
+                          ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                          : "border-l-2 border-transparent"
+                          } flex items-center gap-2.5 px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
+                      >
+                        <SubDot />
+                        {t("campaigns", { defaultValue: "Campaigns" })}
+                      </Link>
+                    </li>}
+                    {(hasPermission(PERMISSIONS.readLead) && hasPermission(PERMISSIONS.readUser) && hasFeature(FEATURES.CRM)) && <li>
+                      <Link
+                        href="/agents"
+                        onClick={handleNavClick("/agents")}
+                        className={`${isActive("/agents")
+                          ? "dark:text-cyan-300 text-cyan-700 border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                          : "border-l-2 border-transparent"
+                          } flex items-center gap-2.5 px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
+                      >
+                        <SubDot />
+                        {t("agents", { defaultValue: "Agents" })}
+                      </Link>
+                    </li>}
+                    {(hasPermission(PERMISSIONS.readEnquiry)&&  (hasFeature(FEATURES.CRM))) && <li>
+                      <Link
+                        href="/enquiry"
+                        onClick={handleNavClick("/enquiry")}
+                        className={`${isActive("/enquiry")
+                          ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                          : "border-l-2 border-transparent"
+                          } flex items-center gap-2.5 px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
+                      >
+                        <SubDot />
+                        {t("enquiry")}
                       </Link>
                     </li>}
                   </motion.ul>
@@ -1046,7 +1076,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                   >
                     {hasPermission(PERMISSIONS.emailProspects) && <li>
                       <Link href="/emailManagement/mail" onClick={handleNavClick("/emailManagement/mail")}
-                        className={`${isActive("/emailManagement/mail") ? "bg-cyan-50 text-cyan-700 dark:bg-slate-700 dark:text-cyan-300" : ""} block rounded-md px-3 py-2 text-sm hover:bg-cyan-600/10`}>My Email</Link>
+                        className={`${isActive("/emailManagement/mail") ? "bg-cyan-50 text-cyan-700 dark:bg-slate-700 dark:text-cyan-300" : ""} flex items-center gap-2.5 rounded-md px-3 py-2 text-sm hover:bg-cyan-600/10`}><SubDot />My Email</Link>
                     </li>}
                     {(hasPermission(PERMISSIONS.readTemplate)|| hasPermission(PERMISSIONS.createTemplate)) && <li>
                       <Link
@@ -1055,8 +1085,9 @@ const isSuperAdmin = auth.user?.userRole?.some(
                         className={`${isActive("/emailManagement/templates")
                           ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent"
-                          } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
+                          } flex items-center gap-2.5 px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
+                        <SubDot />
                         {t("templates")}
                       </Link>
                     </li>}
@@ -1067,8 +1098,9 @@ const isSuperAdmin = auth.user?.userRole?.some(
                         className={`${isActive("/emailManagement/outbox")
                           ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent"
-                          } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
+                          } flex items-center gap-2.5 px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
+                        <SubDot />
                         {t("outbox")}
                       </Link>
                     </li>}

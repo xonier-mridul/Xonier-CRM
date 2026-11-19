@@ -879,6 +879,22 @@ class LeadService:
             if "engagementStatus" in filters:
                 query.update({"connectStatus": filters["engagementStatus"]})
 
+            # Pre-sales pipeline: only fetch active leads so closed / converted /
+            # disqualified leads are never downloaded (subset of the UI's own filter).
+            if filters.get("pipeline") == "active":
+                pipeline_statuses = await LeadStatusService().statuses()
+                excluded_status_keys = {
+                    SALES_STATUS.DELETE.value,
+                    "won", "closed_won", "lost", "closed_lost",
+                }
+                excluded_status_keys.update(
+                    s["key"] for s in pipeline_statuses if s.get("type") == "final"
+                )
+                query["status"] = {"$nin": sorted(excluded_status_keys)}
+                query["inDeal"] = {"$ne": True}
+                query["disqualifiedAt"] = None
+                query["deletedAt"] = None
+
             if "leadid" in filters:
                 query.update({"lead_id": {"$regex": re.escape(filters["leadid"]), "$options": "i"}})
 

@@ -9,6 +9,7 @@ import api from "@/src/lib/axios";
 import { RootState } from "@/src/store";
 import { usePermissions } from "@/src/hooks/usePermissions";
 import { PERMISSIONS } from "@/src/constants/enum";
+import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
 
 type Connection = { provider?: "google" | "microsoft"; providers: { google: boolean; microsoft: boolean }; configured: boolean; connected: boolean; accountEmail?: string; needsReconnect: boolean; canViewCompany: boolean };
 type History = { id: string; from_email: string; to_emails: string[]; cc_emails?: string[]; subject: string; text_body: string; status: string; provider: string; gmailOutcome: string; created_at: string; error_message?: string; attachments?: { name: string; size: number }[] };
@@ -99,7 +100,13 @@ function MailWorkspace() {
     } catch (err) { windowHandle.close(); setConnecting(false); setError(errorMessage(err)); }
   };
   const disconnect = async () => {
-    if (!window.confirm("Disconnect your email from the CRM? Your CRM email history will remain.")) return;
+    const { isConfirmed } = await ConfirmPopup({
+      title: "Disconnect email?",
+      text: "Disconnect your email from the CRM? Your CRM email history will remain.",
+      btnTxt: "Disconnect",
+      variant: "warning",
+    });
+    if (!isConfirmed) return;
     setDisconnecting(true); setError("");
     try {
       const result = await api.delete<{ revoked: boolean }>("/mail/connection");

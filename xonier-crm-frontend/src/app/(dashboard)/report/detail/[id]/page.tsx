@@ -14,6 +14,14 @@ import axios from "axios";
 import { useParams, useRouter } from "next/navigation";
 import React, { JSX, useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Hourglass, Inbox, CircleCheck, RotateCcw, Ban, Smile, Meh, Moon, Frown, Trophy, CalendarDays, Info } from "lucide-react";
+import { HiChartBar, HiClipboardList, HiClock, HiInformationCircle, HiMoon, HiPencilAlt, HiSparkles, HiSun } from "react-icons/hi";
+
+const iconTile = "group/icon inline-flex shrink-0 items-center justify-center rounded-lg ring-1 ring-inset ring-current/10 [&>svg]:motion-safe:transition-transform [&>svg]:motion-safe:duration-200 [&>svg]:motion-safe:group-hover/icon:-translate-y-0.5";
+const morningTone = "bg-amber-100/80 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300";
+const eveningTone = "bg-indigo-100/80 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-300";
+const reportTone = "bg-cyan-100/80 text-cyan-700 dark:bg-cyan-950/60 dark:text-cyan-300";
+const progressTone = "bg-emerald-100/80 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300";
 
 const STATUS_META: Record<
   string,
@@ -68,60 +76,60 @@ const ITEM_STATUS_META: Record<
     label: "pending",
     bg: "bg-amber-50 dark:bg-amber-900/20",
     text: "text-amber-600 dark:text-amber-400",
-    icon: "⏳",
+    icon: "pending",
   },
   in_progress: {
     label: "in_progress",
     bg: "bg-cyan-50 dark:bg-cyan-900/20",
     text: "text-cyan-600 dark:text-cyan-400",
-    icon: "🔄",
+    icon: "in_progress",
   },
   completed: {
     label: "completed",
     bg: "bg-emerald-50 dark:bg-emerald-900/20",
     text: "text-emerald-600 dark:text-emerald-400",
-    icon: "✅",
+    icon: "completed",
   },
   carried_forward: {
     label: "carried_forward",
     bg: "bg-cyan-50 dark:bg-cyan-900/20",
     text: "text-cyan-600 dark:text-cyan-400",
-    icon: "➡️",
+    icon: "carried_forward",
   },
   blocked: {
     label: "blocked",
     bg: "bg-red-50 dark:bg-red-900/20",
     text: "text-red-600 dark:text-red-400",
-    icon: "🚫",
+    icon: "blocked",
   },
 };
 
 const MOOD_MAP: Record<
   string,
-  { emoji: string; label: string; color: string }
+  { icon: React.ElementType; label: string; color: string }
 > = {
   excellent: {
-    emoji: "🚀",
+    icon: HiSparkles,
     label: "Excellent",
     color: "text-emerald-600 dark:text-emerald-400",
   },
   good: {
-    emoji: "😊",
+    icon: Smile,
     label: "Good",
     color: "text-cyan-600 dark:text-cyan-400",
   },
   neutral: {
-    emoji: "😐",
+    icon: Meh,
     label: "Neutral",
     color: "text-gray-600 dark:text-gray-400",
   },
   tired: {
-    emoji: "😴",
+    icon: Moon,
     label: "Tired",
     color: "text-orange-600 dark:text-orange-400",
   },
   stressed: {
-    emoji: "😰",
+    icon: Frown,
     label: "Stressed",
     color: "text-red-600 dark:text-red-400",
   },
@@ -136,7 +144,7 @@ function StatusBadge({ status }: { status: string }) {
   };
   return (
     <span
-      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${m.bg} ${m.text}`}
+      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${m.bg} ${m.text}`}
     >
       <span className={`w-1.5 h-1.5 rounded-full ${m.dot}`} />
       {m.label}
@@ -183,40 +191,40 @@ function TaskItemCard({
     PRIORITY_BADGE[item.priority ?? "low"] ?? PRIORITY_BADGE["low"];
 
   return (
-    <div className="group bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-4 hover:shadow-md hover:border-gray-200 dark:hover:border-gray-600 transition-all duration-200 hover:-translate-y-0.5">
-      <div className="flex items-start justify-between gap-3 mb-3">
+    <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
+      <div className="flex flex-wrap items-start justify-between gap-3 mb-3">
         <div className="flex items-start gap-2.5 flex-1 min-w-0">
-          <span className="mt-0.5 flex-shrink-0 w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-700 text-xs font-bold text-gray-500 dark:text-gray-400 flex items-center justify-center group-hover:bg-cyan-100 group-hover:text-cyan-600 dark:group-hover:bg-cyan-900/30 dark:group-hover:text-cyan-400 transition-colors duration-200">
+          <span className="mt-0.5 flex-shrink-0 w-6 h-6 rounded-md bg-gray-100 dark:bg-gray-700 text-xs font-medium text-gray-500 dark:text-gray-400 flex items-center justify-center">
             {index + 1}
           </span>
           <div className="min-w-0">
-            <h4 className="text-sm font-semibold text-gray-900 dark:text-white leading-snug mb-1 truncate">
+            <h4 className="text-sm font-semibold text-gray-900 dark:text-white leading-snug mb-1 break-words">
               {item.title}
             </h4>
             {item.description && (
-              <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed line-clamp-2">
+              <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed whitespace-pre-wrap break-words">
                 {item.description.trim()}
               </p>
             )}
           </div>
         </div>
-        <div className="flex items-center gap-1.5 flex-shrink-0">
+        <div className="flex flex-wrap items-center gap-1.5">
           <span
             className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide ${priorityClass}`}
           >
             {item.priority ? t(item.priority) : "—"}
           </span>
           <span
-            className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${statusMeta.bg} ${statusMeta.text}`}
+            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${statusMeta.bg} ${statusMeta.text}`}
           >
-            {statusMeta.icon} {t(statusMeta.label)}
+            <TaskStatusIcon status={item.status} /> {t(statusMeta.label)}
           </span>
         </div>
       </div>
 
-      <CompletionBar value={item.completionPercentage} />
+      <div className="max-w-52"><CompletionBar value={item.completionPercentage} /></div>
 
-      <div className="mt-3 flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+      <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
         <span className="flex items-center gap-1">
           <svg
             className="w-3.5 h-3.5"
@@ -259,12 +267,17 @@ function TaskItemCard({
         )}
         {item.blockerReason && (
           <span className="flex items-center gap-1 text-red-500 dark:text-red-400">
-            🚫 {item.blockerReason}
+          <Ban size={14} /> {item.blockerReason}
           </span>
         )}
       </div>
     </div>
   );
+}
+
+function TaskStatusIcon({ status }: { status: string }) {
+  const Icon = status === "pending" ? Hourglass : status === "in_progress" ? RotateCcw : status === "completed" ? CircleCheck : status === "carried_forward" ? RotateCcw : Ban;
+  return <Icon size={12} aria-hidden="true" />;
 }
 
 function SectionCard({
@@ -284,23 +297,23 @@ function SectionCard({
 }) {
   const { t } = useTranslation();
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300">
+    <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
       <div
-        className={`px-5 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between ${accentClass}`}
+        className={`px-4 py-3 border-b border-gray-100 dark:border-gray-700 flex flex-wrap items-center justify-between gap-2 ${accentClass}`}
       >
         <div className="flex items-center gap-2.5">
-          <span className="text-xl">{icon}</span>
-          <h2 className="text-base font-extrabold text-gray-900 dark:text-white tracking-tight">
+          <span className={`${iconTile} size-8 ${icon === "morning" ? morningTone : eveningTone}`}><SectionIcon icon={icon} /></span>
+          <h2 className="text-base font-semibold text-gray-900 dark:text-white tracking-tight">
             {title}
           </h2>
         </div>
         <div className="flex items-center gap-2">
           {isSubmitted ? (
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
-              {t("submitted_2")}
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+              <CircleCheck size={14} className="mr-1.5 inline-block align-text-bottom" aria-hidden="true" />{t("submitted_2").replace(/^[\p{Extended_Pictographic}\uFE0F✓✔\s]+/u, "")}
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400">
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400">
               {t("not_submitted")}
             </span>
           )}
@@ -321,6 +334,11 @@ function SectionCard({
   );
 }
 
+function SectionIcon({ icon }: { icon: string }) {
+  const Icon = icon === "morning" ? HiSun : HiMoon;
+  return <Icon size={17} aria-hidden="true" />;
+}
+
 function InfoRow({
   label,
   value,
@@ -329,8 +347,8 @@ function InfoRow({
   value: React.ReactNode;
 }) {
   return (
-    <div className="flex items-start gap-2 py-2 border-b border-gray-50 dark:border-gray-700/50 last:border-0 group hover:bg-gray-50/50 dark:hover:bg-gray-700/20 rounded-lg px-1 transition-colors duration-150">
-      <span className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide w-32 flex-shrink-0 mt-0.5">
+    <div className="flex items-start gap-2 py-2 border-b border-gray-50 dark:border-gray-700/50 last:border-0 px-1">
+      <span className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide w-24 shrink-0 mt-0.5">
         {label}
       </span>
       <span className="text-sm text-gray-700 dark:text-gray-200 font-medium flex-1">
@@ -428,7 +446,7 @@ function ReviewPanel({
 
   return (
     <div
-      className={`rounded-2xl border overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 ${
+      className={`rounded-2xl border overflow-hidden  ${
         isAlreadyReviewed
           ? "bg-cyan-50 dark:bg-cyan-900/10 border-cyan-200 dark:border-cyan-800"
           : "bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700"
@@ -443,10 +461,12 @@ function ReviewPanel({
       >
         <div className="flex items-center gap-2.5">
           <span className="text-xl">
-            {isAlreadyReviewed ? "✅" : "📝"}
+            <span className={`${iconTile} size-8 ${reportTone}`} aria-hidden="true">
+              {isAlreadyReviewed ? <CircleCheck size={17} /> : <HiPencilAlt size={17} />}
+            </span>
           </span>
           <div>
-            <h2 className="text-base font-extrabold text-gray-900 dark:text-white tracking-tight">
+            <h2 className="text-base font-semibold text-gray-900 dark:text-white tracking-tight">
               {isAlreadyReviewed ? t("review_submitted") : t("manager_review")}
             </h2>
             {isAlreadyReviewed && report.managerReviewedAt && (
@@ -465,7 +485,7 @@ function ReviewPanel({
         </div>
 
         {isAlreadyReviewed && (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-cyan-100 text-cyan-700 dark:bg-cyan-900/40 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-700">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-cyan-100 text-cyan-700 dark:bg-cyan-900/40 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-700">
             <span className="w-1.5 h-1.5 rounded-full bg-cyan-500" />
             {t("reviewed")}
           </span>
@@ -476,7 +496,7 @@ function ReviewPanel({
         {isAlreadyReviewed && report.reviewedBy && (
           <div className="flex items-center gap-3 p-3 rounded-xl bg-white dark:bg-gray-800 border border-cyan-100 dark:border-cyan-800/50">
             <div className="h-8 w-8 rounded-full bg-cyan-200 dark:bg-cyan-800 flex items-center justify-center flex-shrink-0">
-              <span className="text-xs font-bold text-cyan-700 dark:text-cyan-300">
+              <span className="text-xs font-medium text-cyan-700 dark:text-cyan-300">
                 {report.reviewedBy.firstName.charAt(0)}
                 {report.reviewedBy.lastName?.charAt(0) ?? ""}
               </span>
@@ -494,7 +514,7 @@ function ReviewPanel({
 
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+            <label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
               {isAlreadyReviewed ? t("review_comment") : t("write_your_review_comment")}
             </label>
             {!isAlreadyReviewed && (
@@ -550,7 +570,7 @@ function ReviewPanel({
 
           {err && (
   <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
-    <span className="text-red-500 text-sm">⚠️</span>
+    <Info size={16} className="shrink-0 text-red-500" aria-hidden="true" />
     <p className="text-xs text-red-600 dark:text-red-400 font-medium">
       {Array.isArray(err) ? err.join(", ") : err}
     </p>
@@ -564,7 +584,7 @@ function ReviewPanel({
               type="button"
               onClick={handleSubmit}
               disabled={isSubmitting || !comment.trim() ||!hasPermission("taskReport:review")}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-700 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-bold transition-all duration-200 shadow-sm hover:shadow-md hover:shadow-cyan-200 dark:hover:shadow-cyan-900/30"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-700  disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-bold "
             >
               {isSubmitting ? (
                 <>
@@ -716,7 +736,7 @@ const language = (i18n.resolvedLanguage ?? "en").split("-")[0];
     return (
       <div>
         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl p-6 text-center">
-          <div className="text-4xl mb-3">⚠️</div>
+          <Info size={28} className="mx-auto mb-3 text-red-500" aria-hidden="true" />
           <h3 className="text-base font-bold text-red-700 dark:text-red-400 mb-2">
             {t("failed_to_load_report")}
           </h3>
@@ -728,7 +748,7 @@ const language = (i18n.resolvedLanguage ?? "en").split("-")[0];
           <button
             type="button"
             onClick={getTaskReport}
-            className="mt-4 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm font-semibold transition active:scale-95"
+            className="mt-4 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm font-semibold transition "
           >
             {t("retry")}
           </button>
@@ -739,19 +759,18 @@ const language = (i18n.resolvedLanguage ?? "en").split("-")[0];
 
 
   return (
-    <div className="">
-      <div className="bg-white dark:bg-gray-900/50 dark:backdrop-blur-sm p-6 rounded-xl border border-slate-900/10 w-full mb-10">
-        <div className="flex items-center justify-between mb-7">
+    <div className="w-full space-y-5">
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 pb-5 dark:border-slate-700">
           <div className="flex items-center gap-3">
             <div>
               <div className="flex items-center gap-2.5">
-                <span className="text-2xl">📋</span>
-                <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+                <span className={`${iconTile} size-10 ${reportTone}`} aria-hidden="true"><HiClipboardList size={22} /></span>
+                <h1 className="text-2xl font-semibold text-gray-900 dark:text-white tracking-tight">
                   {t("task_report_detail")}
                 </h1>
               </div>
               {!isLoading && report && (
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5 ml-9">
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
                 {new Date(report.reportDate).toLocaleDateString(
                   localeMap[language] || "en-IN",
                   {
@@ -762,9 +781,9 @@ const language = (i18n.resolvedLanguage ?? "en").split("-")[0];
                   }
                 )}
 
-                {report.user && (
+                {(report.user?.firstName || report.user?.lastName) && (
                   <span className="ml-2 text-cyan-600 dark:text-cyan-400 font-semibold">
-                    · {report.user.firstName} {report.user.lastName}
+                    · {report.user?.firstName} {report.user?.lastName}
                   </span>
                 )}
               </p>
@@ -779,7 +798,7 @@ const language = (i18n.resolvedLanguage ?? "en").split("-")[0];
             <button
               type="button"
               onClick={getTaskReport}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-700 dark:text-white text-sm font-bold transition-all active:scale-95 hover:shadow-sm"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-gray-200 bg-white dark:bg-gray-800 dark:border-gray-700 text-gray-700 dark:text-white text-sm font-semibold"
             >
               <svg
                 width="14"
@@ -811,44 +830,40 @@ const language = (i18n.resolvedLanguage ?? "en").split("-")[0];
           <DetailSkeleton />
         ) : report ? (
           <div className="space-y-6">
-            <div className="grid grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 divide-x divide-slate-200 overflow-hidden rounded-xl border border-slate-200 bg-white dark:divide-slate-700 dark:border-slate-700 dark:bg-gray-800 lg:grid-cols-4">
               {[
                 {
                   label: t("morning_tasks"),
                   value: morning?.items.length ?? 0,
-                  icon: "🌅",
-                  bg: "bg-amber-50 border-amber-100 dark:bg-amber-900/20 dark:border-amber-800",
-                  hover: "hover:border-amber-300 dark:hover:border-amber-700 hover:shadow-amber-100 dark:hover:shadow-amber-900/20",
+                  icon: HiSun,
+                  tone: morningTone,
                 },
                 {
                   label: t("evening_tasks"),
                   value: evening?.completedItems.length ?? 0,
-                  icon: "🌆",
-                  bg: "bg-emerald-50 border-emerald-100 dark:bg-emerald-900/20 dark:border-emerald-800",
-                  hover: "hover:border-emerald-300 dark:hover:border-emerald-700 hover:shadow-emerald-100 dark:hover:shadow-emerald-900/20",
+                  icon: HiMoon,
+                  tone: eveningTone,
                 },
                 {
                   label: t("total_hours"),
                   value: `${totalActual || totalEstimated}h`,
-                  icon: "⏱️",
-                  bg: "bg-cyan-50 border-cyan-100 dark:bg-cyan-900/20 dark:border-cyan-800",
-                  hover: "hover:border-cyan-300 dark:hover:border-cyan-700 hover:shadow-cyan-100 dark:hover:shadow-cyan-900/20",
+                  icon: HiClock,
+                  tone: reportTone,
                 },
                 {
                   label: t("avg_completion"),
                   value: `${avgCompletion}%`,
-                  icon: "📊",
-                  bg: "bg-cyan-50 border-cyan-100 dark:bg-cyan-900/20 dark:border-cyan-800",
-                  hover: "hover:border-cyan-300 dark:hover:border-cyan-700 hover:shadow-cyan-100 dark:hover:shadow-cyan-900/20",
+                  icon: HiChartBar,
+                  tone: progressTone,
                 },
               ].map((s) => (
                 <div
                   key={s.label}
-                  className={`flex items-center gap-3 p-4 rounded-2xl border transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 cursor-default ${s.bg} ${s.hover}`}
+                  className={"flex min-w-0 flex-wrap items-center gap-2 px-3 py-3 sm:gap-3 sm:px-4"}
                 >
-                  <span className="text-xl">{s.icon}</span>
+                  <span className={`${iconTile} size-9 ${s.tone}`} aria-hidden="true"><s.icon size={19} /></span>
                   <div>
-                    <div className="text-xl font-extrabold text-gray-900 dark:text-white">
+                    <div className="text-lg font-medium tabular-nums text-gray-900 dark:text-white">
                       {s.value}
                     </div>
                     <div className="text-xs text-gray-500 dark:text-gray-400 font-medium">
@@ -859,16 +874,18 @@ const language = (i18n.resolvedLanguage ?? "en").split("-")[0];
               ))}
             </div>
 
+            <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(300px,340px)]">
+            <div className="min-w-0 space-y-5">
             <SectionCard
               title={t("morning_agenda")}
-              icon="🌅"
-              accentClass="bg-amber-50/50 dark:bg-amber-900/10"
+              icon="morning"
+              accentClass="bg-amber-50/50 dark:bg-amber-950/20"
               submittedAt={morning?.submittedAt}
               isSubmitted={morning?.isSubmitted ?? false}
             >
               {morning?.goals && (
                 <div className="mb-4 p-3.5 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800">
-                  <p className="text-xs font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wide mb-1">
+                  <p className="text-xs font-medium text-amber-700 dark:text-amber-400 uppercase tracking-wide mb-1">
                     {t("daily_goals")}
                   </p>
                   <p className="text-sm text-gray-700 dark:text-gray-200">
@@ -884,7 +901,7 @@ const language = (i18n.resolvedLanguage ?? "en").split("-")[0];
                 </div>
               ) : (
                 <div className="text-center py-10">
-                  <div className="text-4xl mb-2">📭</div>
+                  <Inbox size={24} className="mx-auto mb-2 text-slate-400" aria-hidden="true" />
                   <p className="text-sm text-gray-400 dark:text-gray-500 font-medium">
                     {t("no_morning_agenda_items")}
                   </p>
@@ -894,16 +911,16 @@ const language = (i18n.resolvedLanguage ?? "en").split("-")[0];
 
             <SectionCard
               title={t("evening_report")}
-              icon="🌆"
-              accentClass="bg-indigo-50/50 dark:bg-indigo-900/10"
+              icon="evening"
+              accentClass="bg-indigo-50/60 dark:bg-indigo-950/20"
               submittedAt={evening?.submittedAt}
               isSubmitted={evening?.isSubmitted ?? false}
             >
               {mood && (
                 <div className="mb-4 flex items-center gap-3 p-3.5 rounded-xl bg-gray-50 dark:bg-gray-700/50 border border-gray-100 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200">
-                  <span className="text-2xl">{mood.emoji}</span>
+                  <span className={`${iconTile} size-9 bg-white dark:bg-gray-800 ${mood.color}`} aria-hidden="true"><mood.icon size={19} /></span>
                   <div>
-                    <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wide">
+                    <p className="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wide">
                       {t("overall_mood")}
                     </p>
                     <p className={`text-sm font-semibold ${mood.color}`}>
@@ -915,8 +932,8 @@ const language = (i18n.resolvedLanguage ?? "en").split("-")[0];
 
               {evening?.completedItems.length ? (
                 <div className="mb-5">
-                  <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
-                    {t("completed_tasks_2")}{evening.completedItems.length})
+                  <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
+                    <CircleCheck size={14} className="mr-1.5 inline-block align-text-bottom" aria-hidden="true" />{t("completed_tasks_2").replace(/^[\p{Extended_Pictographic}\uFE0F✓✔\s]+/u, "")}{evening.completedItems.length})
                   </p>
                   <div className="space-y-3">
                     {evening.completedItems.map((item, idx) => (
@@ -928,8 +945,8 @@ const language = (i18n.resolvedLanguage ?? "en").split("-")[0];
 
               {evening?.pendingItems.length ? (
                 <div className="mb-5">
-                  <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
-                    {t("pending_tasks")}({evening.pendingItems.length})
+                  <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
+                    <Hourglass size={14} className="mr-1.5 inline-block align-text-bottom" aria-hidden="true" />{t("pending_tasks").replace(/^[\p{Extended_Pictographic}\uFE0F✓✔\s]+/u, "")}({evening.pendingItems.length})
                   </p>
                   <div className="space-y-3">
                     {evening.pendingItems.map((item, idx) => (
@@ -942,18 +959,18 @@ const language = (i18n.resolvedLanguage ?? "en").split("-")[0];
               {!evening?.completedItems.length &&
                 !evening?.pendingItems.length && (
                   <div className="text-center py-10">
-                    <div className="text-4xl mb-2">📭</div>
+                    <Inbox size={24} className="mx-auto mb-2 text-slate-400" aria-hidden="true" />
                     <p className="text-sm text-gray-400 dark:text-gray-500 font-medium">
                       {t("no_evening_report_items")}
                     </p>
                   </div>
                 )}
 
-              <div className="mt-5 grid grid-cols-1 gap-3">
+              <div className="mt-5 grid gap-3 sm:grid-cols-[repeat(auto-fit,minmax(165px,1fr))]">
                 {evening?.achievements && (
-                  <div className="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800 hover:shadow-sm transition-shadow duration-200">
-                    <p className="text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wide mb-1">
-                      {t("achievements")}
+                  <div className="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800 ">
+                    <p className="text-xs font-medium text-emerald-700 dark:text-emerald-400 uppercase tracking-wide mb-1">
+                      <Trophy size={14} className="mr-1.5 inline-block align-text-bottom" aria-hidden="true" />{t("achievements").replace(/^[\p{Extended_Pictographic}\uFE0F✓✔\s]+/u, "")}
                     </p>
                     <p className="text-sm text-gray-700 dark:text-gray-200">
                       {evening.achievements}
@@ -961,9 +978,9 @@ const language = (i18n.resolvedLanguage ?? "en").split("-")[0];
                   </div>
                 )}
                 {evening?.blockers && (
-                  <div className="p-3.5 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800 hover:shadow-sm transition-shadow duration-200">
-                    <p className="text-xs font-bold text-red-700 dark:text-red-400 uppercase tracking-wide mb-1">
-                      {t("blockers")}
+                  <div className="p-3.5 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800 ">
+                    <p className="text-xs font-medium text-red-700 dark:text-red-400 uppercase tracking-wide mb-1">
+                      <Ban size={14} className="mr-1.5 inline-block align-text-bottom" aria-hidden="true" />{t("blockers").replace(/^[\p{Extended_Pictographic}\uFE0F✓✔\s]+/u, "")}
                     </p>
                     <p className="text-sm text-gray-700 dark:text-gray-200">
                       {evening.blockers}
@@ -971,9 +988,9 @@ const language = (i18n.resolvedLanguage ?? "en").split("-")[0];
                   </div>
                 )}
                 {evening?.tomorrowPlan && (
-                  <div className="p-3.5 rounded-xl bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-100 dark:border-cyan-800 hover:shadow-sm transition-shadow duration-200">
-                    <p className="text-xs font-bold text-cyan-700 dark:text-cyan-400 uppercase tracking-wide mb-1">
-                      {t("tomorrow_s_plan")}
+                  <div className="p-3.5 rounded-xl bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-100 dark:border-cyan-800 ">
+                    <p className="text-xs font-medium text-cyan-700 dark:text-cyan-400 uppercase tracking-wide mb-1">
+                      <CalendarDays size={14} className="mr-1.5 inline-block align-text-bottom" aria-hidden="true" />{t("tomorrow_s_plan").replace(/^[\p{Extended_Pictographic}\uFE0F✓✔\s]+/u, "")}
                     </p>
                     <p className="text-sm text-gray-700 dark:text-gray-200">
                       {evening.tomorrowPlan}
@@ -1009,16 +1026,18 @@ const language = (i18n.resolvedLanguage ?? "en").split("-")[0];
               )}
             </SectionCard>
 
+            </div>
+            <aside className="min-w-0 space-y-5">
             <ReviewPanel report={report} onReviewed={getTaskReport} />
 
-            <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 overflow-hidden">
               <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center gap-2.5">
-                <span className="text-xl">ℹ️</span>
-                <h2 className="text-base font-extrabold text-gray-900 dark:text-white tracking-tight">
+                <span className={`${iconTile} size-8 ${eveningTone}`} aria-hidden="true"><HiInformationCircle size={18} /></span>
+                <h2 className="text-base font-semibold text-gray-900 dark:text-white tracking-tight">
                   {t("report_info")}
                 </h2>
               </div>
-              <div className="p-5 grid grid-cols-2 gap-x-10">
+              <div className="px-4 py-2 [&>div+div]:border-t [&>div+div]:border-slate-100 dark:[&>div+div]:border-slate-700">
                 <div>
                   <InfoRow
                     label={t("status")}
@@ -1095,9 +1114,10 @@ const language = (i18n.resolvedLanguage ?? "en").split("-")[0];
                 </div>
               </div>
             </div>
+            </aside>
+            </div>
           </div>
         ) : null}
-      </div>
     </div>
   );
 };

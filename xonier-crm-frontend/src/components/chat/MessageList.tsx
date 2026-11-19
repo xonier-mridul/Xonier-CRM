@@ -6,6 +6,7 @@ import { toast } from "react-toastify";
 import { chatApi, chatError } from "@/src/services/chat.service";
 import type { ChatMessage } from "@/src/types/chat";
 import { useChat } from "./ChatProvider";
+import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
 
 const emojis = ["👍", "❤️", "😂", "🎉", "👀", "✅"];
 function Avatar({ name }: { name: string }) {
@@ -49,7 +50,7 @@ function Message({ message, update, onThread, discard }: { message: ChatMessage;
     {!message.deletedAt && !message.delivery && !editing && <div className="absolute right-3 top-0 flex items-center gap-1 rounded-lg border border-slate-200 bg-white p-1 shadow-sm opacity-0 focus-within:opacity-100 group-hover:opacity-100 dark:border-slate-600 dark:bg-slate-800">
       <button title="React" aria-label="Add reaction" onClick={() => setReactions(!reactions)} className="rounded p-1 hover:bg-slate-100 dark:hover:bg-slate-700"><Smile size={15} /></button>
       {onThread && <button title="Reply in thread" aria-label="Reply in thread" onClick={() => onThread(message)} className="rounded p-1 hover:bg-slate-100 dark:hover:bg-slate-700"><MessageSquare size={15} /></button>}
-      {message.senderId === uid && <><button title="Edit message" aria-label="Edit message" onClick={() => { setText(message.text); setEditing(true); }} className="rounded p-1 hover:bg-slate-100 dark:hover:bg-slate-700"><Pencil size={15} /></button><button disabled={busy} title="Delete message" aria-label="Delete message" onClick={() => { if (window.confirm("Delete this message?")) void act(() => chatApi.delete(message.conversationId, message.id)); }} className="rounded p-1 text-red-500 hover:bg-red-50"><Trash2 size={15} /></button></>}
+      {message.senderId === uid && <><button title="Edit message" aria-label="Edit message" onClick={() => { setText(message.text); setEditing(true); }} className="rounded p-1 hover:bg-slate-100 dark:hover:bg-slate-700"><Pencil size={15} /></button><button disabled={busy} title="Delete message" aria-label="Delete message" onClick={async () => { const { isConfirmed } = await ConfirmPopup({ title: "Delete message?", text: "This message will be removed for everyone in this conversation.", btnTxt: "Delete", variant: "danger" }); if (isConfirmed) void act(() => chatApi.delete(message.conversationId, message.id)); }} className="rounded p-1 text-red-500 hover:bg-red-50"><Trash2 size={15} /></button></>}
       {reactions && <div className="absolute right-0 top-full mt-1 flex gap-1 rounded-lg border border-slate-200 bg-white p-2 shadow-lg dark:bg-slate-800">{emojis.map(emoji => <button key={emoji} disabled={busy} aria-label={`React ${emoji}`} onClick={() => { setReactions(false); void act(() => chatApi.reaction(message.conversationId, message.id, emoji)); }} className="rounded p-1 hover:bg-slate-100 dark:hover:bg-slate-700">{emoji}</button>)}</div>}
     </div>}
   </article>;
