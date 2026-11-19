@@ -10,8 +10,8 @@ import {
   ArrowLeft,
   ArrowRight,
   CheckCircle2,
+  ClipboardPaste,
   CornerDownLeft,
-  Download,
   ExternalLink,
   Globe,
   KeyRound,
@@ -25,6 +25,86 @@ import {
   Users,
   Zap,
 } from "lucide-react";
+
+const COOKIE_EDITOR_WEBSTORE_URL =
+  "https://chromewebstore.google.com/detail/cookie-editor/hlkenndednhfkekhgcdicdfddnkalmdm";
+
+function parseLinkedInClipboard(raw: string): {
+  liAt: string;
+  jsessionId?: string;
+  cookies?: Record<string, unknown>[];
+} | null {
+  const trimmed = (raw || "").trim();
+  if (!trimmed) return null;
+
+  // 1. Cookie-Editor / EditThisCookie JSON export
+  if (trimmed.startsWith("[") || trimmed.startsWith("{")) {
+    try {
+      const parsed = JSON.parse(trimmed);
+      const list = Array.isArray(parsed) ? parsed : [parsed];
+      const cookies: Record<string, unknown>[] = [];
+      let liAt = "";
+      let jsessionId = "";
+
+      for (const item of list) {
+        if (!item || typeof item.name !== "string" || typeof item.value !== "string") continue;
+        const sameSiteRaw = String(item.sameSite || "").toLowerCase();
+        const sameSite =
+          sameSiteRaw === "no_restriction" || sameSiteRaw === "none"
+            ? "None"
+            : sameSiteRaw === "lax"
+              ? "Lax"
+              : sameSiteRaw === "strict"
+                ? "Strict"
+                : undefined;
+        const exp = item.expirationDate ?? item.expires;
+        cookies.push({
+          name: item.name,
+          value: item.value,
+          domain: typeof item.domain === "string" && item.domain ? item.domain : ".linkedin.com",
+          path: typeof item.path === "string" && item.path ? item.path : "/",
+          secure: item.secure !== false,
+          httpOnly: Boolean(item.httpOnly),
+          ...(sameSite ? { sameSite } : {}),
+          ...(typeof exp === "number" && Number.isFinite(exp) ? { expires: Math.floor(exp) } : {}),
+        });
+        if (item.name === "li_at" && item.value) liAt = item.value.trim();
+        if (item.name === "JSESSIONID" && item.value) jsessionId = item.value.trim().replace(/^"|"$/g, "");
+      }
+      if (liAt.length >= 20) {
+        return { liAt, jsessionId: jsessionId || undefined, cookies };
+      }
+    } catch {
+      // Fall through to other formats
+    }
+  }
+
+  // 2. Header string format (e.g. "bcookie=...; li_at=...; JSESSIONID=...")
+  const headerLiAt = trimmed.match(/(?:^|[;\s])li_at=([^;\r\n]+)/);
+  if (headerLiAt?.[1]) {
+    const liAt = headerLiAt[1].trim().replace(/^"|"$/g, "");
+    const headerJsession = trimmed.match(/(?:^|[;\s])JSESSIONID=([^;\r\n]+)/);
+    const jsessionId = headerJsession?.[1]?.trim().replace(/^"|"$/g, "");
+    if (liAt.length >= 20) return { liAt, jsessionId: jsessionId || undefined };
+  }
+
+  // 3. Netscape cookie file format (tab-separated)
+  const netscapeLiAt = trimmed.match(/\tli_at\t([^\r\n\t]+)/);
+  if (netscapeLiAt?.[1]) {
+    const liAt = netscapeLiAt[1].trim();
+    const netscapeJsession = trimmed.match(/\tJSESSIONID\t([^\r\n\t]+)/);
+    const jsessionId = netscapeJsession?.[1]?.trim().replace(/^"|"$/g, "");
+    if (liAt.length >= 20) return { liAt, jsessionId: jsessionId || undefined };
+  }
+
+  // 4. Raw li_at token
+  const cleanToken = trimmed.replace(/^"|"$/g, "");
+  if (cleanToken.length >= 20 && !/\s/.test(cleanToken)) {
+    return { liAt: cleanToken };
+  }
+
+  return null;
+}
 
 type Connection = {
   owner?: string;
@@ -626,6 +706,7 @@ function LinkedInWorkspace() {
   const sendAttempt = useRef<{ threadId: string; text: string; requestId: string } | null>(null);
   const generation = useRef(0);
   const bottom = useRef<HTMLDivElement>(null);
+  const pasteInputRef = useRef<HTMLInputElement>(null);
 
   const own = !owner || owner === overview?.currentUser;
   const viewedConnection = own ? connection : overview?.connections.find(item => item.owner === owner);
@@ -838,18 +919,61 @@ function LinkedInWorkspace() {
     };
   }, [refreshConnection]);
 
-  const connectWithExtension = () => {
-    const installed = extInstalled || document.documentElement.getAttribute("data-xonier-linkedin-ext") === "1";
-    if (!installed) {
-      setShowExtensionSetup(true);
-      window.postMessage({ type: "XONIER_PING_EXT" }, "*");
+  const submitParsedCookieSession = async (rawInput: string) => {
+    const parsed = parseLinkedInClipboard(rawInput);
+    if (!parsed?.liAt) {
+      setShowCookieForm(true);
+      setTimeout(() => pasteInputRef.current?.focus(), 50);
+      setError(
+        "No exported LinkedIn cookies found in clipboard. On linkedin.com, open Cookie-Editor → click Export, then click Paste & Connect (or press Ctrl+V / Cmd+V in the box).",
+      );
       return;
     }
-    setExtInstalled(true);
-    setShowExtensionSetup(false);
     setBusy(true);
     setError("");
-    window.postMessage({ type: "XONIER_REQUEST_LINKEDIN_SESSION", openTabIfMissing: true }, "*");
+    try {
+      await api.post("/linkedin/connect", {
+        consent: true,
+        mode: "cookie",
+        liAt: parsed.liAt,
+        jsessionId: parsed.jsessionId || jsessionId.trim() || undefined,
+        cookies: parsed.cookies,
+      });
+      setLiAt("");
+      setJsessionId("");
+      setShowCookieForm(false);
+      await refreshConnection();
+      setRefreshCount(c => c + 1);
+    } catch (err) {
+      setError(errorMessage(err));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const connectWithClipboardOrExtension = async () => {
+    const installed = extInstalled || document.documentElement.getAttribute("data-xonier-linkedin-ext") === "1";
+    if (installed) {
+      setExtInstalled(true);
+      setShowExtensionSetup(false);
+      setBusy(true);
+      setError("");
+      window.postMessage({ type: "XONIER_REQUEST_LINKEDIN_SESSION", openTabIfMissing: true }, "*");
+      return;
+    }
+    if (typeof navigator !== "undefined" && navigator.clipboard?.readText) {
+      try {
+        const clipText = await navigator.clipboard.readText();
+        if (clipText && parseLinkedInClipboard(clipText)) {
+          await submitParsedCookieSession(clipText);
+          return;
+        }
+      } catch {
+        // Browser blocked direct clipboard read (e.g. non-HTTPS origin); open and focus paste box.
+      }
+    }
+    setShowCookieForm(true);
+    setTimeout(() => pasteInputRef.current?.focus(), 50);
   };
 
   const connectWithBrowser = async () => {
@@ -868,25 +992,7 @@ function LinkedInWorkspace() {
   const connectWithCookie = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!consent || !liAt.trim()) return;
-    setBusy(true);
-    setError("");
-    try {
-      await api.post("/linkedin/connect", {
-        consent: true,
-        mode: "cookie",
-        liAt: liAt.trim(),
-        jsessionId: jsessionId.trim() || undefined,
-      });
-      setLiAt("");
-      setJsessionId("");
-      setShowCookieForm(false);
-      await refreshConnection();
-      setRefreshCount(c => c + 1);
-    } catch (err) {
-      setError(errorMessage(err));
-    } finally {
-      setBusy(false);
-    }
+    await submitParsedCookieSession(liAt);
   };
 
   const disconnect = async () => {
@@ -1111,11 +1217,35 @@ function LinkedInWorkspace() {
             ) : (
               <div className="grid gap-6 md:grid-cols-[1.2fr_1fr]">
                 <div className="space-y-4 text-sm">
-                  <h3 className="text-lg font-semibold">Connect your LinkedIn inside Xonier CRM</h3>
+                  <h3 className="text-lg font-semibold">Connect your LinkedIn in 2 Clicks (No Password or Inspect Needed)</h3>
                   <ol className="list-decimal space-y-2 pl-5 text-slate-600 dark:text-slate-300">
-                    <li>Keep your LinkedIn account signed in on your regular Chrome browser (no Inspect or copy-paste needed).</li>
-                    <li>Click <strong>1-Click Auto-Connect from Chrome</strong> to securely link your active LinkedIn session.</li>
-                    <li>Use your LinkedIn Inbox, Connections, and Live LinkedIn Feed right inside Xonier CRM.</li>
+                    <li>
+                      Install{" "}
+                      <a
+                        href={COOKIE_EDITOR_WEBSTORE_URL}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 font-semibold text-[#0A66C2] underline"
+                      >
+                        Cookie-Editor from Chrome Web Store <ExternalLink size={12} />
+                      </a>{" "}
+                      (official 1-click Chrome extension).
+                    </li>
+                    <li>
+                      On your logged-in{" "}
+                      <a
+                        href="https://www.linkedin.com/feed/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-semibold text-[#0A66C2] underline"
+                      >
+                        linkedin.com
+                      </a>{" "}
+                      tab, click the <strong>Cookie-Editor</strong> icon and click <strong>Export</strong> (bottom-right copy button).
+                    </li>
+                    <li>
+                      Tick the consent checkbox below and click <strong>1-Click Paste &amp; Connect</strong>.
+                    </li>
                   </ol>
                   <label className="flex items-start gap-2">
                     <input
@@ -1130,15 +1260,26 @@ function LinkedInWorkspace() {
                     <button
                       type="button"
                       disabled={!consent || busy || loading}
-                      onClick={() => connectWithExtension()}
+                      onClick={() => void connectWithClipboardOrExtension()}
                       className="flex items-center gap-2 rounded-lg bg-[#0A66C2] px-4 py-2.5 font-semibold text-white hover:bg-[#004182] disabled:opacity-50"
                     >
-                      {busy ? <Loader2 size={16} className="animate-spin" /> : <Zap size={16} />}
+                      {busy ? <Loader2 size={16} className="animate-spin" /> : extInstalled ? <Zap size={16} /> : <ClipboardPaste size={16} />}
                       {busy
                         ? "Connecting LinkedIn…"
                         : extInstalled
                           ? "1-Click Auto-Connect from Chrome"
-                          : "1-Click Auto-Connect (Chrome Extension)"}
+                          : "1-Click Paste & Connect"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowCookieForm(prev => !prev);
+                        setTimeout(() => pasteInputRef.current?.focus(), 50);
+                      }}
+                      className="flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-2.5 text-xs font-medium text-slate-600 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700"
+                    >
+                      <KeyRound size={14} />
+                      {showCookieForm ? "Hide Paste Box" : "Open Paste Box"}
                     </button>
                     <button
                       disabled={!consent || busy || loading}
@@ -1147,14 +1288,6 @@ function LinkedInWorkspace() {
                     >
                       <Globe size={14} />
                       Sign in with Live Browser
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setShowCookieForm(prev => !prev)}
-                      className="flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-2.5 text-xs font-medium text-slate-600 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700"
-                    >
-                      <KeyRound size={14} />
-                      {showCookieForm ? "Hide Cookie Login" : "Manual li_at Cookie"}
                     </button>
                   </div>
 
@@ -1170,87 +1303,50 @@ function LinkedInWorkspace() {
                     </div>
                   )}
 
-                  {showExtensionSetup && !extInstalled && (
-                    <div className="space-y-2.5 rounded-xl border border-sky-200 bg-sky-50/70 p-4 text-xs text-slate-700 dark:border-sky-800 dark:bg-sky-950/30 dark:text-slate-200">
-                      <p className="font-semibold text-sky-900 dark:text-sky-200">
-                        One-time 30-second setup for 1-Click LinkedIn Auto-Connect:
-                      </p>
-                      <ol className="list-decimal space-y-1.5 pl-4">
-                        <li>
-                          Download and unzip{" "}
-                          <a
-                            href="/xonier-linkedin-connector.zip"
-                            download="xonier-linkedin-connector.zip"
-                            className="inline-flex items-center gap-1 font-semibold text-[#0A66C2] underline"
-                          >
-                            <Download size={12} /> Xonier LinkedIn Connector (.zip)
-                          </a>
-                        </li>
-                        <li>
-                          Open <code>chrome://extensions</code> in Chrome, enable <strong>Developer mode</strong> (top-right), click <strong>Load unpacked</strong>, and pick the unzipped folder.
-                        </li>
-                        <li>Click <strong>Check Again</strong> below (or refresh this page) and click Auto-Connect.</li>
-                      </ol>
-                      <div className="flex flex-wrap items-center gap-2 pt-1">
-                        <a
-                          href="/xonier-linkedin-connector.zip"
-                          download="xonier-linkedin-connector.zip"
-                          className="inline-flex items-center gap-1.5 rounded-lg bg-[#0A66C2] px-3 py-1.5 font-semibold text-white hover:bg-[#004182]"
-                        >
-                          <Download size={13} /> Download Extension (.zip)
-                        </a>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (document.documentElement.getAttribute("data-xonier-linkedin-ext") === "1") {
-                              setExtInstalled(true);
-                              setShowExtensionSetup(false);
-                              connectWithExtension();
-                            } else {
-                              window.postMessage({ type: "XONIER_PING_EXT" }, "*");
-                            }
-                          }}
-                          className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
-                        >
-                          Check Extension Again
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
                   {connection.error && <p className="text-red-600">{connection.error}</p>}
                 </div>
 
                 {showCookieForm && (
                   <form
                     onSubmit={e => void connectWithCookie(e)}
-                    className="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm dark:border-slate-700 dark:bg-slate-900"
+                    className="space-y-3 rounded-xl border border-sky-200 bg-sky-50/50 p-4 text-sm dark:border-slate-700 dark:bg-slate-900"
                   >
-                    <h4 className="font-semibold">Instant Session Cookie Login (SSO Accounts)</h4>
+                    <h4 className="font-semibold">Quick Paste Box (Cookie-Editor Export or li_at)</h4>
                     <p className="text-xs text-slate-500 dark:text-slate-400">
-                      Useful if you sign into LinkedIn with Google or Apple. Open LinkedIn in your browser → DevTools → Application → Cookies → copy <code>li_at</code>.
+                      Press <strong>Ctrl+V</strong> (or <strong>Cmd+V</strong>) below after clicking <strong>Export</strong> in{" "}
+                      <a
+                        href={COOKIE_EDITOR_WEBSTORE_URL}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-semibold text-[#0A66C2] underline"
+                      >
+                        Cookie-Editor
+                      </a>
+                      . It connects automatically on paste!
                     </p>
                     <input
-                      type="password"
+                      ref={pasteInputRef}
+                      type="text"
                       value={liAt}
                       onChange={e => setLiAt(e.target.value)}
-                      placeholder="Paste li_at cookie value"
+                      onPaste={e => {
+                        const pasted = e.clipboardData?.getData("text");
+                        if (pasted && consent && parseLinkedInClipboard(pasted)) {
+                          e.preventDefault();
+                          setLiAt(pasted);
+                          void submitParsedCookieSession(pasted);
+                        }
+                      }}
+                      placeholder="Click here and press Ctrl+V / Cmd+V to auto-connect..."
                       required
-                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs outline-none dark:border-slate-700 dark:bg-slate-800"
-                    />
-                    <input
-                      type="text"
-                      value={jsessionId}
-                      onChange={e => setJsessionId(e.target.value)}
-                      placeholder="Optional JSESSIONID (e.g. ajax:...)"
-                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs outline-none dark:border-slate-700 dark:bg-slate-800"
+                      className="w-full rounded-lg border border-sky-300 bg-white px-3 py-2.5 text-xs outline-none focus:border-[#0A66C2] dark:border-slate-700 dark:bg-slate-800"
                     />
                     <button
                       type="submit"
                       disabled={!consent || busy || !liAt.trim()}
-                      className="w-full rounded-lg bg-slate-800 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-700 disabled:opacity-50 dark:bg-sky-600"
+                      className="w-full rounded-lg bg-[#0A66C2] px-4 py-2 text-xs font-semibold text-white hover:bg-[#004182] disabled:opacity-50"
                     >
-                      {busy ? "Verifying cookie…" : "Connect with Cookie"}
+                      {busy ? "Connecting LinkedIn…" : "Connect LinkedIn"}
                     </button>
                   </form>
                 )}
