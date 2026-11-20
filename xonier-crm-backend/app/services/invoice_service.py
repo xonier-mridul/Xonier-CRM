@@ -345,16 +345,16 @@ class InvoiceService:
             styles = getSampleStyleSheet()
             ink = colors.HexColor('#18233A')
             muted = colors.HexColor('#667085')
-            accent = colors.HexColor('#283593')
-            line = colors.HexColor('#E3E7F0')
-            pale = colors.HexColor('#F6F7FB')
+            accent = colors.HexColor('#18233A')
+            line = colors.HexColor('#E5E7EB')
+            pale = colors.HexColor('#F8F9FA')
 
             eyebrow = ParagraphStyle('InvoiceEyebrow', parent=styles['Normal'], fontName='Helvetica-Bold', fontSize=7.5, leading=10, textColor=muted, spaceAfter=5, tracking=0.7)
             body = ParagraphStyle('InvoiceBody', parent=styles['Normal'], fontName='Helvetica', fontSize=9, leading=13, textColor=ink)
             customer_name = ParagraphStyle('InvoiceCustomer', parent=body, fontName='Helvetica-Bold', fontSize=12, leading=15, spaceAfter=4)
             small = ParagraphStyle('InvoiceSmall', parent=body, fontSize=8.5, leading=12, textColor=muted)
             section = ParagraphStyle('InvoiceSection', parent=styles['Normal'], fontName='Helvetica-Bold', fontSize=10, leading=13, textColor=ink, spaceBefore=2, spaceAfter=10)
-            table_header = ParagraphStyle('InvoiceTableHeader', parent=eyebrow, textColor=colors.white)
+            table_header = ParagraphStyle('InvoiceTableHeader', parent=eyebrow, textColor=ink)
             detail_label = ParagraphStyle('InvoiceDetailLabel', parent=eyebrow, fontSize=6.7, leading=8, spaceAfter=0, tracking=0.1)
             detail_value = ParagraphStyle('InvoiceDetailValue', parent=body, fontSize=8, leading=10, spaceAfter=0)
 
@@ -445,9 +445,10 @@ class InvoiceService:
 
             item_table = Table(item_rows, colWidths=[0.48*inch, 3.12*inch, 0.65*inch, 1.2*inch, 1.45*inch], repeatRows=1, hAlign='LEFT')
             item_style = [
-                ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#202B72')),
-                ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-                ('LINEBELOW', (0, 0), (-1, 0), 0.8, accent),
+                ('BACKGROUND', (0, 0), (-1, 0), pale),
+                ('TEXTCOLOR', (0, 0), (-1, 0), ink),
+                ('LINEABOVE', (0, 0), (-1, 0), 0.8, line),
+                ('LINEBELOW', (0, 0), (-1, 0), 0.8, line),
                 ('LINEBELOW', (0, 1), (-1, -1), 0.45, line),
                 ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
                 ('ALIGN', (0, 1), (0, -1), 'CENTER'),
@@ -611,37 +612,23 @@ class InvoiceService:
         page_width, page_height = A4
         left = doc.leftMargin
         right = page_width - doc.rightMargin
-        accent = colors.HexColor("#283593")
-        deep = colors.HexColor("#151B4F")
-        ink = colors.HexColor("#17233C")
-        muted = colors.HexColor("#D6DCF8")
+        ink = colors.HexColor("#18233A")
+        muted = colors.HexColor("#667085")
+        border = colors.HexColor("#E5E7EB")
         company_name = self._pdf_text(branding.get("companyName") or "Company")
 
         canvas.saveState()
-        # Full-width blue masthead with an editorial curved edge inspired by the reference.
-        header = canvas.beginPath()
-        header.moveTo(0, page_height)
-        header.lineTo(page_width, page_height)
-        header.lineTo(page_width, page_height - 112)
-        header.curveTo(page_width * 0.76, page_height - 132, page_width * 0.59, page_height - 146, page_width * 0.43, page_height - 151)
-        header.curveTo(page_width * 0.23, page_height - 157, page_width * 0.11, page_height - 139, 0, page_height - 158)
-        header.close()
-        canvas.setFillColor(deep)
-        canvas.drawPath(header, stroke=0, fill=1)
-
-        # Fine indigo highlight echoes the wave without overpowering the document.
-        wave = canvas.beginPath()
-        wave.moveTo(0, page_height - 162)
-        wave.curveTo(page_width * 0.22, page_height - 143, page_width * 0.34, page_height - 164, page_width * 0.49, page_height - 155)
-        wave.curveTo(page_width * 0.68, page_height - 144, page_width * 0.83, page_height - 139, page_width, page_height - 116)
-        canvas.setStrokeColor(colors.HexColor("#5664C7"))
-        canvas.setLineWidth(1.2)
-        canvas.drawPath(wave, stroke=1, fill=0)
+        # Clean, theme-neutral white header with a subtle bottom divider.
+        canvas.setStrokeColor(border)
+        canvas.setLineWidth(0.8)
+        canvas.line(left, page_height - 122, right, page_height - 122)
 
         logo_bytes = branding.get("logoBytes")
         logo_x, logo_y, logo_w, logo_h = left, page_height - 102, 58, 52
         canvas.setFillColor(colors.white)
-        canvas.roundRect(logo_x - 5, logo_y - 4, logo_w + 10, logo_h + 8, 8, stroke=0, fill=1)
+        canvas.setStrokeColor(border)
+        canvas.setLineWidth(0.8)
+        canvas.roundRect(logo_x - 5, logo_y - 4, logo_w + 10, logo_h + 8, 8, stroke=1, fill=1)
         if logo_bytes:
             try:
                 canvas.drawImage(
@@ -655,12 +642,12 @@ class InvoiceService:
                     mask="auto",
                 )
             except Exception:
-                self._draw_company_monogram(canvas, logo_x, logo_y, logo_w, logo_h, company_name, accent)
+                self._draw_company_monogram(canvas, logo_x, logo_y, logo_w, logo_h, company_name, ink)
         else:
-            self._draw_company_monogram(canvas, logo_x, logo_y, logo_w, logo_h, company_name, accent)
+            self._draw_company_monogram(canvas, logo_x, logo_y, logo_w, logo_h, company_name, ink)
 
         company_x = left + 76
-        canvas.setFillColor(colors.white)
+        canvas.setFillColor(ink)
         canvas.setFont("Helvetica-Bold", 12)
         company_column_width = right - company_x - 178
         canvas.drawString(
@@ -688,43 +675,33 @@ class InvoiceService:
                 self._fit_pdf_text(line, company_column_width, "Helvetica", 8),
             )
 
-        canvas.setFillColor(colors.white)
+        canvas.setFillColor(ink)
         canvas.setFont("Helvetica-Bold", 24)
         canvas.drawRightString(right, page_height - 50, "TAX INVOICE")
-        canvas.setFillColor(colors.HexColor("#C8D0FF"))
+        canvas.setFillColor(muted)
         canvas.setFont("Helvetica-Bold", 7.5)
         canvas.drawRightString(right, page_height - 65, "OFFICIAL PAYMENT DEMAND")
-        canvas.setFillColor(colors.white)
+        canvas.setFillColor(ink)
         canvas.setFont("Helvetica", 7.5)
         invoice_id = self._fit_pdf_text(branding.get("invoiceId", ""), 210, "Helvetica", 7.5)
         if invoice_id:
             canvas.drawRightString(right, page_height - 79, f"Invoice #: {invoice_id}")
         source_quote = self._pdf_text(branding.get("sourceQuoteId", ""))
         if source_quote:
-            canvas.setFillColor(colors.HexColor("#93C5FD"))
+            canvas.setFillColor(muted)
             canvas.setFont("Helvetica-Bold", 7.2)
             canvas.drawRightString(right, page_height - 92, f"Ref Quote: {source_quote}")
-        footer = canvas.beginPath()
-        footer.moveTo(0, 0)
-        footer.lineTo(page_width, 0)
-        footer.lineTo(page_width, 88)
-        footer.curveTo(page_width * 0.78, 72, page_width * 0.6, 69, page_width * 0.44, 78)
-        footer.curveTo(page_width * 0.25, 89, page_width * 0.12, 74, 0, 98)
-        footer.close()
-        canvas.setFillColor(deep)
-        canvas.drawPath(footer, stroke=0, fill=1)
-        canvas.setStrokeColor(colors.HexColor("#5664C7"))
-        canvas.setLineWidth(1.2)
-        footer_wave = canvas.beginPath()
-        footer_wave.moveTo(0, 101)
-        footer_wave.curveTo(page_width * 0.18, 78, page_width * 0.31, 99, page_width * 0.47, 84)
-        footer_wave.curveTo(page_width * 0.68, 66, page_width * 0.84, 78, page_width, 91)
-        canvas.drawPath(footer_wave, stroke=1, fill=0)
 
-        canvas.setFillColor(colors.white)
+        # Clean, theme-neutral white footer with a subtle top divider.
+        canvas.setStrokeColor(border)
+        canvas.setLineWidth(0.8)
+        canvas.line(left, 72, right, 72)
+
+        canvas.setFillColor(ink)
         canvas.setFont("Helvetica-Bold", 8)
         canvas.drawString(left, 49, "THANK YOU FOR YOUR BUSINESS")
         footer_contact = "   |   ".join(self._pdf_text(item) for item in (branding.get("phone"), branding.get("email")) if item)
+        canvas.setFillColor(muted)
         canvas.setFont("Helvetica", 7)
         if footer_contact:
             canvas.drawString(left, 34, self._fit_pdf_text(footer_contact, 270, "Helvetica", 7))
@@ -734,8 +711,6 @@ class InvoiceService:
             canvas.drawRightString(right, 51, self._fit_pdf_text(website, 260, "Helvetica", 7))
         if address:
             canvas.drawRightString(right, 39, self._fit_pdf_text(address, 260, "Helvetica", 7))
-        canvas.setFillColor(colors.HexColor("#CBD2F7"))
-        canvas.setFont("Helvetica", 7)
         legal_items = [f"Reg. {self._pdf_text(branding['registrationNumber'])}" for _ in [0] if branding.get("registrationNumber")]
         legal_items.extend([f"Trade {self._pdf_text(branding['tradeNumber'])}" for _ in [0] if branding.get("tradeNumber")])
         if legal_items:
@@ -746,7 +721,7 @@ class InvoiceService:
 
     @staticmethod
     def _draw_company_monogram(canvas: Canvas, x: float, y: float, width: float, height: float, name: str, accent) -> None:
-        canvas.setFillColor(colors.HexColor("#EEF1FF"))
+        canvas.setFillColor(colors.HexColor("#F3F4F6"))
         canvas.roundRect(x, y, width, height, 7, stroke=0, fill=1)
         initials = "".join(word[0] for word in name.split()[:2]).upper() or "C"
         canvas.setFillColor(accent)

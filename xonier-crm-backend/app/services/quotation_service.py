@@ -1349,22 +1349,22 @@ class QuotationService:
             elements = []
             styles = getSampleStyleSheet()
 
-            # Palette: Executive Forest & Emerald Proposal
+            # Palette: Clean, theme-neutral white proposal
             ink    = colors.HexColor("#0F172A")
             muted  = colors.HexColor("#64748B")
-            accent = colors.HexColor("#065F46")   # Deep forest green
-            mint   = colors.HexColor("#047857")   # Emerald
+            accent = colors.HexColor("#0F172A")
+            mint   = colors.HexColor("#E2E8F0")
             line   = colors.HexColor("#E2E8F0")
             pale   = colors.HexColor("#F8FAFC")
-            mint_pale = colors.HexColor("#F0FDF4")
-            mint_border = colors.HexColor("#86EFAC")
+            mint_pale = colors.HexColor("#F8FAFC")
+            mint_border = colors.HexColor("#E2E8F0")
 
             eyebrow       = ParagraphStyle("QEyebrow",   parent=styles["Normal"], fontName="Helvetica-Bold", fontSize=7, leading=9, textColor=muted, spaceAfter=4)
             body          = ParagraphStyle("QBody",      parent=styles["Normal"], fontName="Helvetica",      fontSize=8.5, leading=12, textColor=ink)
             cust_name_sty = ParagraphStyle("QCust",      parent=body,            fontName="Helvetica-Bold", fontSize=11.5, leading=14, textColor=ink, spaceAfter=3)
             small         = ParagraphStyle("QSmall",     parent=body,            fontSize=8, leading=11, textColor=muted)
             section       = ParagraphStyle("QSection",   parent=styles["Normal"], fontName="Helvetica-Bold", fontSize=9.5, leading=12, textColor=accent, spaceBefore=0, spaceAfter=8)
-            tbl_hdr       = ParagraphStyle("QTblHdr",    parent=eyebrow, textColor=colors.white, fontName="Helvetica-Bold", fontSize=7.5, leading=9)
+            tbl_hdr       = ParagraphStyle("QTblHdr",    parent=eyebrow, textColor=ink, fontName="Helvetica-Bold", fontSize=7.5, leading=9)
             det_label     = ParagraphStyle("QDetLabel",  parent=eyebrow, fontSize=6.5, leading=8, spaceAfter=0)
             det_value     = ParagraphStyle("QDetValue",  parent=body,    fontSize=7.8, leading=10, spaceAfter=0)
 
@@ -1490,9 +1490,10 @@ class QuotationService:
 
             item_table = Table(rows, colWidths=[0.42*inch, 3.48*inch, 0.75*inch, 1.15*inch, 1.25*inch], repeatRows=1, hAlign="LEFT")
             item_table.setStyle(TableStyle([
-                ("BACKGROUND", (0,0), (-1,0), accent),
-                ("TEXTCOLOR",  (0,0), (-1,0), colors.white),
-                ("LINEBELOW",  (0,0), (-1,0), 0.8, mint),
+                ("BACKGROUND", (0,0), (-1,0), pale),
+                ("TEXTCOLOR",  (0,0), (-1,0), ink),
+                ("LINEABOVE",  (0,0), (-1,0), 0.8, line),
+                ("LINEBELOW",  (0,0), (-1,0), 0.8, line),
                 ("LINEBELOW",  (0,1), (-1,-1), 0.35, line),
                 ("VALIGN",  (0,0), (-1,-1), "MIDDLE"),
                 ("ALIGN",   (0,1), (0, -1), "CENTER"),
@@ -1638,36 +1639,35 @@ class QuotationService:
         page_width, page_height = A4
         left  = doc.leftMargin
         right = page_width - doc.rightMargin
-        accent = colors.HexColor("#064E3B")    # Deep Forest Green
-        mint   = colors.HexColor("#10B981")    # Emerald Highlight
-        tint   = colors.HexColor("#D1FAE5")    # Soft Mint
+        ink    = colors.HexColor("#0F172A")
+        muted  = colors.HexColor("#64748B")
+        border = colors.HexColor("#E2E8F0")
         company_name = self._pdf_text_q(branding.get("companyName") or "Company")
 
         canvas.saveState()
-        # Top Header: Sleek, architectural banner (Distinct from the wavy invoice!)
-        canvas.setFillColor(accent)
-        canvas.rect(0, page_height - 130, page_width, 130, stroke=0, fill=1)
-
-        # Thin mint divider rule line
-        canvas.setFillColor(mint)
-        canvas.rect(0, page_height - 133, page_width, 3, stroke=0, fill=1)
+        # Top Header: Clean, theme-neutral white header with a subtle bottom divider.
+        canvas.setStrokeColor(border)
+        canvas.setLineWidth(0.8)
+        canvas.line(left, page_height - 122, right, page_height - 122)
 
         # Company Logo Box
         logo_bytes = branding.get("logoBytes")
         logo_x, logo_y, logo_w, logo_h = left, page_height - 98, 54, 48
         canvas.setFillColor(colors.white)
-        canvas.roundRect(logo_x - 4, logo_y - 4, logo_w + 8, logo_h + 8, 6, stroke=0, fill=1)
+        canvas.setStrokeColor(border)
+        canvas.setLineWidth(0.8)
+        canvas.roundRect(logo_x - 4, logo_y - 4, logo_w + 8, logo_h + 8, 6, stroke=1, fill=1)
         if logo_bytes:
             try:
                 canvas.drawImage(ImageReader(BytesIO(logo_bytes)), logo_x, logo_y, width=logo_w, height=logo_h, preserveAspectRatio=True, anchor="c", mask="auto")
             except Exception:
-                self._draw_company_monogram_q(canvas, logo_x, logo_y, logo_w, logo_h, company_name, accent)
+                self._draw_company_monogram_q(canvas, logo_x, logo_y, logo_w, logo_h, company_name, ink)
         else:
-            self._draw_company_monogram_q(canvas, logo_x, logo_y, logo_w, logo_h, company_name, accent)
+            self._draw_company_monogram_q(canvas, logo_x, logo_y, logo_w, logo_h, company_name, ink)
 
         # Company Details (Left Column)
         company_x = left + 72
-        canvas.setFillColor(colors.white)
+        canvas.setFillColor(ink)
         canvas.setFont("Helvetica-Bold", 12)
         col_w = right - company_x - 190
         canvas.drawString(company_x, page_height - 50, self._fit_pdf_text_q(company_name, col_w, "Helvetica-Bold", 12))
@@ -1680,21 +1680,21 @@ class QuotationService:
         if contact_line:
             lines.append(contact_line)
 
-        canvas.setFillColor(colors.HexColor("#A7F3D0"))
+        canvas.setFillColor(muted)
         canvas.setFont("Helvetica", 7.5)
         for i, ln in enumerate(lines[:3]):
             canvas.drawString(company_x, page_height - 66 - (i * 11), self._fit_pdf_text_q(ln, col_w, "Helvetica", 7.5))
 
         # Right Column Header: Clear Proposal Identity
-        canvas.setFillColor(colors.white)
+        canvas.setFillColor(ink)
         canvas.setFont("Helvetica-Bold", 22)
         canvas.drawRightString(right, page_height - 50, "PRICE QUOTATION")
 
-        canvas.setFillColor(tint)
+        canvas.setFillColor(muted)
         canvas.setFont("Helvetica-Bold", 8)
         canvas.drawRightString(right, page_height - 66, "COMMERCIAL PROPOSAL & SCOPE")
 
-        canvas.setFillColor(colors.white)
+        canvas.setFillColor(ink)
         canvas.setFont("Helvetica", 7.5)
         quote_id = self._pdf_text_q(branding.get("quoteId", ""))
         if quote_id:
@@ -1702,22 +1702,21 @@ class QuotationService:
 
         valid_str = self._pdf_text_q(branding.get("valid", ""))
         if valid_str:
-            canvas.setFillColor(colors.HexColor("#6EE7B7"))
+            canvas.setFillColor(muted)
             canvas.setFont("Helvetica-Bold", 7.5)
             canvas.drawRightString(right, page_height - 94, f"Valid Through: {valid_str}")
 
-        # Footer: Modern, clean architectural footer band
-        canvas.setFillColor(colors.HexColor("#064E3B"))
-        canvas.rect(0, 0, page_width, 55, stroke=0, fill=1)
-        canvas.setFillColor(mint)
-        canvas.rect(0, 55, page_width, 2, stroke=0, fill=1)
+        # Footer: Clean, theme-neutral white footer with a subtle top divider.
+        canvas.setStrokeColor(border)
+        canvas.setLineWidth(0.8)
+        canvas.line(left, 56, right, 56)
 
-        canvas.setFillColor(colors.white)
+        canvas.setFillColor(ink)
         canvas.setFont("Helvetica-Bold", 7.5)
         canvas.drawString(left, 36, "CONFIDENTIAL COMMERCIAL PROPOSAL")
 
         canvas.setFont("Helvetica", 6.8)
-        canvas.setFillColor(colors.HexColor("#A7F3D0"))
+        canvas.setFillColor(muted)
         contact_str = "   |   ".join(self._pdf_text_q(i) for i in [branding.get("phone"), branding.get("email"), branding.get("website")] if i)
         if contact_str:
             canvas.drawString(left, 24, self._fit_pdf_text_q(contact_str, 320, "Helvetica", 6.8))
@@ -1729,14 +1728,14 @@ class QuotationService:
         if reg_items:
             canvas.drawRightString(right, 36, self._fit_pdf_text_q("   |   ".join(reg_items), 220, "Helvetica", 6.8))
 
-        canvas.setFillColor(colors.white)
+        canvas.setFillColor(ink)
         canvas.drawRightString(right, 22, self._fit_pdf_text_q(f"{company_name}  ·  Page {doc.page}", 200, "Helvetica", 6.8))
 
         canvas.restoreState()
 
     @staticmethod
     def _draw_company_monogram_q(canvas, x, y, width, height, name, accent):
-        canvas.setFillColor(colors.HexColor("#ECFDF5"))
+        canvas.setFillColor(colors.HexColor("#F1F5F9"))
         canvas.roundRect(x, y, width, height, 6, stroke=0, fill=1)
         initials = "".join(w[0] for w in name.split()[:2]).upper() or "Q"
         canvas.setFillColor(accent)

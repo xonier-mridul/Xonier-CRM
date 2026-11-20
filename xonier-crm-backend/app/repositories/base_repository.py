@@ -844,6 +844,7 @@ class BaseRepository:
             "page": page,
             "totalPages": total_pages,
             "limit": limit,
+            "total": count,
         }
 
 
