@@ -6,6 +6,7 @@ from beanie import PydanticObjectId
 from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel, Field, field_validator
 
+from app.utils.record_visibility import live_deal_filter, live_lead_filter
 from app.core.dependencies import Dependencies
 from app.core.enums import FEATURE, NOTE_STATUS, NOTE_VISIBILITY, ACTIVITY_ACTION, ACTIVITY_ENTITY_TYPE
 from app.db.models.deal_model import DealModel
@@ -83,7 +84,8 @@ async def require_record(request: Request, entity_type: str, entity_id: str, wri
     await dependencies.permissions([f"{entity_type}:{'update' if write else 'read'}"])(request)
     record_id = object_id(entity_id)
     model = LeadsModel if entity_type == "lead" else DealModel
-    record = await model.find_one({"_id": record_id, "deletedAt": None})
+    visibility = live_lead_filter if entity_type == "lead" else live_deal_filter
+    record = await model.find_one(visibility({"_id": record_id}))
     if not record:
         raise AppException(404, "Commercial record not found")
     if entity_type == "lead":
@@ -293,7 +295,7 @@ async def timeline(request: Request, entity_type: str, entity_id: str):
     # A deal can inherit call history only when the viewer can also read its lead.
     lead_id = entity_id if entity_type == "lead" else None
     if entity_type == "deal":
-        deal = await DealModel.find_one({"_id": record_id, "deletedAt": None})
+        deal = await DealModel.find_one(live_deal_filter({"_id": record_id}))
         if deal and deal.lead_id and getattr(deal.lead_id, "ref", None):
             candidate = str(deal.lead_id.ref.id)
             try:

@@ -7,6 +7,7 @@ import httpx
 from beanie import PydanticObjectId
 from jose import jwt
 
+from app.utils.record_visibility import live_deal_filter, live_lead_filter
 from app.core.config import get_setting
 from app.core.crypto import encryptor
 from app.db.models.company_model import CompanyModel
@@ -241,7 +242,12 @@ class GoogleCalendarService:
             (EnquiryModel, "enquiry", "fullName"),
         ]
         for model, entity_type, name_field in collections:
-            records = await model.get_pymongo_collection().find(query).to_list(length=2000)
+            record_query = query
+            if model is LeadsModel:
+                record_query = live_lead_filter(query)
+            elif model is DealModel:
+                record_query = live_deal_filter(query)
+            records = await model.get_pymongo_collection().find(record_query).to_list(length=2000)
             for record in records:
                 owner_id = record.get("followUpOwnerId")
                 owner = await UserModel.get(PydanticObjectId(owner_id)) if owner_id else None

@@ -2,6 +2,7 @@ from collections import Counter
 
 from beanie import PydanticObjectId
 
+from app.utils.record_visibility import live_lead_filter
 from app.core.crypto import Encryption
 from app.db.models.campaign_model import CampaignModel
 from app.db.models.lead_model import LeadsModel
@@ -25,7 +26,7 @@ class AgentService:
             campaign_counts.update(ids)
 
         pipeline = [
-            {"$match": scope},
+            {"$match": live_lead_filter(scope)},
             {"$unwind": "$assignedTo"},
             {"$addFields": {"agentId": {"$ifNull": ["$assignedTo.$id", "$assignedTo"]}}},
             # Count each lead once per agent, including legacy duplicate assignments.

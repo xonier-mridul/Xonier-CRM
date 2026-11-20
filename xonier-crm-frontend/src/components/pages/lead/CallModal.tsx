@@ -33,6 +33,7 @@ interface CallModalProps {
   onClose: () => void;
   /** Called after the agent answers "Was call connected?" so the table can refresh the row. */
   onDisposed?: (leadId: string, connectStatus: string) => void;
+  onLeadUnavailable?: () => void;
   onLeadUpdated?: (leadId: string, lead: Partial<Lead>) => void;
   campaignAssignment?: CampaignLeadAssignment;
   campaignId?: string;
@@ -74,7 +75,7 @@ const DetailRow = ({ label, value }: { label: string; value?: string | null }) =
   </div>
 );
 
-const CallModal = ({ lead: initialLead, onClose, onDisposed, onLeadUpdated, campaignAssignment, campaignId, campaignLeadId }: CallModalProps) => {
+const CallModal = ({ lead: initialLead, onClose, onDisposed, onLeadUnavailable, onLeadUpdated, campaignAssignment, campaignId, campaignLeadId }: CallModalProps) => {
   const [lead, setLead] = useState(initialLead);
   const [editingLead, setEditingLead] = useState(false);
   const [tab, setTab] = useState<Tab>("info");
@@ -110,12 +111,18 @@ const CallModal = ({ lead: initialLead, onClose, onDisposed, onLeadUpdated, camp
       if (data.campaignAssignedTo) campaignAssignment?.onAssigned(data.campaignAssignedTo);
     } catch (err) {
       setSession(null);
-      setError(getErrorMessage(err));
+      const message = getErrorMessage(err);
+      if (onLeadUnavailable && axios.isAxiosError(err) && err.response?.status === 404) {
+        toast.error(message);
+        onLeadUnavailable();
+      } else {
+        setError(message);
+      }
     } finally {
       requestPendingRef.current = false;
       setRequesting(false);
     }
-  }, [lead.id, campaignId, campaignLeadId, campaignAssignment]);
+  }, [lead.id, campaignId, campaignLeadId, campaignAssignment, onLeadUnavailable]);
 
   const handleRetry = () => {
     if (requestPendingRef.current) return;

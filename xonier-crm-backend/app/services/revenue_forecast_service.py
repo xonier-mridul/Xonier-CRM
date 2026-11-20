@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from beanie import PydanticObjectId
 from bson import DBRef, ObjectId
 
+from app.utils.record_visibility import live_deal_filter
 from app.db.models.deal_model import DealModel
 from app.db.models.user_model import UserModel
 from app.core.tenant import current_company
@@ -88,7 +89,7 @@ async def revenue_forecast(user, first_month, last_month):
         visible_ids = list({str(member) for member in (members or [])} | {str(user["_id"])})
         query["createdBy.$id"] = {"$in": [PydanticObjectId(value) for value in visible_ids]}
     docs = await DealModel.get_pymongo_collection().find(
-        DealModel._inject_scope(query),
+        DealModel._inject_scope(live_deal_filter(query)),
         {"amount": 1, "closeDate": 1, "dealStage": 1, "forecastProbability": 1, "dealProbability": 1,
          "assignedTo": 1, "createdBy": 1},
     ).to_list(length=None)

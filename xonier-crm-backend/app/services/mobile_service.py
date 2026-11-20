@@ -20,6 +20,7 @@ from zoneinfo import ZoneInfo
 from beanie import PydanticObjectId
 from bson import ObjectId
 
+from app.utils.record_visibility import live_campaign_lead_join, live_lead_filter
 from app.core.crypto import Encryption
 from app.core.enums import CONTACT_STATUS, CAMPAIGN_STATUS
 from app.core.security import hash_value
@@ -32,7 +33,6 @@ from app.services.lead_service import LeadService
 from app.utils.custom_exception import AppException
 from app.utils.validate_admin import validate_admin_company_admin, validate_company_admin
 
-DELETED_LEAD_STATUSES = ["delete", "deleted"]
 CLOSED_LEAD_STATUSES = ["won", "lost", "delete", "deleted"]
 HIDDEN_CAMPAIGN_STATUSES = ["deleted"]
 PERIODS = ["today", "week", "month", "quarter"]
@@ -167,7 +167,7 @@ class MobileService:
 
     @staticmethod
     def _campaign_mini(camp: Optional[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
-        if not camp or camp.get("deletedAt"):
+        if not camp or camp.get("deletedAt") is not None or camp.get("status") in HIDDEN_CAMPAIGN_STATUSES:
             return None
         return {
             "id": str(camp["_id"]),
@@ -212,14 +212,16 @@ class MobileService:
         member_ids |= {str(_ref_id(r)) for r in (camp.get("managers") or []) if r}
         if not self._is_company_admin(user) and str(uid) not in member_ids:
             # Also check if agent has assigned leads in this campaign
-            has_assigned = await self._campaign_leads().find_one({
-                "$or": [
+            has_assigned = await self._campaign_leads().aggregate([
+                {"$match": {"companyId": company, "$or": [
                     {"campaignId.$id": camp["_id"], "assignedTo.$id": oid},
                     {"campaignId.$id": camp["_id"], "assignedTo": oid},
                     {"campaignId": camp["_id"], "assignedTo.$id": oid},
                     {"campaignId": camp["_id"], "assignedTo": oid},
-                ]
-            })
+                ]}},
+                *live_campaign_lead_join(company),
+                {"$limit": 1},
+            ]).to_list(length=1)
             if not has_assigned:
                 raise AppException(403, "You are not part of this campaign")
         return camp
@@ -235,8 +237,6 @@ class MobileService:
 
             query: Dict[str, Any] = {
                 "companyId": company,
-                "deletedAt": None,
-                "status": {"$nin": DELETED_LEAD_STATUSES},
             }
             if not self._is_company_admin(user):
                 query["assignedTo.$id"] = uid
@@ -264,7 +264,8 @@ class MobileService:
                 query["$and"] = ands
 
             status_filter = self._validate_connect_status(filters.get("status"))
-            count_query = dict(query)  # chip counts ignore the status filter itself
+            query = live_lead_filter(query)
+            count_query = dict(query)  # chip counts ignore the engagement status filter itself
             if status_filter:
                 query["connectStatus"] = status_filter
 
@@ -328,21 +329,13 @@ class MobileService:
     # MY CAMPAIGNS
     # ─────────────────────────────────────────────────────────────────────────
 
-    async def _get_campaign_ids_from_leads(self, uid: ObjectId) -> List[ObjectId]:
-        docs = await self._campaign_leads().find(
-            {"$or": [{"assignedTo.$id": uid}, {"assignedTo": uid}]},
-            {"campaignId": 1}
-        ).to_list(length=None)
-        cids = set()
-        for d in docs:
-            cid = d.get("campaignId")
-            if hasattr(cid, "id"):
-                cids.add(cid.id)
-            elif isinstance(cid, dict) and "$id" in cid:
-                cids.add(cid["$id"])
-            elif isinstance(cid, ObjectId):
-                cids.add(cid)
-        return list(cids)
+    async def _get_campaign_ids_from_leads(self, uid: ObjectId, company: ObjectId) -> List[ObjectId]:
+        docs = await self._campaign_leads().aggregate([
+            {"$match": {"companyId": company, "$or": [{"assignedTo.$id": uid}, {"assignedTo": uid}]}},
+            *live_campaign_lead_join(company),
+            {"$group": {"_id": {"$ifNull": ["$campaignId.$id", "$campaignId"]}}},
+        ]).to_list(length=None)
+        return [doc["_id"] for doc in docs if doc.get("_id")]
 
     async def _my_campaign_query(self, uid, company, status: Optional[str] = None, search: str = "", user=None):
         query: Dict[str, Any] = {
@@ -353,23 +346,24 @@ class MobileService:
         if not user or not self._is_company_admin(user):
             oid = ObjectId(str(uid))
             # Non-admin: only campaigns in which at least one lead is assigned to the user
-            lead_camp_ids = await self._get_campaign_ids_from_leads(oid)
+            lead_camp_ids = await self._get_campaign_ids_from_leads(oid, company)
             query["_id"] = {"$in": lead_camp_ids}
         if status:
             try:
-                query["status"] = CAMPAIGN_STATUS(status).value
+                query["status"]["$eq"] = CAMPAIGN_STATUS(status).value
             except ValueError:
                 raise AppException(400, f"Invalid status filter: {status}")
         if search:
             query["name"] = {"$regex": re.escape(search), "$options": "i"}
         return query
 
-    async def _campaign_stats(self, camp_ids: List[Any], uid) -> Dict[Any, Dict[str, int]]:
+    async def _campaign_stats(self, camp_ids: List[Any], uid, company) -> Dict[Any, Dict[str, int]]:
         if not camp_ids:
             return {}
         rows = await self._campaign_leads().aggregate([
-            {"$match": {"$or": [{"campaignId.$id": {"$in": camp_ids}},
+            {"$match": {"companyId": company, "$or": [{"campaignId.$id": {"$in": camp_ids}},
                                 {"campaignId": {"$in": camp_ids}}]}},
+            *live_campaign_lead_join(company),
             {"$group": {
                 "_id": {
                     "c": {"$ifNull": ["$campaignId.$id", "$campaignId"]},
@@ -430,7 +424,7 @@ class MobileService:
             camps = await self._campaigns().find(query).sort([("createdAt", -1), ("_id", -1)]) \
                 .skip((page - 1) * limit).limit(limit).to_list(length=limit)
 
-            stats = await self._campaign_stats([c["_id"] for c in camps], uid)
+            stats = await self._campaign_stats([c["_id"] for c in camps], uid, company)
             users = await self._user_map(self._camp_user_ids(camps))
             data = [await self._campaign_card(c, stats.get(c["_id"], {"totalLeads": 0, "myLeads": 0, "otherLeads": 0, "unassignedLeads": 0}), users) for c in camps]
 
@@ -441,8 +435,7 @@ class MobileService:
             ).to_list(length=None)
             lead_count_query = {
                 "companyId": company,
-                "deletedAt": None,
-                "status": {"$nin": DELETED_LEAD_STATUSES},
+                **live_lead_filter(),
             }
             if not self._is_company_admin(user):
                 lead_count_query["assignedTo.$id"] = uid
@@ -484,11 +477,7 @@ class MobileService:
                 {"$group": {"_id": {"$ifNull": ["$leadId.$id", "$leadId"]}}},
                 {"$lookup": {"from": "leads", "localField": "_id", "foreignField": "_id", "as": "lead"}},
                 {"$unwind": "$lead"},
-                {"$match": {
-                    "lead.companyId": company,
-                    "lead.deletedAt": None,
-                    "lead.status": {"$nin": DELETED_LEAD_STATUSES},
-                }},
+                {"$match": live_lead_filter({"lead.companyId": company}, prefix="lead.")},
                 {"$count": "count"},
             ]).to_list(length=None)
             return {
@@ -503,38 +492,23 @@ class MobileService:
 
     async def campaign_detail(self, user: Dict[str, Any], campaign_id: str) -> Dict[str, Any]:
         try:
-            uid, _ = self._ids(user)
+            uid, company = self._ids(user)
             is_company_admin = self._is_company_admin(user)
             camp = await self._get_accessible_campaign(user, campaign_id)
-            stats = (await self._campaign_stats([camp["_id"]], uid))[camp["_id"]]
+            stats = (await self._campaign_stats([camp["_id"]], uid, company))[camp["_id"]]
             users = await self._user_map(self._camp_user_ids([camp]))
             card = await self._campaign_card(camp, stats, users)
 
+            match = {"companyId": company, "$or": [
+                {"campaignId.$id": camp["_id"]}, {"campaignId": camp["_id"]},
+            ]}
+            if not is_company_admin:
+                match["$and"] = [{"$or": [{"assignedTo.$id": uid}, {"assignedTo": uid}]}]
             rows = await self._campaign_leads().aggregate([
-                {"$match": {"$or": [{"campaignId.$id": camp["_id"]}, {"campaignId": camp["_id"]}]}},
-                {"$addFields": {
-                    "leadOid": {"$ifNull": ["$leadId.$id", "$leadId"]},
-                    "assignedOid": {"$ifNull": ["$assignedTo.$id", "$assignedTo"]},
-                }},
-                {"$lookup": {"from": "leads", "localField": "leadOid",
-                             "foreignField": "_id", "as": "lead"}},
-                {"$unwind": "$lead"},
+                {"$match": match},
+                *live_campaign_lead_join(company),
                 {"$group": {"_id": "$lead.connectStatus", "count": {"$sum": 1}}},
             ]).to_list(length=None)
-            if not is_company_admin:
-                # Preserve the mobile agent's personal campaign summary.
-                rows = await self._campaign_leads().aggregate([
-                    {"$match": {"$or": [{"campaignId.$id": camp["_id"]}, {"campaignId": camp["_id"]}]}},
-                    {"$addFields": {
-                        "leadOid": {"$ifNull": ["$leadId.$id", "$leadId"]},
-                        "assignedOid": {"$ifNull": ["$assignedTo.$id", "$assignedTo"]},
-                    }},
-                    {"$match": {"assignedOid": uid}},
-                    {"$lookup": {"from": "leads", "localField": "leadOid",
-                                 "foreignField": "_id", "as": "lead"}},
-                    {"$unwind": "$lead"},
-                    {"$group": {"_id": "$lead.connectStatus", "count": {"$sum": 1}}},
-                ]).to_list(length=None)
             card["myLeadsByStatus"] = {r["_id"] or "not_reached": r["count"] for r in rows}
             card["isPaused"] = camp.get("status") == "paused"
             return card
@@ -550,7 +524,7 @@ class MobileService:
 
     async def campaign_leads(self, user: Dict[str, Any], campaign_id: str, filters) -> Dict[str, Any]:
         try:
-            uid, _ = self._ids(user)
+            uid, company = self._ids(user)
             page, limit = _page_args(filters)
             camp = await self._get_accessible_campaign(user, campaign_id)
 
@@ -564,10 +538,7 @@ class MobileService:
                 "other": {"assignedOid": {"$nin": [uid, None]}},
             }[ownership]
 
-            lead_match: Dict[str, Any] = {
-                "lead.deletedAt": None,
-                "lead.status": {"$nin": DELETED_LEAD_STATUSES},
-            }
+            lead_match: Dict[str, Any] = {}
             # Agents see their own and unassigned leads; company admins see every
             # campaign lead belonging to the campaign's company.
             if not self._is_company_admin(user):
@@ -584,14 +555,11 @@ class MobileService:
             search = (filters.get("search") or "").strip()
 
             base_pipeline = [
-                {"$match": {"$or": [{"campaignId.$id": camp["_id"]}, {"campaignId": camp["_id"]}]}},
-                {"$addFields": {
-                    "leadOid": {"$ifNull": ["$leadId.$id", "$leadId"]},
-                    "assignedOid": {"$ifNull": ["$assignedTo.$id", "$assignedTo"]},
-                }},
-                {"$lookup": {"from": "leads", "localField": "leadOid",
-                             "foreignField": "_id", "as": "lead"}},
-                {"$unwind": "$lead"},
+                {"$match": {"companyId": company, "$or": [
+                    {"campaignId.$id": camp["_id"]}, {"campaignId": camp["_id"]},
+                ]}},
+                *live_campaign_lead_join(company),
+                {"$addFields": {"assignedOid": {"$ifNull": ["$assignedTo.$id", "$assignedTo"]}}},
                 {"$match": lead_match},
             ]
 
@@ -718,7 +686,7 @@ class MobileService:
             uid, company = self._ids(user)
             lead_oid = _oid(lead_id, "lead id")
             lead = await self._leads().find_one(
-                {"_id": lead_oid, "companyId": company, "deletedAt": None},
+                live_lead_filter({"_id": lead_oid, "companyId": company}),
                 {"assignedTo": 1, "createdBy": 1, "fullName": 1, "lead_id": 1},
             )
             if not lead:
@@ -756,8 +724,7 @@ class MobileService:
     def _my_lead_base(self, uid, company, company_admin: bool = False) -> Dict[str, Any]:
         query = {
             "companyId": company,
-            "deletedAt": None,
-            "status": {"$nin": DELETED_LEAD_STATUSES},
+            **live_lead_filter(),
         }
         if not company_admin:
             query["assignedTo.$id"] = uid

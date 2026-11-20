@@ -4,6 +4,7 @@ from zoneinfo import ZoneInfo
 from beanie import PydanticObjectId
 from bson import ObjectId
 
+from app.utils.record_visibility import live_deal_filter, live_lead_filter
 from app.db.models.deal_model import DealModel
 from app.db.models.enquiry_management_model import EnquiryModel
 from app.db.models.invoice_model import InvoiceModel
@@ -38,6 +39,11 @@ class FollowUpService:
         query: dict = {"followUpAt": {"$ne": None}, "deletedAt": None}
         if user.get("companyId"):
             query["companyId"] = PydanticObjectId(user["companyId"])
+
+        if model is LeadsModel:
+            query = live_lead_filter(query)
+        elif model is DealModel:
+            query = live_deal_filter(query)
 
         if entity_type == "lead":
             is_admin_or_manager = (
@@ -92,7 +98,10 @@ class FollowUpService:
                 {"assignTo.$id": {"$in": access_ids}},
             ]
         }
-        record = await model.find_one({"_id": ObjectId(record_id), **access_filter})
+        query = {"_id": ObjectId(record_id), **access_filter}
+        if model is DealModel:
+            query = live_deal_filter(query)
+        record = await model.find_one(query)
         if not record:
             raise AppException(404, f"{entity_type.title()} not found or access denied")
 

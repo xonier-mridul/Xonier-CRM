@@ -127,6 +127,7 @@ const CampaignDetailView: React.FC<Props> = ({ campaign, onBack, onStatusChange 
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const pageLimit = 10;
+  const leadRequestId = useRef(0);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -178,6 +179,7 @@ const CampaignDetailView: React.FC<Props> = ({ campaign, onBack, onStatusChange 
   };
 
   const fetchLeads = useCallback(async (showLoading = true, pageOverride?: number) => {
+    const requestId = ++leadRequestId.current;
     if (showLoading) setIsLoading(true);
     try {
       const campaignId = campaign.id || campaign._id;
@@ -188,13 +190,16 @@ const CampaignDetailView: React.FC<Props> = ({ campaign, onBack, onStatusChange 
         pageLimit,
         debouncedSearch
       );
+      if (requestId !== leadRequestId.current) return;
       if (res.status === 200) {
         const payload = res.data?.data;
         // Backend returns: { data: [...], page, limit, total, totalPages }
         if (payload?.data) {
+          const lastPage = Number(payload.totalPages) || 1;
           setLeads(payload.data);
-          setTotalPages(Number(payload.totalPages) || 1);
+          setTotalPages(lastPage);
           setTotal(Number(payload.total) || 0);
+          if (pageToFetch > lastPage) setCurrentPage(lastPage);
         } else if (Array.isArray(payload)) {
           setLeads(payload);
           setTotalPages(1);
@@ -204,9 +209,15 @@ const CampaignDetailView: React.FC<Props> = ({ campaign, onBack, onStatusChange 
         }
       }
     } catch (err: any) {
+      if (requestId !== leadRequestId.current) return;
+      if (err?.response?.status === 404) {
+        setLeads([]);
+        setTotal(0);
+        setTotalPages(1);
+      }
       toast.error(err?.response?.data?.message || "Failed to fetch campaign leads");
     } finally {
-      setIsLoading(false);
+      if (requestId === leadRequestId.current) setIsLoading(false);
     }
   }, [campaign.id, campaign._id, currentPage, debouncedSearch]);
 
@@ -228,6 +239,10 @@ const CampaignDetailView: React.FC<Props> = ({ campaign, onBack, onStatusChange 
   }, [fetchLeads]);
 
   const [callingLead, setCallingLead] = useState<CampaignLead | null>(null);
+  const removeUnavailableLead = (campaignLeadId: string) => {
+    setLeads((previous) => previous.filter((lead) => lead._id !== campaignLeadId));
+    void fetchLeads(false);
+  };
   const [status, setStatus] = useState<string>(String(campaign.status || "active").toLowerCase());
   const [isTogglingPause, setIsTogglingPause] = useState(false);
   const isPaused = status === "paused";
@@ -307,7 +322,7 @@ const CampaignDetailView: React.FC<Props> = ({ campaign, onBack, onStatusChange 
 
       {/* Stats Row */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <StatCard icon={<FiLayers />} label="Total Leads" value={campaign.totalLeads ?? total} color="bg-cyan-500" />
+        <StatCard icon={<FiLayers />} label="Total Leads" value={debouncedSearch ? campaign.totalLeads ?? total : total} color="bg-cyan-500" />
         <StatCard icon={<FiActivity />} label="Assigned" value={campaign.assignedLeads ?? "—"} color="bg-indigo-500" />
         <StatCard icon={<FiUsers />} label="Managers" value={campaign.managers?.length ?? 0} color="bg-violet-500" />
         <StatCard icon={<FiUser />} label="Agents" value={campaign.agents?.length ?? 0} color="bg-emerald-500" />
@@ -459,6 +474,7 @@ const CampaignDetailView: React.FC<Props> = ({ campaign, onBack, onStatusChange 
                                   ));
                                 },
                               }}
+                              onLeadUnavailable={() => removeUnavailableLead(lead._id)}
                               onLeadUpdated={(leadId, updatedLead) => {
                                 setLeads((previous) => previous.map((campaignLead) =>
                                   campaignLead.lead?._id === leadId
@@ -629,6 +645,10 @@ const CampaignDetailView: React.FC<Props> = ({ campaign, onBack, onStatusChange 
           campaignLeadId={callingLead._id}
           onClose={() => { setCallingLead(null); void fetchLeads(false); }}
           onDisposed={() => { void fetchLeads(false); }}
+          onLeadUnavailable={() => {
+            setCallingLead(null);
+            removeUnavailableLead(callingLead._id);
+          }}
         />
       )}
     </div>

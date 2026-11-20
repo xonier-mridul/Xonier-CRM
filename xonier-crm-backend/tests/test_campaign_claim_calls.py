@@ -26,7 +26,8 @@ class CampaignClaimsTests(unittest.IsolatedAsyncioTestCase):
         self.service._collection = Mock(return_value=self.camps)
         self.service._global_leads_collection = Mock(return_value=self.globals)
         self.camps.update_one = AsyncMock()
-        self.globals.update_one = AsyncMock()
+        self.globals.update_one = AsyncMock(return_value=SimpleNamespace(matched_count=1))
+        self.globals.find_one = AsyncMock(return_value={"_id": self.lid})
         self.row = {'_id': self.clid, 'companyId': self.company,
             'campaignId': DBRef('campaigns', self.cid), 'leadId': DBRef('leads', self.lid),
             'assignedTo': None, 'campaignStatus': 'unassigned'}
@@ -51,6 +52,63 @@ class CampaignClaimsTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(self.row['assignedTo']['$id'], self.a)
         self.globals.update_one.assert_awaited_once()
         self.camps.update_one.assert_awaited_once()
+
+    async def test_claim_rejects_orphaned_campaign_row_before_mutation(self):
+        self.globals.find_one.return_value = None
+
+        with self.assertRaises(AppException) as error:
+            await self.claim()
+
+        self.assertEqual(error.exception.status_code, 404)
+        query = self.globals.find_one.call_args.args[0]
+        self.assertEqual(query["_id"], self.lid)
+        self.assertEqual(query["companyId"], self.company)
+        self.assertIsNone(query["deletedAt"])
+        self.assertEqual(query["status"], {"$nin": ["delete", "deleted"]})
+        self.links.find_one_and_update.assert_not_awaited()
+        self.camps.update_one.assert_not_awaited()
+        self.globals.update_one.assert_not_awaited()
+
+    async def test_privileged_campaign_lists_exclude_deleted_and_missing_leads_before_count(self):
+        cursor = SimpleNamespace(to_list=AsyncMock(return_value=[]))
+        self.links.aggregate = Mock(return_value=cursor)
+        for role in ("COMPANY_ADMIN", "MANAGER", "USER"):
+            for search in ("", "follow-up"):
+                with self.subTest(role=role, search=search):
+                    self.service._get_user_campaign_scope = AsyncMock(return_value=(
+                        [{"_id": self.cid}], [], {"membershipCampaignIds": {self.cid}},
+                    ))
+                    user = {**self.user, "userRole": [{"code": role}]}
+                    response = await self.service.get_campaign_leads(str(self.cid), {"search": search}, user)
+                    pipeline = self.links.aggregate.call_args.args[0]
+                    unwind_index = pipeline.index({"$unwind": "$lead"})
+                    self.assertEqual(pipeline[unwind_index + 1], {"$match": {
+                        "lead.companyId": self.company,
+                        "lead.deletedAt": None,
+                        "lead.status": {"$nin": ["delete", "deleted"]},
+                    }})
+                    if not search:
+                        self.assertIn("$facet", pipeline[-1])
+                    self.assertEqual(response["total"], 0)
+
+    async def test_claim_next_skips_a_lead_deleted_after_selection(self):
+        self.campaign.distributionMode = "on_demand"
+        next_id = ObjectId()
+
+        async def candidates():
+            yield {"_id": self.clid}
+            yield {"_id": next_id, "lead": {"fullName": "Live lead"}}
+
+        self.links.aggregate = Mock(return_value=candidates())
+        self.service.claim_lead = AsyncMock(side_effect=[
+            AppException(404, "Campaign lead not found"), {"claimed": True},
+        ])
+
+        result = await self.service.claim_next_lead(str(self.cid), self.user)
+
+        self.assertEqual(result["campaignLead"]["_id"], str(next_id))
+        self.assertEqual(self.service.claim_lead.await_count, 2)
+        self.assertTrue(self.service.claim_lead.await_args.kwargs["only_unassigned"])
 
     async def test_two_members_race_only_one_wins(self):
         other = {**self.user, '_id': str(self.b)}

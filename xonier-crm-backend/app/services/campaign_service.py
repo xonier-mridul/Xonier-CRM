@@ -1,3 +1,4 @@
+from app.utils.record_visibility import live_campaign_lead_join, live_lead_filter
 from app.utils.transaction_retry import retry_transaction
 from app.services.lead_status_service import LeadStatusService
 from app.utils.lead_assignment_access import can_assign_leads, require_lead_assigner, require_lower_assignee
@@ -75,7 +76,7 @@ class CampaignService:
     async def _get_campaign_or_404(self, campaign_id: str, user: Dict[str, Any] | None = None) -> CampaignModel:
         """Fetch campaign by string ObjectId; raise 404 if not found or deleted."""
         campaign = await self.repo.find_by_id(PydanticObjectId(campaign_id))
-        if not campaign or campaign.deletedAt is not None:
+        if not campaign or campaign.deletedAt is not None or campaign.status == CAMPAIGN_STATUS.DELETED:
             raise AppException(404, "Campaign not found")
         if user and not can_assign_leads(user.get("userRole", [])):
             visible_campaigns, _, _ = await self._get_user_campaign_scope(user)
@@ -117,7 +118,7 @@ class CampaignService:
         own_leads = await self._global_leads_collection().find(
             {
                 "companyId": company_oid,
-                "deletedAt": None,
+                **live_lead_filter(),
                 "isAssigned": True,
                 "$or": [
                     {"assignedTo.$id": user_oid},
@@ -130,8 +131,8 @@ class CampaignService:
 
         campaign_links = []
         if all_campaign_ids:
-            campaign_links = await self._lead_collection().find(
-                {
+            campaign_links = await self._lead_collection().aggregate([
+                {"$match": {
                     "companyId": company_oid,
                     "$or": [
                         {"campaignId.$id": {"$in": all_campaign_ids}},
@@ -140,13 +141,15 @@ class CampaignService:
                     "$and": [{
                         "$or": [
                             {"assignedTo.$id": user_oid},
+                            {"assignedTo": user_oid},
                             {"leadId.$id": {"$in": own_lead_ids}},
                             {"leadId": {"$in": own_lead_ids}},
                         ]
                     }],
-                },
-                {"campaignId": 1, "leadId": 1, "assignedTo": 1, "campaignStatus": 1},
-            ).to_list(length=None)
+                }},
+                *live_campaign_lead_join(company_oid),
+                {"$project": {"campaignId": 1, "leadId": 1, "assignedTo": 1, "campaignStatus": 1}},
+            ]).to_list(length=None)
 
         personal_campaign_ids = set()
         personal_lead_ids = set()
@@ -176,17 +179,19 @@ class CampaignService:
         # Members can also see the unassigned pool of their campaigns; a lead is
         # assigned to the member automatically once they call/claim it.
         if membership_campaign_ids:
-            pool_links = await self._lead_collection().find(
-                {
+            pool_links = await self._lead_collection().aggregate([
+                {"$match": {
                     "companyId": company_oid,
                     "assignedTo": None,
+                    "_id": {"$nin": [link["_id"] for link in campaign_links]},
                     "$or": [
                         {"campaignId.$id": {"$in": list(membership_campaign_ids)}},
                         {"campaignId": {"$in": list(membership_campaign_ids)}},
                     ],
-                },
-                {"campaignId": 1, "leadId": 1, "assignedTo": 1, "campaignStatus": 1},
-            ).to_list(length=None)
+                }},
+                *live_campaign_lead_join(company_oid),
+                {"$project": {"campaignId": 1, "leadId": 1, "assignedTo": 1, "campaignStatus": 1}},
+            ]).to_list(length=None)
             for link in pool_links:
                 campaign_id = self._reference_id(link.get("campaignId"))
                 lead_id = self._reference_id(link.get("leadId"))
@@ -200,6 +205,39 @@ class CampaignService:
             "linksByCampaign": personal_links_by_campaign,
             "membershipCampaignIds": membership_campaign_ids,
         }
+
+    async def _live_lead_counts(self, campaign_ids, company_id):
+        rows = await self._lead_collection().aggregate([
+            {"$match": {
+                "companyId": company_id,
+                "$or": [
+                    {"campaignId.$id": {"$in": campaign_ids}},
+                    {"campaignId": {"$in": campaign_ids}},
+                ],
+            }},
+            *live_campaign_lead_join(company_id),
+            {"$group": {
+                "_id": {"$ifNull": ["$campaignId.$id", "$campaignId"]},
+                "totalLeads": {"$sum": 1},
+                "assignedLeads": {"$sum": {"$cond": [
+                    {"$ne": [{"$ifNull": ["$assignedTo", None]}, None]}, 1, 0,
+                ]}},
+                "completedLeads": {"$sum": {"$cond": [
+                    {"$eq": ["$campaignStatus", CAMPAIGN_LEAD_STATUS.COMPLETED.value]}, 1, 0,
+                ]}},
+            }},
+        ]).to_list(length=None)
+        return {row.pop("_id"): row for row in rows}
+
+    async def _require_live_campaign_lead(self, link_filter, session=None):
+        link = await self._lead_collection().find_one(link_filter, session=session)
+        lead_id = self._reference_id(link.get("leadId")) if link else None
+        if lead_id is None or not await self._global_leads_collection().find_one(
+            live_lead_filter({"_id": lead_id, "companyId": link_filter["companyId"]}),
+            {"_id": 1}, session=session,
+        ):
+            raise AppException(404, "Campaign lead not found")
+        return link
 
     async def _clear_cache(self) -> None:
         """Safely clear campaign and lead caches; gracefully handles Redis downtime."""
@@ -276,11 +314,11 @@ class CampaignService:
             status = filters.get("status")
             search = filters.get("search", "").strip()
 
-            query: Dict[str, Any] = {"deletedAt": None}
+            query: Dict[str, Any] = {"deletedAt": None, "status": {"$ne": CAMPAIGN_STATUS.DELETED.value}}
 
             if status:
                 try:
-                    query["status"] = CAMPAIGN_STATUS(status)
+                    query["status"] = {"$eq": CAMPAIGN_STATUS(status), "$ne": CAMPAIGN_STATUS.DELETED.value}
                 except ValueError:
                     raise AppException(400, f"Invalid status filter: {status}")
 
@@ -335,6 +373,14 @@ class CampaignService:
                     ) != user_id:
                         campaign["createdBy"] = None
 
+            elif result.get("data"):
+                campaign_ids = [PydanticObjectId(c.get("id") or c.get("_id")) for c in result["data"]]
+                counts = await self._live_lead_counts(campaign_ids, PydanticObjectId(user["companyId"]))
+                for campaign, campaign_oid in zip(result["data"], campaign_ids):
+                    campaign.update(counts.get(campaign_oid, {
+                        "totalLeads": 0, "assignedLeads": 0, "completedLeads": 0,
+                    }))
+
             return result
 
         except AppException:
@@ -353,15 +399,26 @@ class CampaignService:
                 PydanticObjectId(campaign_id),
                 populate=["managers", "agents", "createdBy", "updatedBy"],
             )
-            if not campaign or campaign.deletedAt is not None:
+            if not campaign or campaign.deletedAt is not None or campaign.status == CAMPAIGN_STATUS.DELETED:
                 raise AppException(404, "Campaign not found")
 
+            result = jsonable_encoder(campaign)
             if not can_assign_leads(user.get("userRole", [])):
-                visible_campaigns, _, _ = await self._get_user_campaign_scope(user)
+                visible_campaigns, _, scope = await self._get_user_campaign_scope(user)
                 if not any(str(item.get("_id")) == str(campaign.id) for item in visible_campaigns):
                     raise AppException(404, "Campaign not found")
-
-            return jsonable_encoder(campaign)
+                links = scope["linksByCampaign"].get(str(campaign.id), [])
+                result.update(
+                    totalLeads=len(links),
+                    assignedLeads=sum(self._reference_id(link.get("assignedTo")) == scope["userId"] for link in links),
+                    completedLeads=sum(link.get("campaignStatus") == CAMPAIGN_LEAD_STATUS.COMPLETED.value for link in links),
+                )
+            else:
+                counts = await self._live_lead_counts([campaign.id], PydanticObjectId(user["companyId"]))
+                result.update(counts.get(campaign.id, {
+                    "totalLeads": 0, "assignedLeads": 0, "completedLeads": 0,
+                }))
+            return result
 
         except AppException:
             raise
@@ -574,7 +631,7 @@ class CampaignService:
                     if hash_filters:
                         existing_leads = await LeadsModel.find({
                             "companyId": campaign.companyId,
-                            "deletedAt": None,
+                            **live_lead_filter(),
                             "$or": hash_filters,
                         }).to_list()
                         existing_set = {
@@ -907,28 +964,8 @@ class CampaignService:
 
             pipeline = [
                 {"$match": match},
-                {"$sort": {"importedAt": -1, "_id": -1}},
-                # Extract raw ObjectId from Beanie DBRef before $lookup
-                {
-                    "$addFields": {
-                        "leadOid": {"$ifNull": ["$leadId.$id", "$leadId"]},
-                        "assignedOid": {"$ifNull": ["$assignedTo.$id", "$assignedTo"]},
-                    }
-                },
-                {
-                    "$lookup": {
-                        "from": "leads",
-                        "localField": "leadOid",
-                        "foreignField": "_id",
-                        "as": "lead",
-                    }
-                },
-                {"$unwind": {"path": "$lead", "preserveNullAndEmptyArrays": True}},
-                *([{"$match": {
-                    "lead.companyId": PydanticObjectId(user["companyId"]),
-                    "lead.deletedAt": None,
-                    "lead.status": {"$nin": ["delete", "deleted"]},
-                }}] if not is_admin else []),
+                *live_campaign_lead_join(PydanticObjectId(user["companyId"])),
+                {"$addFields": {"assignedOid": {"$ifNull": ["$assignedTo.$id", "$assignedTo"]}}},
                 {
                     "$lookup": {
                         "from": "users",
@@ -1079,9 +1116,14 @@ class CampaignService:
                     if new_status == CAMPAIGN_LEAD_STATUS.COMPLETED:
                         updates["completedAt"] = now
 
-                    cl_collection = self._lead_collection()
-                    result = await cl_collection.update_one(
-                        {"_id": cl_oid, "campaignId.$id": campaign_oid},
+                    link_filter = {
+                        "_id": cl_oid,
+                        "companyId": PydanticObjectId(user["companyId"]),
+                        "$or": [{"campaignId.$id": campaign_oid}, {"campaignId": campaign_oid}],
+                    }
+                    await self._require_live_campaign_lead(link_filter, session=session)
+                    result = await self._lead_collection().update_one(
+                        link_filter,
                         {"$set": updates},
                         session=session,
                     )
@@ -1146,19 +1188,16 @@ class CampaignService:
 
                     cl_collection = self._lead_collection()
                     
-                    prev_doc = await cl_collection.find_one({"_id": cl_oid, "campaignId.$id": campaign_oid})
-                    if not prev_doc:
-                        raise AppException(404, "Campaign lead not found")
-                        
-                    lead_ref = prev_doc.get("leadId")
-                    lead_oid = None
-                    if hasattr(lead_ref, "id"):
-                        lead_oid = lead_ref.id
-                    elif isinstance(lead_ref, dict) and "$id" in lead_ref:
-                        lead_oid = lead_ref["$id"]
-                        
-                    result = await cl_collection.update_one(
-                        {"_id": cl_oid, "campaignId.$id": campaign_oid},
+                    link_filter = {
+                        "_id": cl_oid,
+                        "companyId": PydanticObjectId(user["companyId"]),
+                        "$or": [{"campaignId.$id": campaign_oid}, {"campaignId": campaign_oid}],
+                    }
+                    prev_doc = await self._require_live_campaign_lead(link_filter, session=session)
+                    lead_oid = self._reference_id(prev_doc["leadId"])
+
+                    await cl_collection.update_one(
+                        link_filter,
                         {"$set": {
                             "assignedTo": {"$ref": "users", "$id": agent_oid},
                             "assignedAt": now,
@@ -1183,7 +1222,7 @@ class CampaignService:
                     if lead_oid:
                         global_leads_collection = self._global_leads_collection()
                         await global_leads_collection.update_one(
-                            {"_id": lead_oid},
+                            live_lead_filter({"_id": lead_oid, "companyId": campaign.companyId}),
                             {
                                 "$addToSet": {
                                     "assignedTo": {"$ref": "users", "$id": agent_oid}
@@ -1233,9 +1272,17 @@ class CampaignService:
             return {"distributed": 0, "message": "No agents found"}
 
         cl_collection = self._lead_collection()
-        unassigned = await cl_collection.find(
-            {"campaignId.$id": campaign_oid, "campaignStatus": "unassigned"}
-        ).sort("importedAt", 1).to_list(length=None)
+        unassigned = await cl_collection.aggregate([
+            {"$match": {
+                "companyId": campaign.companyId,
+                "$or": [{"campaignId.$id": campaign_oid}, {"campaignId": campaign_oid}],
+                "campaignStatus": "unassigned",
+                "assignedTo": None,
+            }},
+            *live_campaign_lead_join(campaign.companyId),
+            {"$sort": {"importedAt": 1, "_id": 1}},
+            {"$project": {"leadId": 1}},
+        ]).to_list(length=None)
 
         if not unassigned:
             return {"distributed": 0, "message": "No unassigned leads found"}
@@ -1252,12 +1299,7 @@ class CampaignService:
         for idx, cl_doc in enumerate(unassigned):
             agent_oid = agent_ids[idx % num_agents]
             # Get the leadId from the campaign_lead doc
-            lead_ref = cl_doc.get("leadId")
-            lead_oid = None
-            if hasattr(lead_ref, "id"):
-                lead_oid = lead_ref.id
-            elif isinstance(lead_ref, dict) and "$id" in lead_ref:
-                lead_oid = lead_ref["$id"]
+            lead_oid = self._reference_id(cl_doc.get("leadId"))
             
             bulk_ops.append(
                 UpdateOne(
@@ -1288,7 +1330,7 @@ class CampaignService:
                 leads_collection = self._global_leads_collection()
                 lead_bulk_ops = [
                     UpdateOne(
-                        {"_id": lead_oid},
+                        live_lead_filter({"_id": lead_oid, "companyId": campaign.companyId}),
                         {
                             "$addToSet": {
                                 "assignedTo": {"$ref": "users", "$id": agent_oid}
@@ -1344,9 +1386,17 @@ class CampaignService:
                         raise AppException(400, "Campaign has no valid agents assigned")
 
                     cl_collection = self._lead_collection()
-                    unassigned = await cl_collection.find(
-                        {"campaignId.$id": campaign_oid, "campaignStatus": "unassigned"}
-                    ).sort("importedAt", 1).to_list(length=None)
+                    unassigned = await cl_collection.aggregate([
+                        {"$match": {
+                            "companyId": campaign.companyId,
+                            "$or": [{"campaignId.$id": campaign_oid}, {"campaignId": campaign_oid}],
+                            "campaignStatus": "unassigned",
+                            "assignedTo": None,
+                        }},
+                        *live_campaign_lead_join(campaign.companyId),
+                        {"$sort": {"importedAt": 1, "_id": 1}},
+                        {"$project": {"leadId": 1}},
+                    ], session=session).to_list(length=None)
 
                     if not unassigned:
                         return {"distributed": 0, "message": "No unassigned leads found"}
@@ -1389,17 +1439,12 @@ class CampaignService:
                         lead_bulk_ops = []
                         for idx, cl_doc in enumerate(unassigned):
                             agent_oid = agent_ids[idx % num_agents]
-                            lead_ref = cl_doc.get("leadId")
-                            lead_oid = None
-                            if hasattr(lead_ref, "id"):
-                                lead_oid = lead_ref.id
-                            elif isinstance(lead_ref, dict) and "$id" in lead_ref:
-                                lead_oid = lead_ref["$id"]
+                            lead_oid = self._reference_id(cl_doc.get("leadId"))
                                 
                             if lead_oid:
                                 lead_bulk_ops.append(
                                     UpdateOne(
-                                        {"_id": lead_oid},
+                                        live_lead_filter({"_id": lead_oid, "companyId": campaign.companyId}),
                                         {
                                             "$addToSet": {
                                                 "assignedTo": {"$ref": "users", "$id": agent_oid}
@@ -1460,67 +1505,33 @@ class CampaignService:
                     "This campaign is not configured for ON DEMAND distribution"
                 )
 
-            campaign_oid = campaign.id
-            agent_oid = PydanticObjectId(user["_id"])
-            now = datetime.now(timezone.utc)
-
-            cl_collection = self._lead_collection()
-            claimed = await cl_collection.find_one_and_update(
-                {"companyId": PydanticObjectId(user["companyId"]),
-                 "$or": [{"campaignId.$id": campaign_oid}, {"campaignId": campaign_oid}],
-                 "assignedTo": None},
-                {"$set": {
-                    "assignedTo": {"$ref": "users", "$id": agent_oid},
-                    "assignedAt": now,
-                    "claimedAt": now,
-                    "campaignStatus": CAMPAIGN_LEAD_STATUS.ASSIGNED,
-                    "updatedAt": now,
+            company_id = PydanticObjectId(user["companyId"])
+            candidates = self._lead_collection().aggregate([
+                {"$match": {
+                    "companyId": company_id,
+                    "$or": [{"campaignId.$id": campaign.id}, {"campaignId": campaign.id}],
+                    "assignedTo": None,
                 }},
-                sort=[("importedAt", 1)],
-                return_document=True,
-            )
+                *live_campaign_lead_join(company_id),
+                {"$sort": {"importedAt": 1, "_id": 1}},
+                {"$project": {
+                    "lead.lead_id": 1, "lead.fullName": 1, "lead.status": 1,
+                    "lead.priority": 1, "lead.companyName": 1,
+                }},
+            ])
+            async for candidate in candidates:
+                try:
+                    await self.claim_lead(campaign_id, str(candidate["_id"]), user, only_unassigned=True)
+                except AppException as error:
+                    if error.status_code in (404, 409):
+                        continue
+                    raise
+                candidate["_id"] = str(candidate["_id"])
+                candidate["campaignStatus"] = CAMPAIGN_LEAD_STATUS.ASSIGNED.value
+                candidate["claimedAt"] = datetime.now(timezone.utc)
+                return {"claimed": True, "campaignLead": candidate}
 
-            if not claimed:
-                return {"claimed": False, "message": "No unassigned leads available"}
-
-            # $inc assignedLeads on campaign
-            camp_collection = self._collection()
-            await camp_collection.update_one(
-                {"_id": campaign_oid},
-                {"$inc": {"assignedLeads": 1}, "$set": {"updatedAt": now}},
-            )
-
-            # Fetch joined lead details
-            pipeline = [
-                {"$match": {"_id": claimed["_id"]}},
-                {
-                    "$lookup": {
-                        "from": "leads",
-                        "localField": "leadId.$id",
-                        "foreignField": "_id",
-                        "as": "lead",
-                    }
-                },
-                {"$unwind": {"path": "$lead", "preserveNullAndEmptyArrays": True}},
-                {
-                    "$project": {
-                        "_id": {"$toString": "$_id"},
-                        "campaignStatus": 1,
-                        "claimedAt": 1,
-                        "lead.lead_id": 1,
-                        "lead.fullName": 1,
-                        "lead.status": 1,
-                        "lead.priority": 1,
-                        "lead.companyName": 1,
-                    }
-                },
-            ]
-            enriched = await cl_collection.aggregate(pipeline).to_list(length=1)
-
-            return {
-                "claimed": True,
-                "campaignLead": enriched[0] if enriched else {"_id": str(claimed["_id"])},
-            }
+            return {"claimed": False, "message": "No unassigned leads available"}
 
         except AppException:
             raise
@@ -1533,6 +1544,8 @@ class CampaignService:
         campaign_id: str,
         campaign_lead_id: str,
         user: Dict[str, Any],
+        *,
+        only_unassigned: bool = False,
     ) -> Dict[str, Any]:
         """
         Atomically claim a specific unassigned campaign lead. If someone else
@@ -1553,13 +1566,14 @@ class CampaignService:
             now = datetime.now(timezone.utc)
             cl_collection = self._lead_collection()
 
+            link_filter = {
+                "_id": cl_oid,
+                "companyId": PydanticObjectId(user["companyId"]),
+                "$or": [{"campaignId.$id": campaign.id}, {"campaignId": campaign.id}],
+            }
+            link = await self._require_live_campaign_lead(link_filter)
             claimed = await cl_collection.find_one_and_update(
-                {
-                    "_id": cl_oid,
-                    "companyId": PydanticObjectId(user["companyId"]),
-                    "$or": [{"campaignId.$id": campaign.id}, {"campaignId": campaign.id}],
-                    "assignedTo": None,
-                },
+                {**link_filter, "leadId": link["leadId"], "assignedTo": None},
                 {"$set": {
                     "assignedTo": {"$ref": "users", "$id": agent_oid},
                     "assignedAt": now,
@@ -1571,14 +1585,8 @@ class CampaignService:
             )
             newly_claimed = claimed is not None
             if not claimed:
-                claimed = await cl_collection.find_one({
-                    "_id": cl_oid,
-                    "companyId": PydanticObjectId(user["companyId"]),
-                    "$or": [{"campaignId.$id": campaign.id}, {"campaignId": campaign.id}],
-                })
-                if not claimed:
-                    raise AppException(404, "Campaign lead not found")
-                if self._reference_id(claimed.get("assignedTo")) != agent_oid:
+                claimed = await self._require_live_campaign_lead(link_filter)
+                if only_unassigned or self._reference_id(claimed.get("assignedTo")) != agent_oid:
                     raise AppException(409, "This lead has already been taken by someone else")
 
             # Retries can repair global assignment without counting a second claim.
@@ -1589,23 +1597,24 @@ class CampaignService:
                 )
 
             lead_oid = self._reference_id(claimed.get("leadId"))
-            if lead_oid:
-                await self._global_leads_collection().update_one(
-                    {"_id": lead_oid, "companyId": PydanticObjectId(user["companyId"])},
-                    {
-                        "$addToSet": {"assignedTo": {"$ref": "users", "$id": agent_oid}},
-                        "$set": {
-                            "isAssigned": True,
-                            "assignedAt": now,
-                            "assignedBy": {"$ref": "users", "$id": agent_oid},
-                            "updatedAt": now,
-                        },
+            result = await self._global_leads_collection().update_one(
+                live_lead_filter({"_id": lead_oid, "companyId": PydanticObjectId(user["companyId"])}),
+                {
+                    "$addToSet": {"assignedTo": {"$ref": "users", "$id": agent_oid}},
+                    "$set": {
+                        "isAssigned": True,
+                        "assignedAt": now,
+                        "assignedBy": {"$ref": "users", "$id": agent_oid},
+                        "updatedAt": now,
                     },
-                )
+                },
+            )
+            if result.matched_count == 0:
+                raise AppException(404, "Campaign lead not found")
 
             return {
                 "claimed": True,
-                "leadId": str(lead_oid) if lead_oid else None,
+                "leadId": str(lead_oid),
                 "campaignLeadId": str(cl_oid),
             }
         except AppException:
@@ -1672,8 +1681,7 @@ class CampaignService:
             leads = await LeadsModel.find({
                 "_id": {"$in": lead_ids},
                 "companyId": company_oid,
-                "deletedAt": None,
-                "status": {"$nin": ["delete", "deleted"]},
+                **live_lead_filter(),
             }).sort([("createdAt", -1), ("_id", -1)]).to_list(length=None)
 
             matching_leads = []
@@ -1814,11 +1822,7 @@ class CampaignService:
                 {"$group": {"_id": {"$ifNull": ["$leadId.$id", "$leadId"]}}},
                 {"$lookup": {"from": "leads", "localField": "_id", "foreignField": "_id", "as": "lead"}},
                 {"$unwind": "$lead"},
-                {"$match": {
-                    "lead.companyId": company_oid,
-                    "lead.deletedAt": None,
-                    "lead.status": {"$nin": ["delete", "deleted"]},
-                }},
+                {"$match": live_lead_filter({"lead.companyId": company_oid}, prefix="lead.")},
                 {"$group": {
                     "_id": {
                         "status": "$lead.status",

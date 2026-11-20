@@ -1,3 +1,4 @@
+from app.utils.record_visibility import live_deal_filter, live_lead_filter
 from app.services.lead_status_service import LeadStatusService
 from typing import Dict, Any, Optional
 from datetime import datetime, timezone, timedelta
@@ -99,6 +100,10 @@ class CompanyAdminDashboardService:
 
     async def _aggregate(self, model, pipeline: list) -> list:
         collection = database_module.db[model.Settings.name]
+        if model is LeadsModel:
+            pipeline = [{"$match": live_lead_filter()}, *pipeline]
+        elif model is DealModel:
+            pipeline = [{"$match": live_deal_filter()}, *pipeline]
         cursor = collection.aggregate(pipeline)
         return await cursor.to_list(length=None)
 

@@ -3,6 +3,7 @@ from typing import Optional
 
 from beanie import PydanticObjectId
 
+from app.utils.record_visibility import live_deal_filter, live_lead_filter
 from app.core.crypto import encryptor
 from app.core.security import hash_value
 from app.db.models.deal_model import DealModel
@@ -205,9 +206,7 @@ class CommercialRelationshipService:
         return organization, person
 
     async def sync_company_records(self, user_id: str) -> dict:
-        leads = await LeadsModel.find(
-            {"deletedAt": None, "status": {"$ne": "delete"}}
-        ).to_list()
+        leads = await LeadsModel.find(live_lead_filter()).to_list()
 
         synced_leads = 0
         lead_org_map: dict[str, tuple[Optional[PydanticObjectId], Optional[PydanticObjectId]]] = {}
@@ -224,9 +223,7 @@ class CommercialRelationshipService:
                 synced_leads += 1
             lead_org_map[str(lead.id)] = (new_org_id, new_person_id)
 
-        deals = await DealModel.find(
-            {"deletedAt": None, "status": {"$ne": "delete"}}
-        ).to_list()
+        deals = await DealModel.find(live_deal_filter()).to_list()
 
         synced_deals = 0
         for deal in deals:
@@ -238,7 +235,7 @@ class CommercialRelationshipService:
                 continue
             mapped = lead_org_map.get(str(lead_oid))
             if not mapped:
-                linked_lead = await LeadsModel.find_one({"_id": lead_oid})
+                linked_lead = await LeadsModel.find_one(live_lead_filter({"_id": lead_oid}))
                 if linked_lead:
                     mapped = (linked_lead.organizationId, linked_lead.personId)
             if not mapped:

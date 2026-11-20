@@ -1,3 +1,4 @@
+from app.utils.record_visibility import DELETED_STATUSES, live_deal_filter, live_lead_filter
 from app.utils.transaction_retry import retry_transaction
 from app.services.lead_status_service import LeadStatusService
 from typing import Dict, Any
@@ -52,13 +53,15 @@ class DealService:
                 lead = None
                 if lead_id:
                     is_exist = await self.repo.find_by_lead(
-                        leadId=PydanticObjectId(lead_id)
+                        leadId=PydanticObjectId(lead_id), session=session,
                     )
-                    if is_exist and is_exist.status != DEAL_STATUS.DELETE.value:
+                    if is_exist:
                         raise AppException(
                             400, "Deal already exist for this lead, process stopped"
                         )
-                    lead = await self.leadRepo.find_by_id(PydanticObjectId(lead_id))
+                    lead = await self.leadRepo.find_one(
+                        live_lead_filter({"_id": PydanticObjectId(lead_id)}), session=session,
+                    )
                     if not lead:
                         raise AppException(404, "Lead not found against lead id")
                     organization, person = await CommercialRelationshipService().ensure_for_lead(
@@ -249,6 +252,8 @@ class DealService:
                 if date_filter:
                     query.update({"createdAt": date_filter})
  
+            query = live_deal_filter(query)
+
             if filters.get("attention"):
                 return await get_attention_queue(query, filters["attention"], page, limit)
 
@@ -283,6 +288,14 @@ class DealService:
             if not result:
                 raise AppException(404, "Deal data not found")
  
+            for deal in result["data"]:
+                linked_lead = deal.get("lead_id")
+                if linked_lead and (
+                    not linked_lead.get("lead_id") or linked_lead.get("deletedAt") is not None
+                    or linked_lead.get("status") in DELETED_STATUSES
+                ):
+                    deal["lead_id"] = None
+
             result = jsonable_encoder(
                 result,
                 exclude={
@@ -325,7 +338,10 @@ class DealService:
                     isManager = True
 
             
-            result = await self.repo.find_by_id(id=PydanticObjectId(dealId), populate=["createdBy", "lead_id", "updatedBy", "assignedTo"])
+            result = await self.repo.find_one(
+                live_deal_filter({"_id": PydanticObjectId(dealId)}),
+                populate=["createdBy", "lead_id", "updatedBy", "assignedTo"],
+            )
             if not result:
                 raise AppException(404, "Deal not found against this id")
             
@@ -341,6 +357,9 @@ class DealService:
                 raise AppException(403, "Unauthorized, only admin, manager or creator access deal")
             
             lead = result.get("lead_id") or {}
+            if not lead.get("lead_id") or lead.get("deletedAt") is not None or lead.get("status") in DELETED_STATUSES:
+                result["lead_id"] = None
+                lead = {}
             email = lead.get("email")
             phone = lead.get("phone")
 
@@ -395,15 +414,15 @@ class DealService:
                     isCreator:bool = False
                     isManager:bool = False
 
-                    deal = await self.repo.find_by_id(id=PydanticObjectId(id), populate=["createdBy"])
+                    deal = await self.repo.find_one(
+                        live_deal_filter({"_id": PydanticObjectId(id)}),
+                        populate=["createdBy"], session=session,
+                    )
                     if not deal:
                         raise AppException(404, "deal not found against this id")
                     
                     deal = deal.model_dump(mode="json")
                     
-                    if deal["dealStage"] == DEAL_STAGES.DELETE.value and deal["status"] == DEAL_STATUS.DELETE.value:
-                        raise AppException(400, f"Update operation failed, {deal["dealName"]} deal deleted")
-
                     
 
                     if not isAdmin:
@@ -570,7 +589,10 @@ class DealService:
                     is_admin = validate_admin_company_admin(user["userRole"])
                     is_creator = False
 
-                    result = await self.repo.find_by_id(id=PydanticObjectId(id), populate=["createdBy", "lead_id"])
+                    result = await self.repo.find_one(
+                        live_deal_filter({"_id": PydanticObjectId(id)}),
+                        populate=["createdBy"], session=session,
+                    )
 
                     if not result:
                         raise AppException(404, "No deal data found again deal Id")
@@ -578,9 +600,6 @@ class DealService:
                     if result.dealStage == DEAL_STAGES.WON.value:
                         raise AppException(400, "Deal is won, deletion failed")
 
-                    if result.dealStage == DEAL_STAGES.DELETE.value and result.status == DEAL_STATUS.DELETE:
-                        raise AppException(400, "Deal already deleted")
-                    
                     if result.inQuotation:
                         raise AppException(400, "Deletion failed, Deal in under quotation")
                     
@@ -599,12 +618,17 @@ class DealService:
 
                     deleted = await self.repo.update(id=PydanticObjectId(id), data=payload, session=session)
 
-                    if result.lead_id:
+                    linked_lead = (
+                        await self.leadRepo.find_one(
+                            live_lead_filter({"_id": result.lead_id.ref.id}), session=session,
+                        ) if result.lead_id else None
+                    )
+                    if linked_lead:
                         lead_payload = {
                             "inDeal": False,
                             "status": await LeadStatusService().resolve(session=session)
                         }
-                        lead_update = await self.leadRepo.update(id=PydanticObjectId(result.lead_id.id), data=lead_payload, session=session)
+                        lead_update = await self.leadRepo.update(id=linked_lead.id, data=lead_payload, session=session)
                         if not lead_update:
                             raise AppException(400, "Lead fields are not updated")
 
@@ -618,19 +642,16 @@ class DealService:
                     if not is_activity:
                         raise AppException(400, "Activity not created")
                     
-                    await FastAPICache.get_backend().clear(namespace=DEAL_CACHE_NAMESPACE)
-                    await FastAPICache.get_backend().clear(namespace=DEAL_CACHE_NAMESPACE_BY_ID)
-                    await FastAPICache.get_backend().clear(namespace=LEAD_CACHE_NAMESPACE)
-                    
-                    return result.model_dump(mode="json")
-
-
                 except AppException as e:
                     raise
                 except Exception as e:
                     
                     raise AppException(500, f"Internal server error {e}")
 
+        await FastAPICache.get_backend().clear(namespace=DEAL_CACHE_NAMESPACE)
+        await FastAPICache.get_backend().clear(namespace=DEAL_CACHE_NAMESPACE_BY_ID)
+        await FastAPICache.get_backend().clear(namespace=LEAD_CACHE_NAMESPACE)
+        return result.model_dump(mode="json")
 
     async def bulk_assign(self, deal_ids: list, assigned_to_id: str, user: Dict[str, Any]) -> Dict[str, Any]:
         """Bulk assign multiple deals to a specific user. Uses batch update for efficiency."""
@@ -665,8 +686,8 @@ class DealService:
             }
 
             # Use bulk update for efficiency
-            updated_count = await self.repo.bulk_update_by_ids(
-                ids=valid_object_ids,
+            updated_count = await self.repo.bulk_update(
+                filters=live_deal_filter({"_id": {"$in": valid_object_ids}}),
                 data=update_payload,
             )
 

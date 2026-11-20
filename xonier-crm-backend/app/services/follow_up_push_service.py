@@ -8,6 +8,7 @@ import uuid
 from datetime import datetime, timedelta, timezone
 from beanie import PydanticObjectId
 from pymongo import ReturnDocument
+from app.utils.record_visibility import live_lead_filter
 from app.core.config import get_setting
 from app.core.crypto import encryptor
 from app.db.db import Client
@@ -74,8 +75,7 @@ class FollowUpPushService:
                 "followUpAt": {"$gte": now - WINDOW, "$lte": now + timedelta(minutes=5)},
                 "followUpOwnerId": {"$ne": None},
                 "companyId": {"$ne": None},
-                "deletedAt": None,
-                "status": {"$ne": "delete"},
+                **live_lead_filter(),
             },
             {"_id": 1, "companyId": 1, "followUpOwnerId": 1, "followUpAt": 1},
         )
@@ -130,8 +130,9 @@ class FollowUpPushService:
         if not current or utc(current["expiresAt"]) <= now:
             return
         lead = await self._db()["leads"].find_one({
-            "_id": job["leadId"], "companyId": job["companyId"], "deletedAt": None,
-            "status": {"$ne": "delete"}, "followUpOwnerId": job["userId"],
+            "_id": job["leadId"], "companyId": job["companyId"],
+            "followUpOwnerId": job["userId"],
+            **live_lead_filter(),
             "followUpAt": job["scheduledAt"],
         }, {"fullName": 1})
         user = await self._db()["users"].find_one({
@@ -157,8 +158,9 @@ class FollowUpPushService:
             if not latest:
                 return
             latest_lead = await self._db()["leads"].find_one({
-                "_id": job["leadId"], "companyId": job["companyId"], "deletedAt": None,
-                "status": {"$ne": "delete"}, "followUpOwnerId": job["userId"],
+                "_id": job["leadId"], "companyId": job["companyId"],
+                "followUpOwnerId": job["userId"],
+                **live_lead_filter(),
                 "followUpAt": job["scheduledAt"],
             }, {"_id": 1})
             latest_user = await self._db()["users"].find_one({

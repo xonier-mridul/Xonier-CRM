@@ -1,4 +1,5 @@
 from typing import Dict, Any, List
+from app.utils.record_visibility import live_deal_filter, live_lead_filter
 from app.utils.custom_exception import AppException
 from app.repositories.event_repository import EventRepository
 from fastapi.encoders import jsonable_encoder
@@ -259,7 +260,12 @@ class EventService:
                 (EnquiryModel, "enquiry", "fullName"),
             ]
             for model, entity_type, title_field in follow_up_sources:
-                records = await model.find(follow_up_query).to_list()
+                query = follow_up_query
+                if model is LeadsModel:
+                    query = live_lead_filter(query)
+                elif model is DealModel:
+                    query = live_deal_filter(query)
+                records = await model.find(query).to_list()
                 for record in records:
                     start = record.followUpAt
                     if start.tzinfo is None:

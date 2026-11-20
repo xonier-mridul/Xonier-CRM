@@ -1,6 +1,7 @@
 from typing import Dict, Any
 from datetime import datetime, timezone
 from beanie import PydanticObjectId
+from app.utils.record_visibility import live_lead_filter
 from app.utils.custom_exception import AppException
 from app.utils.validate_admin import validate_admin, validate_admin_company_admin
 from app.repositories.activity_repository import ActivityRepository
@@ -393,7 +394,7 @@ class ActivityService:
             company_id = PydanticObjectId(user["companyId"])
 
             lead = await self.leadRepo.model.get_pymongo_collection().find_one(
-                {"_id": lead_oid, "companyId": company_id, "deletedAt": None}, {"_id": 1}
+                live_lead_filter({"_id": lead_oid, "companyId": company_id}), {"_id": 1}
             )
             if not lead:
                 raise AppException(404, "Lead not found")
@@ -527,7 +528,7 @@ class ActivityService:
                         leadId = PydanticObjectId(call_act.entityId)
                         lead_update_data: dict = {}
                         previous_lead = await LeadsModel.get_pymongo_collection().find_one(
-                            {"_id": leadId, "companyId": PydanticObjectId(user["companyId"])},
+                            live_lead_filter({"_id": leadId, "companyId": PydanticObjectId(user["companyId"])}),
                             {"fullName": 1, "followUpOwnerId": 1},
                             session=session,
                         )
@@ -553,7 +554,7 @@ class ActivityService:
                             # scoped collection avoids any repository/session
                             # scope ambiguity between the mobile and web flows.
                             write_result = await LeadsModel.get_pymongo_collection().update_one(
-                                {"_id": leadId, "companyId": PydanticObjectId(user["companyId"])},
+                                live_lead_filter({"_id": leadId, "companyId": PydanticObjectId(user["companyId"])}),
                                 {"$set": lead_update_data},
                                 session=session,
                             )

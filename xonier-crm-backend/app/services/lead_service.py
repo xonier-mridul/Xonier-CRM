@@ -1,3 +1,4 @@
+from app.utils.record_visibility import DELETED_STATUSES, live_lead_filter
 from app.utils.transaction_retry import retry_transaction
 from typing import Dict, Any, List
 import re
@@ -15,6 +16,7 @@ from app.core.crypto import encryptor
 from app.core.constants import (
     SUPER_ADMIN_CODE,
     LEAD_CACHE_NAMESPACE,
+    DEAL_CACHE_NAMESPACE,
     USER_LEAD_CACHE_NAMESPACE,
     
 )
@@ -471,7 +473,7 @@ class LeadService:
                         {
                             "_id": {"$in": lead_object_ids},
                             "companyId": PydanticObjectId(user["companyId"]),
-                            "deletedAt": None
+                            **live_lead_filter(),
                         },
                         {"_id": 1, "lead_id": 1, "assignedTo": 1}
                     ).to_list(length=None)
@@ -594,7 +596,7 @@ class LeadService:
                         {
                             "_id": {"$in": lead_object_ids},
                             "companyId": PydanticObjectId(user["companyId"]),
-                            "deletedAt": None
+                            **live_lead_filter(),
                         },
                         {"_id": 1, "lead_id": 1, "isAssigned": 1, "assignedTo": 1}
                     ).to_list(length=None)
@@ -728,7 +730,7 @@ class LeadService:
                         {
                             "_id": {"$in": lead_object_ids},
                             "companyId": PydanticObjectId(user["companyId"]),
-                            "deletedAt": None
+                            **live_lead_filter(),
                         },
                         {"_id": 1, "lead_id": 1, "assignedTo": 1, "isAssigned": 1}
                     ).to_list(length=None)
@@ -853,7 +855,7 @@ class LeadService:
             is_admin_or_manager = await self._is_admin_or_manager(user)
             user_object_id = PydanticObjectId(user["_id"])
 
-            query: Dict[str, Any] = {"status": {"$ne": SALES_STATUS.DELETE.value}}
+            query: Dict[str, Any] = {}
             and_conditions: List[Dict[str, Any]] = []
 
             # Normal users/agents can ONLY see leads assigned to them.
@@ -893,7 +895,6 @@ class LeadService:
                 query["status"] = {"$nin": sorted(excluded_status_keys)}
                 query["inDeal"] = {"$ne": True}
                 query["disqualifiedAt"] = None
-                query["deletedAt"] = None
 
             if "leadid" in filters:
                 query.update({"lead_id": {"$regex": re.escape(filters["leadid"]), "$options": "i"}})
@@ -982,6 +983,8 @@ class LeadService:
 
             if and_conditions:
                 query["$and"] = and_conditions
+
+            query = live_lead_filter(query)
 
             from enum import Enum
             def serialize_for_cache(v):
@@ -1116,7 +1119,10 @@ class LeadService:
                     camp_names: Dict[str, str] = {}
                     if campaign_oids:
                         camp_docs = await CampaignModel.get_pymongo_collection().find(
-                            {"_id": {"$in": campaign_oids}}, {"name": 1}
+                            {
+                                "_id": {"$in": campaign_oids}, "deletedAt": None,
+                                "status": {"$ne": "deleted"},
+                            }, {"name": 1}
                         ).to_list(length=None)
                         camp_names = {str(c["_id"]): c.get("name") for c in camp_docs}
 
@@ -1174,6 +1180,7 @@ class LeadService:
             if "type" in filters:
                 query.update({"projectType": filters["type"]})
 
+            query = live_lead_filter(query)
             cache_query = {
                 k: str(v) if isinstance(v, PydanticObjectId) else v
                 for k, v in query.items()
@@ -1231,7 +1238,7 @@ class LeadService:
             page = filters.get("page") or 1
             limit = filters.get("limit") or 10
 
-            query = {"status": {"$in": await LeadStatusService().keys("final")}}
+            query = live_lead_filter({"status": {"$in": await LeadStatusService().keys("final")}})
 
             if "leadid" in filters:
                 query.update({"lead_id": filters["leadid"]})
@@ -1278,8 +1285,9 @@ class LeadService:
             if not ObjectId.is_valid(id):
                 raise AppException(400, "Invalid lead object id")
            
-            result = await self.repo.find_by_id(
-                id=id, populate=["createdBy", "updatedBy", "assignedTo"]
+            result = await self.repo.find_one(
+                live_lead_filter({"_id": PydanticObjectId(id)}),
+                populate=["createdBy", "updatedBy", "assignedTo"],
             )
 
             if not result:
@@ -1365,11 +1373,11 @@ class LeadService:
                     new_status = payload.get("status")
                     if new_status:
                         payload["status"] = await LeadStatusService().resolve(new_status, session=session)
-                    if new_status == SALES_STATUS.DELETE.value:
+                    if new_status in DELETED_STATUSES:
                         raise AppException(400, "Action denied, can not set status delete")
                     
                     
-                    if lead.status == SALES_STATUS.DELETE.value:
+                    if lead.status in DELETED_STATUSES or getattr(lead, "deletedAt", None) is not None:
                         raise AppException(400, "Action denied, Lead is deleted")
 
                     for item in lead.assignedTo or []:
@@ -1463,11 +1471,11 @@ class LeadService:
                     if not lead:
                         raise AppException(404, "Lead data not found")
                     
-                    if payload["status"] == SALES_STATUS.DELETE.value:
+                    if payload["status"] in DELETED_STATUSES:
                         raise AppException(400, "Action denied, can not set status delete")
                     
                     
-                    if lead.status == SALES_STATUS.DELETE.value:
+                    if lead.status in DELETED_STATUSES or getattr(lead, "deletedAt", None) is not None:
                         raise AppException(400, "Action denied, Lead is deleted")
                     if lead.status == "disqualified":
                         raise AppException(400, "Disqualified leads cannot be moved through the pipeline")
@@ -1522,7 +1530,7 @@ class LeadService:
                 lead = await self.repo.find_by_id(PydanticObjectId(leadId), populate=["assignedTo"])
                 if not lead:
                     raise AppException(404, "Lead data not found")
-                if lead.status == SALES_STATUS.DELETE.value:
+                if lead.status in DELETED_STATUSES or getattr(lead, "deletedAt", None) is not None:
                     raise AppException(400, "Action denied, Lead is deleted")
                 if lead.inDeal:
                     raise AppException(400, "A lead already converted to a deal cannot be disqualified")
@@ -1565,11 +1573,11 @@ class LeadService:
                     if not lead:
                         raise AppException(404, "Lead data not found")
                     
-                    if payload["status"] == SALES_STATUS.DELETE.value:
+                    if payload["status"] in DELETED_STATUSES:
                         raise AppException(400, "Action denied, can not set status delete")
                     
                     
-                    if lead.status == SALES_STATUS.DELETE.value:
+                    if lead.status in DELETED_STATUSES or getattr(lead, "deletedAt", None) is not None:
                         raise AppException(400, "Action denied, Lead is deleted")
 
                     for item in lead.assignedTo or []:
@@ -1687,7 +1695,7 @@ class LeadService:
                     if not result:
                         raise AppException(404, "Lead data not found")
                     
-                    if result.status == SALES_STATUS.DELETE.value:
+                    if result.status in DELETED_STATUSES or result.deletedAt is not None:
                         raise AppException(400, "Action denied, Lead is already deleted")
                     
                     if result.inDeal:
@@ -1714,19 +1722,16 @@ class LeadService:
                     if not is_activity:
                         raise AppException(400, "Activity log failed")
 
-                    await FastAPICache.get_backend().clear(namespace=LEAD_CACHE_NAMESPACE)
-                    await FastAPICache.get_backend().clear(namespace=USER_LEAD_CACHE_NAMESPACE)
-
-                    return True
-
                 except AppException:
                     raise
 
                 except Exception as e:
                     raise AppException(status_code=500, message=f"Internal server error: {e}")
 
-
-
+        await FastAPICache.get_backend().clear(namespace=LEAD_CACHE_NAMESPACE)
+        await FastAPICache.get_backend().clear(namespace=USER_LEAD_CACHE_NAMESPACE)
+        await FastAPICache.get_backend().clear(namespace=DEAL_CACHE_NAMESPACE)
+        return True
 
     async def bulkDelete(self, payload: Dict[str, Any], user: Dict[str, Any]):
         async with await self.client.start_session() as session:
@@ -1768,7 +1773,7 @@ class LeadService:
                     eligible_leads = []
  
                     for lead in (leads or []):
-                        if lead.status == SALES_STATUS.DELETE.value:
+                        if lead.status in DELETED_STATUSES or getattr(lead, "deletedAt", None) is not None:
                             failed_leads.append({
                                 "id": str(lead.id),
                                 "lead_id": lead.lead_id,
@@ -1825,10 +1830,7 @@ class LeadService:
  
                         deleted_count = len(eligible_leads)
  
-                        await FastAPICache.get_backend().clear(namespace=LEAD_CACHE_NAMESPACE)
-                        await FastAPICache.get_backend().clear(namespace=USER_LEAD_CACHE_NAMESPACE)
- 
-                    return {
+                    result = {
                         "totalRequested": len(leadsIds),
                         "deletedCount": deleted_count,
                         "failedCount": len(failed_leads),
@@ -1840,7 +1842,12 @@ class LeadService:
  
                 except Exception as e:
                     raise AppException(status_code=500, message=f"Internal server error: {e}")
- 
+
+        if result["deletedCount"]:
+            await FastAPICache.get_backend().clear(namespace=LEAD_CACHE_NAMESPACE)
+            await FastAPICache.get_backend().clear(namespace=USER_LEAD_CACHE_NAMESPACE)
+            await FastAPICache.get_backend().clear(namespace=DEAL_CACHE_NAMESPACE)
+        return result
 
     async def get_all_deleted_leads(self, filters: Dict[str, Any], user: Dict[str, Any]):
         try:
@@ -1848,7 +1855,10 @@ class LeadService:
             limit = filters.get("limit") or 10
             skip = (page - 1) * limit
 
-            query = {"deletedAt": {"$ne": None, "$exists": True}}
+            query = {"$or": [
+                {"deletedAt": {"$ne": None}},
+                {"status": {"$in": list(DELETED_STATUSES)}},
+            ]}
 
             is_admin = validate_admin(user["userRole"])
 
@@ -1857,15 +1867,16 @@ class LeadService:
                 obj_members = [PydanticObjectId(item) for item in members]
 
                 if obj_members:
-                    query.update({
+                    query = {"$and": [query, {
                         "$or": [
                             {"createdBy.$id": {"$in": obj_members}},
                             {"assignedTo.$id": {"$in": obj_members}}
                         ]
-                    })
+                    }]}
 
             collection = LeadsModel.get_pymongo_collection()
 
+            query = LeadsModel._inject_scope(query)
             total = await collection.count_documents(query)
 
             cursor = collection.find(query).sort([("deletedAt", -1), ("_id", -1)]).skip(skip).limit(limit)

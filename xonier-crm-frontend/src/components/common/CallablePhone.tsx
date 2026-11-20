@@ -11,6 +11,7 @@ interface CallablePhoneProps {
   displayValue: string;
   fontSize?: string;
   onCallDisposed?: (leadId: string, connectStatus: string) => void;
+  onLeadUnavailable?: () => void;
   onLeadUpdated?: (leadId: string, lead: Partial<Lead>) => void;
   /** When called from a campaign, the backend verifies this exact assignment. */
   campaignAssignment?: CampaignLeadAssignment;
@@ -23,6 +24,7 @@ export default function CallablePhone({
   displayValue,
   fontSize = "[13px]",
   onCallDisposed,
+  onLeadUnavailable,
   onLeadUpdated,
   campaignAssignment,
   campaignId,
@@ -56,6 +58,10 @@ export default function CallablePhone({
           lead={lead}
           onClose={() => setOpen(false)}
           onDisposed={onCallDisposed}
+          onLeadUnavailable={onLeadUnavailable && (() => {
+            setOpen(false);
+            onLeadUnavailable();
+          })}
           onLeadUpdated={onLeadUpdated}
           campaignAssignment={campaignAssignment}
           campaignId={campaignId}

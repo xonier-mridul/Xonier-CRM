@@ -1,4 +1,6 @@
 from typing import List, Optional
+from typing import List, Optional
+from app.utils.record_visibility import live_deal_filter
 from app.db.models.deal_model import DealModel
 from motor.motor_asyncio import AsyncIOMotorClientSession
 from app.repositories.base_repository import BaseRepository
@@ -50,4 +52,4 @@ class DealRepository(BaseRepository):
 
     async def find_by_lead(self,leadId: PydanticObjectId, populate: Optional[List[str]] = None, session: Optional[AsyncIOMotorClientSession] = None):
        
-        return await self.find_one({"lead_id.$id": leadId})
+        return await self.find_one(live_deal_filter({"lead_id.$id": leadId}), populate=populate, session=session)

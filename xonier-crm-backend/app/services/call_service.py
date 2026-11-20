@@ -17,6 +17,7 @@ from typing import Any, Dict, Optional
 
 from beanie import PydanticObjectId
 
+from app.utils.record_visibility import live_lead_filter
 from app.core.crypto import Encryption
 from app.core.ws_manager import manager
 from app.db.models.call_session_model import (
@@ -158,7 +159,7 @@ class CallService:
                 raise AppException(400, "Invalid lead id")
 
             lead = await self._leads().find_one(
-                {"_id": lead_oid, "companyId": company, "deletedAt": None}
+                live_lead_filter({"_id": lead_oid, "companyId": company})
             )
             if not lead:
                 raise AppException(404, "Lead not found")
@@ -292,7 +293,7 @@ class CallService:
                 raise AppException(400, "Invalid lead id")
 
             exists = await self._leads().find_one(
-                {"_id": lead_oid, "companyId": company, "deletedAt": None}, {"_id": 1}
+                live_lead_filter({"_id": lead_oid, "companyId": company}), {"_id": 1}
             )
             if not exists:
                 raise AppException(404, "Lead not found")

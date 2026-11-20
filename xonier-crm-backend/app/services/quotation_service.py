@@ -1,3 +1,4 @@
+from app.utils.record_visibility import live_deal_filter
 from app.utils.custom_exception import AppException
 from app.utils.custom_response import successResponse
 from typing import Dict, Any, Optional
@@ -30,7 +31,6 @@ from app.core.enums import (
     DEAL_STAGES,
     QuotationStatus,
     QuotationEventType,
-    DEAL_STATUS,
     ACTIVITY_ACTION,
     ACTIVITY_ENTITY_TYPE,
     DEAL_PIPELINE, INVOICE_STATUS
@@ -104,8 +104,9 @@ class QuotationService:
                         if not ObjectId.is_valid(payload["deal"]):
                             raise AppException(400, "Invalid deal Id")
 
-                        deal = await self.dealRepo.find_by_id(
-                            PydanticObjectId(payload["deal"]), populate=["createdBy"]
+                        deal = await self.dealRepo.find_one(
+                            live_deal_filter({"_id": PydanticObjectId(payload["deal"])}),
+                            populate=["createdBy"], session=session,
                         )
 
                         if not deal:
@@ -117,14 +118,6 @@ class QuotationService:
                             raise AppException(
                                 400,
                                 "Action stopped, Already created quotation against this deal",
-                            )
-
-                        if (
-                            deal["dealStage"] == DEAL_STAGES.DELETE.value
-                            and deal["status"] == DEAL_STATUS.DELETE.value
-                        ):
-                            raise AppException(
-                                400, f"Quotation failed, {deal["dealName"]} deleted"
                             )
 
                         isAdmin = False

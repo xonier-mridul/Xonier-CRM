@@ -6,6 +6,7 @@ from beanie import PydanticObjectId
 from bson import ObjectId
 from fastapi import APIRouter, Depends, Query, Request
 
+from app.utils.record_visibility import live_deal_filter, live_lead_filter
 from app.core.dependencies import Dependencies
 from app.core.enums import FEATURE
 from app.core.security import hash_value
@@ -150,7 +151,7 @@ async def list_organizations(
         org_count = await OrganizationModel.find({"deletedAt": None}).count()
         if org_count == 0:
             lead_count = await LeadsModel.find(
-                {"deletedAt": None, "status": {"$ne": "delete"}}
+                live_lead_filter()
             ).count()
             if lead_count > 0:
                 await CommercialRelationshipService().sync_company_records(
@@ -197,13 +198,13 @@ async def list_organizations(
         people_counts = {str(r["_id"]): r["count"] for r in people_rows}
 
         lead_rows = await LeadsModel.get_pymongo_collection().aggregate([
-            {"$match": LeadsModel._inject_scope({"organizationId": {"$in": org_ids}, "deletedAt": None, "status": {"$ne": "delete"}})},
+            {"$match": LeadsModel._inject_scope(live_lead_filter({"organizationId": {"$in": org_ids}}))},
             {"$group": {"_id": "$organizationId", "count": {"$sum": 1}}},
         ]).to_list(length=None)
         lead_counts = {str(r["_id"]): r["count"] for r in lead_rows}
 
         deal_rows = await DealModel.get_pymongo_collection().aggregate([
-            {"$match": DealModel._inject_scope({"organizationId": {"$in": org_ids}, "deletedAt": None, "status": {"$ne": "delete"}})},
+            {"$match": DealModel._inject_scope(live_deal_filter({"organizationId": {"$in": org_ids}}))},
             {"$group": {"_id": "$organizationId", "count": {"$sum": 1}, "totalAmount": {"$sum": {"$ifNull": ["$amount", 0]}}}},
         ]).to_list(length=None)
         deal_counts = {str(r["_id"]): r["count"] for r in deal_rows}
@@ -212,10 +213,10 @@ async def list_organizations(
     total_orgs_all = await OrganizationModel.find({"deletedAt": None}).count()
     total_people_all = await PersonModel.find({"deletedAt": None}).count()
     linked_leads_all = await LeadsModel.find(
-        {"deletedAt": None, "status": {"$ne": "delete"}, "organizationId": {"$ne": None}}
+        live_lead_filter({"organizationId": {"$ne": None}})
     ).count()
     linked_deals_all = await DealModel.find(
-        {"deletedAt": None, "status": {"$ne": "delete"}, "organizationId": {"$ne": None}}
+        live_deal_filter({"organizationId": {"$ne": None}})
     ).count()
 
     items = []
@@ -320,21 +321,17 @@ async def organization_detail(request: Request, organization_id: str):
         .to_list()
     )
 
-    lead_query: dict = {
+    lead_query = live_lead_filter({
         "organizationId": org_oid,
-        "deletedAt": None,
-        "status": {"$ne": "delete"},
-    }
+    })
     lead_scope = await _accessible_lead_scope(request.state.user)
     if lead_scope:
         lead_query.update(lead_scope)
     leads = await LeadsModel.find(lead_query).sort([("createdAt", -1)]).to_list()
 
-    deal_query: dict = {
+    deal_query = live_deal_filter({
         "organizationId": org_oid,
-        "deletedAt": None,
-        "status": {"$ne": "delete"},
-    }
+    })
     deal_scope = await _accessible_deal_scope(request.state.user)
     if deal_scope:
         deal_query.update(deal_scope)
@@ -509,13 +506,13 @@ async def list_people(
 
     if person_ids:
         lead_rows = await LeadsModel.get_pymongo_collection().aggregate([
-            {"$match": LeadsModel._inject_scope({"personId": {"$in": person_ids}, "deletedAt": None, "status": {"$ne": "delete"}})},
+            {"$match": LeadsModel._inject_scope(live_lead_filter({"personId": {"$in": person_ids}}))},
             {"$group": {"_id": "$personId", "count": {"$sum": 1}}},
         ]).to_list(length=None)
         lead_counts = {str(r["_id"]): r["count"] for r in lead_rows}
 
         deal_rows = await DealModel.get_pymongo_collection().aggregate([
-            {"$match": DealModel._inject_scope({"personId": {"$in": person_ids}, "deletedAt": None, "status": {"$ne": "delete"}})},
+            {"$match": DealModel._inject_scope(live_deal_filter({"personId": {"$in": person_ids}}))},
             {"$group": {"_id": "$personId", "count": {"$sum": 1}}},
         ]).to_list(length=None)
         deal_counts = {str(r["_id"]): r["count"] for r in deal_rows}
@@ -610,21 +607,17 @@ async def person_detail(request: Request, person_id: str):
         else None
     )
 
-    lead_query: dict = {
+    lead_query = live_lead_filter({
         "personId": person_oid,
-        "deletedAt": None,
-        "status": {"$ne": "delete"},
-    }
+    })
     lead_scope = await _accessible_lead_scope(request.state.user)
     if lead_scope:
         lead_query.update(lead_scope)
     leads = await LeadsModel.find(lead_query).sort([("createdAt", -1)]).to_list()
 
-    deal_query: dict = {
+    deal_query = live_deal_filter({
         "personId": person_oid,
-        "deletedAt": None,
-        "status": {"$ne": "delete"},
-    }
+    })
     deal_scope = await _accessible_deal_scope(request.state.user)
     if deal_scope:
         deal_query.update(deal_scope)
