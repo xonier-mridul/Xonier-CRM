@@ -244,6 +244,7 @@ const handleChecked = (e: ChangeEvent<HTMLInputElement>) => {
             toast.success(`${formData.dealName} updated successfully`)
             setTimeout(() => {
                 router.push(`/deals/view/${dealData?.id}`)
+                router.refresh()
             }, 1600);
             setErr("")
         }

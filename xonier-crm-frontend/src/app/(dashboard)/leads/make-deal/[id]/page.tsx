@@ -71,6 +71,12 @@ const page = (): JSX.Element => {
   
 
     const [leadData, setLeadData] = useState<Lead | null>(null);
+const defaultExpectedCloseDate = (): string => {
+  const date = new Date();
+  date.setUTCDate(date.getUTCDate() + 30);
+  return date.toISOString().split("T")[0];
+};
+
   const [formData, setFormData] = useState<DealPayload>({
     lead_id: "",
     organizationId: null,
@@ -83,7 +89,7 @@ const page = (): JSX.Element => {
     dealOwner: null,
 
     createDate: new Date().toISOString().split("T")[0],
-    closeDate: null,
+    closeDate: defaultExpectedCloseDate(),
 
     amount: 0,
 
@@ -169,7 +175,22 @@ const page = (): JSX.Element => {
   const handleChange = (e: ChangeEvent<change>) => {
     const { name, value, type } = e.target;
     if (type === "number") {
-      setFormData({ ...formData, [name]: Number(value) });
+      if (value === "" && (name === "dealProbability" || name === "forecastProbability")) {
+        setFormData({ ...formData, [name]: null });
+      } else {
+        setFormData({ ...formData, [name]: Number(value) });
+      }
+    } else if (name === "dealStage") {
+      const prevProb = stages.find((s) => s.key === formData.dealStage)?.probability ?? null;
+      const nextProb = stages.find((s) => s.key === value)?.probability ?? null;
+      const shouldSyncProb =
+        nextProb != null &&
+        (formData.dealProbability == null || formData.dealProbability === prevProb);
+      setFormData({
+        ...formData,
+        dealStage: value,
+        ...(shouldSyncProb ? { dealProbability: nextProb } : {}),
+      });
     } else {
       setFormData({ ...formData, [name]: value });
     }
@@ -184,7 +205,10 @@ const page = (): JSX.Element => {
         const data = result.data.data ?? [];
         const requiredData = data.filter((item: any) => item.required === true);
         setRequiredIds(requiredData);
-        const ids = requiredData.map((item: any) => item.id);
+        const commercialDefaults = data
+          .filter((item: any) => ["closeDate", "dealProbability", "forecastCategory"].includes(item.key))
+          .map((item: any) => item.id);
+        const ids = Array.from(new Set([...requiredData.map((item: any) => item.id), ...commercialDefaults]));
         setSelectedFieldsIds(ids);
         setAllFormField(data);
       }
@@ -245,6 +269,10 @@ const page = (): JSX.Element => {
         toast.error("Select a configured deal stage.");
         return;
       }
+      if (!formData.closeDate) {
+        toast.error("Expected close date is required");
+        return;
+      }
       const result = await dealService.create(formData);
       if (result.status === 201) {
         toast.success(`${formData.dealName} deal created successfully`);
@@ -258,15 +286,15 @@ const page = (): JSX.Element => {
           dealOwner: null,
 
           createDate: new Date().toISOString().split("T")[0],
-          closeDate: null,
+          closeDate: defaultExpectedCloseDate(),
 
           amount: 0,
 
           dealCollaborator: null,
           dealDescription: null,
 
-          dealProbability: 0,
-          forecastProbability: 0,
+          dealProbability: null,
+          forecastProbability: null,
 
           nextStep: "",
           forecastCategory: null,
@@ -594,7 +622,7 @@ const page = (): JSX.Element => {
                         name={item.key}
                         label={currencyLabel(item.name, item.key, currency)}
                         options={item.key === "dealStage" ? stageOptions : item.options ?? []}
-                        value={item.key === "dealStage" ? formData.dealStage : undefined}
+                        value={item.key === "dealStage" ? formData.dealStage : fieldValue}
                         placeholder={item.placeholder ?? "Select"}
                         onChange={(e) => handleChange(e)}
                         required={item.required}

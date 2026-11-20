@@ -291,6 +291,7 @@ const LeadEditForm = ({ id, embedded = false, onSaved, campaignAssignment }: Lea
 
         setTimeout(() => {
           router.back();
+          router.refresh();
         }, 2000);
       }
     } catch (error) {

@@ -378,7 +378,7 @@ const Page = () => {
   }
 
   const handleDelete = async (id: string) => {
-    const {isConfirmed} = await ConfirmPopup({
+    const { isConfirmed } = await ConfirmPopup({
       title: t("are_you_sure_?"),
       text: t("confirm_delete_lead"),
       btnTxt: t("yes,delete")
@@ -397,7 +397,7 @@ const Page = () => {
       toast.error(t("no_leads_to_submit"))
       return
     }
-    const {isConfirmed} = await ConfirmPopup({
+    const { isConfirmed } = await ConfirmPopup({
       title: t("are_you_sure_?"),
       text: t("confirm_submitting_all_leads"),
       btnTxt: t("yes_submit_all")
@@ -428,7 +428,7 @@ const Page = () => {
     e.preventDefault()
 
     setIsLoading(true)
-    const {isConfirmed} = await ConfirmPopup({
+    const { isConfirmed } = await ConfirmPopup({
       title: t("are_you_sure_?"),
       text: t("confirm_submitting_leads"),
       btnTxt: t("yes_submit")
@@ -701,11 +701,10 @@ const Page = () => {
               <FiFileText className='text-base' />
               {t("download_csv_template")}
             </button>
-            <label className={`flex items-center gap-2 px-4 py-2 border-2 border-dashed rounded-lg text-sm cursor-pointer transition-all ${
-              isCsvProcessing
-                ? 'border-cyan-300 text-cyan-500 cursor-wait'
-                : 'border-slate-300 text-slate-600 hover:border-cyan-400 hover:text-cyan-700'
-            }`}>
+            <label className={`flex items-center gap-2 px-4 py-2 border-2 border-dashed rounded-lg text-sm cursor-pointer transition-all ${isCsvProcessing
+              ? 'border-cyan-300 text-cyan-500 cursor-wait'
+              : 'border-slate-300 text-slate-600 hover:border-cyan-400 hover:text-cyan-700'
+              }`}>
               <FiUploadCloud className='text-lg' />
               {isCsvProcessing ? t("processing") : t("bulk_upload_csv")}
               <input
@@ -716,7 +715,7 @@ const Page = () => {
                 disabled={isCsvProcessing}
               />
             </label>
-          
+
           </div>
         </div>
 
@@ -1204,7 +1203,7 @@ const Page = () => {
             </div>
 
             <div className='flex flex-wrap justify-end gap-3 mt-6'>
-           
+
               <FormButton
                 onClick={handleSubmitAll}
                 className="px-8 py-3 bg-gradient-to-r from-cyan-600 to-cyan-700 hover:from-cyan-700 hover:to-cyan-800 text-white rounded-lg font-semibold shadow-md hover:shadow-lg transition-all duration-200"

@@ -49,6 +49,8 @@ const DealContent = (): JSX.Element => {
   const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [dealData, setDealData] = useState<Deal[]>([]);
+  const [kanbanDeals, setKanbanDeals] = useState<Deal[]>([]);
+  const [kanbanRefresh, setKanbanRefresh] = useState<number>(0);
   const [wonDealData, setWonDealData] = useState<Deal[]>([]);
   const [lostDealData, setLostDealData] = useState<Deal[]>([]);
   const [totalRevenue, setTotalRevenue] = useState<number>(0);
@@ -364,6 +366,7 @@ const DealContent = (): JSX.Element => {
       const res = await dealService.updateStage(dealId, payload);
       if (res.status === 200) {
         toast.success(t("deal_stage_updated_successfully"));
+        setKanbanRefresh((prev) => prev + 1);
         await Promise.all([getDealData(), getWonDealData(), getLostDealData()]);
         return true;
       }
@@ -394,20 +397,27 @@ useEffect(() => {
         };
         const first = await dealService.getAll(1, 100, filters);
         const firstPage = first.data.data;
-        let total = (firstPage.data as Deal[]).reduce((sum, deal) => sum + (Number(deal.amount) || 0), 0);
+        const collected: Deal[] = [...(firstPage.data as Deal[])];
         for (let page = 2; page <= Number(firstPage.totalPages || 1); page += 1) {
           const response = await dealService.getAll(page, 100, filters);
-          total += (response.data.data.data as Deal[]).reduce((sum, deal) => sum + (Number(deal.amount) || 0), 0);
+          collected.push(...(response.data.data.data as Deal[]));
         }
-        if (!cancelled) setTotalRevenue(total);
+        const total = collected.reduce((sum, deal) => sum + (Number(deal.amount) || 0), 0);
+        if (!cancelled) {
+          setTotalRevenue(total);
+          setKanbanDeals(collected);
+        }
       } catch (error) {
         process.env.NEXT_PUBLIC_ENV === "development" && console.error("Failed to calculate deal revenue", error);
-        if (!cancelled) setTotalRevenue(0);
+        if (!cancelled) {
+          setTotalRevenue(0);
+          setKanbanDeals([]);
+        }
       }
     };
     loadRevenue();
     return () => { cancelled = true; };
-  }, [currentTab, searchVal, dateFilter, stageFilter, salesPersonFilter, assignedToFilter, userid]);
+  }, [currentTab, searchVal, dateFilter, stageFilter, salesPersonFilter, assignedToFilter, userid, kanbanRefresh]);
 
   if (showAttention) return <DealAttentionQueue stageLabel={stageLabel} onBack={() => setShowAttention(false)} />;
   if (configureStages && canConfigureStages) return <LeadStatusConfiguration entity="deal" onBack={() => setConfigureStages(false)} />;
@@ -688,7 +698,7 @@ useEffect(() => {
         {viewMode === "kanban" ? (
           <div className="w-full min-w-0 overflow-x-hidden mt-4">
             <DealKanbanBoard
-              deals={currentDealData}
+              deals={kanbanDeals}
               onStageChange={handleStageChange}
               stages={dealStages}
               canViewDeal={hasPermission(PERMISSIONS.readDeal)}

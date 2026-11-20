@@ -1394,6 +1394,24 @@ class LeadService:
                     for key, val in payload.items():
                         if key == "status" and not val:
                             continue
+                        if key == "email":
+                            if val:
+                                normalized_email = str(val).strip().lower()
+                                lead.email = encryptor.encrypt_data(normalized_email)
+                                lead.hashedEmail = hash_value(normalized_email)
+                            else:
+                                lead.email = None
+                                lead.hashedEmail = None
+                            continue
+                        if key == "phone":
+                            if val:
+                                normalized_phone = str(val).strip()
+                                lead.phone = encryptor.encrypt_data(normalized_phone)
+                                lead.hashedPhone = hash_value(normalized_phone)
+                            else:
+                                lead.phone = None
+                                lead.hashedPhone = None
+                            continue
                         setattr(lead, key, val)
 
                     organization, person = await CommercialRelationshipService().ensure_for_lead(
@@ -1416,15 +1434,15 @@ class LeadService:
                     if not is_activity:
                         raise AppException(400, "Activity log failed")
 
-                    await FastAPICache.get_backend().clear(namespace=LEAD_CACHE_NAMESPACE)
-                    await FastAPICache.get_backend().clear(namespace=USER_LEAD_CACHE_NAMESPACE)
-                    return True
-
                 except AppException:
                     raise
 
                 except Exception as e:
                     raise AppException(status_code=500, message=f"Internal server error: {e}")
+
+        await FastAPICache.get_backend().clear(namespace=LEAD_CACHE_NAMESPACE)
+        await FastAPICache.get_backend().clear(namespace=USER_LEAD_CACHE_NAMESPACE)
+        return True
 
     @retry_transaction
     async def update_status(self, leadId:str, user:Dict[str, Any], payload: Dict[str, Any]):

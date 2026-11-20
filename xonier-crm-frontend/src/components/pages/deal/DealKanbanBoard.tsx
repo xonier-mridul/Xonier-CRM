@@ -233,34 +233,50 @@ const DealKanbanBoard: React.FC<DealKanbanBoardProps> = ({
           {columns.map((column) => {
             const colDeals = boardData[column.id] || [];
             const colTotal = colDeals.reduce((sum, d) => sum + (Number(d.amount) || 0), 0);
+            let colMissingProb = 0;
             const colWeighted = colDeals.reduce((sum, d) => {
               const prob = d.forecastProbability ?? d.dealProbability ?? column.probability;
-              return prob == null ? sum : sum + (Number(d.amount) || 0) * Math.max(0, Math.min(100, prob)) / 100;
+              if (prob == null) {
+                colMissingProb += 1;
+                return sum;
+              }
+              return sum + (Number(d.amount) || 0) * Math.max(0, Math.min(100, prob)) / 100;
             }, 0);
             return (
             <div key={column.id} className="flex flex-col w-[300px] shrink-0">
               {/* Column Header */}
               <div
-                className={`px-3 py-2.5 rounded-t-lg border-t border-l border-r font-semibold text-sm`}
-                  style={{ color: column.color, backgroundColor: `${column.color}12`, borderColor: `${column.color}45` }}
+                className="px-3.5 py-3 rounded-t-lg border-t border-l border-r font-semibold text-sm"
+                style={{ color: column.color, backgroundColor: `${column.color}12`, borderColor: `${column.color}45` }}
               >
                 <div className="flex justify-between items-center gap-2">
                   <span className="flex items-center gap-2 min-w-0">
                     <span className="w-2 h-2 shrink-0 rounded-full" style={{ backgroundColor: column.color }} />
                     <span className="truncate">{column.title}</span>
                     {column.probability != null && (
-                      <span className="shrink-0 rounded bg-white/70 px-1.5 py-0.5 text-[10px] font-semibold tabular-nums">
+                      <span className="shrink-0 rounded bg-white/80 dark:bg-slate-800/80 px-1.5 py-0.5 text-[10px] font-semibold tabular-nums">
                         {column.probability}%
                       </span>
                     )}
                   </span>
-                  <span className="bg-white/60 px-2 py-0.5 rounded-full text-xs font-bold shrink-0">
+                  <span className="bg-white/75 dark:bg-slate-800/80 px-2 py-0.5 rounded-full text-xs font-bold shrink-0 tabular-nums">
                     {colDeals.length}
                   </span>
                 </div>
-                <div className="mt-1.5 flex items-center justify-between text-[11px] font-medium opacity-85 tabular-nums">
-                  <span>{formatCurrency(colTotal, currency)} total</span>
-                  <span>{formatCurrency(colWeighted, currency)} weighted</span>
+                <div
+                  className="mt-2 pt-2 border-t flex items-center justify-between gap-2 text-[11px] tabular-nums"
+                  style={{ borderColor: `${column.color}25` }}
+                >
+                  <div className="min-w-0">
+                    <span className="block text-[10px] uppercase tracking-wide opacity-70">Total</span>
+                    <span className="font-semibold">{formatCurrency(colTotal, currency)}</span>
+                  </div>
+                  <div className="min-w-0 text-right">
+                    <span className="block text-[10px] uppercase tracking-wide opacity-70">
+                      Weighted{colMissingProb > 0 ? ` (${colMissingProb} no %)` : ""}
+                    </span>
+                    <span className="font-bold">{formatCurrency(colWeighted, currency)}</span>
+                  </div>
                 </div>
               </div>
 

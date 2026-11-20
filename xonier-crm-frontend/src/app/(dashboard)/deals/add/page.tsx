@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "react-toastify";
 import axios from "axios";
-import { DEAL_STAGES, DEAL_TYPE, PERMISSIONS } from "@/src/constants/enum";
+import { DEAL_STAGES, DEAL_TYPE, FORECAST_CATEGORY, PERMISSIONS } from "@/src/constants/enum";
 import { usePermissions } from "@/src/hooks/usePermissions";
 import dealService from "@/src/services/deal.service";
 import extractErrorMessages from "@/src/app/utils/error.utils";
@@ -16,18 +16,33 @@ import { UserFormService } from "@/src/services/userForm.service";
 import { CustomField, UserForm } from "@/src/types/userForm/userForm.types";
 import CommercialEntitySelectors from "@/src/components/common/CommercialEntitySelectors";
 
+const addDays = (isoDate: string, days: number): string => {
+  const base = isoDate ? new Date(`${isoDate}T00:00:00Z`) : new Date();
+  base.setUTCDate(base.getUTCDate() + days);
+  return base.toISOString().slice(0, 10);
+};
+
+const endOfMonth = (isoDate: string, monthOffset = 0): string => {
+  const base = isoDate ? new Date(`${isoDate}T00:00:00Z`) : new Date();
+  const target = new Date(Date.UTC(base.getUTCFullYear(), base.getUTCMonth() + 1 + monthOffset, 0));
+  return target.toISOString().slice(0, 10);
+};
+
 const CreateDealPage = () => {
   const { statuses: stages, error: stageError } = useDealStages();
   const currency = useCompanyCurrency();
   const router = useRouter();
   const { hasPermission } = usePermissions();
+  const today = new Date().toISOString().slice(0, 10);
   const [dealName, setDealName] = useState("");
   const [dealStage, setDealStage] = useState<string>(DEAL_STAGES.QUALIFICATION);
   const [dealType, setDealType] = useState<DEAL_TYPE>(DEAL_TYPE.NEW_BUSINESS);
-  const [createDate, setCreateDate] = useState(new Date().toISOString().slice(0, 10));
-  const [closeDate, setCloseDate] = useState("");
+  const [createDate, setCreateDate] = useState(today);
+  const [closeDate, setCloseDate] = useState(() => addDays(today, 30));
   const [amount, setAmount] = useState("");
   const [dealProbability, setDealProbability] = useState("");
+  const [forecastProbability, setForecastProbability] = useState("");
+  const [forecastCategory, setForecastCategory] = useState<FORECAST_CATEGORY>(FORECAST_CATEGORY.PIPELINE);
   const [dealDescription, setDealDescription] = useState("");
   const [closedWonReason, setClosedWonReason] = useState("");
   const [closedLostReason, setClosedLostReason] = useState("");
@@ -45,7 +60,7 @@ const CreateDealPage = () => {
         const normalizedKey = field.key.toLowerCase().replace(/[\s_-]/g, "");
         const normalizedName = field.name.toLowerCase().replace(/[\s_-]/g, "");
         return normalizedKey !== "dealpipeline" && normalizedName !== "dealpipeline" &&
-          !["dealName", "amount", "dealStage", "dealType", "createDate", "closeDate", "dealDescription", "dealProbability"].includes(field.key);
+          !["dealName", "amount", "dealStage", "dealType", "createDate", "closeDate", "dealDescription", "dealProbability", "forecastProbability", "forecastCategory"].includes(field.key);
       }));
     }).catch(() => setExtraFields([]));
   }, []);
@@ -60,7 +75,7 @@ const CreateDealPage = () => {
     if (!stages.some(stage => stage.key === dealStage)) return setError(stageError || "Select a configured deal stage.");
     const isWon = ([DEAL_STAGES.WON, DEAL_STAGES.CLOSED_WON] as string[]).includes(dealStage);
     const isLost = dealStage === DEAL_STAGES.LOST;
-    if ((isWon || isLost) && !closeDate) return setError("Close date is required for Won/Lost deals");
+    if (!closeDate) return setError("Expected close date is required");
     if (isWon && !closedWonReason.trim()) return setError("Won reason is required");
     if (isLost && !closedLostReason.trim()) return setError("Lost reason is required");
     setSaving(true);
@@ -73,9 +88,11 @@ const CreateDealPage = () => {
         dealType,
         dealOwner: null,
         createDate,
-        closeDate: closeDate || null,
+        closeDate,
         amount: Number(amount),
         dealProbability: dealProbability === "" ? null : Math.max(0, Math.min(100, Number(dealProbability))),
+        forecastProbability: forecastProbability === "" ? null : Math.max(0, Math.min(100, Number(forecastProbability))),
+        forecastCategory,
         dealDescription: dealDescription.trim() || null,
         closedWonReason: closedWonReason.trim() || null,
         closedLostReason: closedLostReason.trim() || null,
@@ -139,7 +156,20 @@ const CreateDealPage = () => {
             </div>
             <div>
               <label className={labelClass} htmlFor="dealStage">Deal stage <span className="text-rose-500">*</span></label>
-              <select id="dealStage" className={inputClass} value={dealStage} onChange={(event) => setDealStage(event.target.value)}>
+              <select
+                id="dealStage"
+                className={inputClass}
+                value={dealStage}
+                onChange={(event) => {
+                  const nextStage = event.target.value;
+                  setDealStage(nextStage);
+                  if (([DEAL_STAGES.WON, DEAL_STAGES.CLOSED_WON, DEAL_STAGES.LOST] as string[]).includes(nextStage)) {
+                    setForecastCategory(FORECAST_CATEGORY.CLOSED);
+                  } else if (forecastCategory === FORECAST_CATEGORY.CLOSED) {
+                    setForecastCategory(FORECAST_CATEGORY.PIPELINE);
+                  }
+                }}
+              >
                 {stages.map(stage => <option key={stage.key} value={stage.key}>{stage.name}{stage.probability != null ? ` (${stage.probability}%)` : ""}</option>)}
               </select>
             </div>
@@ -161,6 +191,35 @@ const CreateDealPage = () => {
               />
             </div>
             <div>
+              <label className={labelClass} htmlFor="forecastProbability">Forecast probability (%)</label>
+              <input
+                id="forecastProbability"
+                className={inputClass}
+                type="number"
+                min="0"
+                max="100"
+                step="1"
+                value={forecastProbability}
+                onChange={(event) => setForecastProbability(event.target.value)}
+                placeholder="Optional override for forecast"
+              />
+            </div>
+            <div>
+              <label className={labelClass} htmlFor="forecastCategory">Forecast category</label>
+              <select
+                id="forecastCategory"
+                className={inputClass}
+                value={forecastCategory}
+                onChange={(event) => setForecastCategory(event.target.value as FORECAST_CATEGORY)}
+              >
+                {Object.values(FORECAST_CATEGORY).map((category) => (
+                  <option key={category} value={category}>
+                    {category.replaceAll("_", " ").replace(/^\w/, (letter) => letter.toUpperCase())}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
               <label className={labelClass} htmlFor="dealType">Deal type <span className="text-rose-500">*</span></label>
               <select id="dealType" className={inputClass} value={dealType} onChange={(event) => setDealType(event.target.value as DEAL_TYPE)}>
                 {Object.values(DEAL_TYPE).map((type) => <option key={type} value={type}>{type.replaceAll("_", " ").replace(/^\w/, (letter) => letter.toUpperCase())}</option>)}
@@ -171,8 +230,29 @@ const CreateDealPage = () => {
               <input id="createDate" className={inputClass} type="date" required value={createDate} onChange={(event) => setCreateDate(event.target.value)} />
             </div>
             <div>
-              <label className={labelClass} htmlFor="closeDate">Close date {(([DEAL_STAGES.WON, DEAL_STAGES.CLOSED_WON, DEAL_STAGES.LOST] as string[]).includes(dealStage)) && <span className="text-rose-500">*</span>}</label>
-              <input id="closeDate" className={inputClass} type="date" min={createDate} required={([DEAL_STAGES.WON, DEAL_STAGES.CLOSED_WON, DEAL_STAGES.LOST] as string[]).includes(dealStage)} value={closeDate} onChange={(event) => setCloseDate(event.target.value)} />
+              <label className={labelClass} htmlFor="closeDate">Expected close date <span className="text-rose-500">*</span></label>
+              <input id="closeDate" className={inputClass} type="date" min={createDate} required value={closeDate} onChange={(event) => setCloseDate(event.target.value)} />
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {[
+                  { label: "+15 days", value: addDays(createDate, 15) },
+                  { label: "+30 days", value: addDays(createDate, 30) },
+                  { label: "End of month", value: endOfMonth(createDate, 0) },
+                  { label: "Next month", value: endOfMonth(createDate, 1) },
+                ].filter((preset) => preset.value >= createDate).map((preset) => (
+                  <button
+                    key={preset.label}
+                    type="button"
+                    onClick={() => setCloseDate(preset.value)}
+                    className={`rounded-md border px-2 py-0.5 text-[11px] font-medium transition ${
+                      closeDate === preset.value
+                        ? "border-cyan-500 bg-cyan-50 text-cyan-700 dark:border-cyan-400 dark:bg-cyan-950/50 dark:text-cyan-300"
+                        : "border-slate-200 bg-slate-50 text-slate-600 hover:border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300"
+                    }`}
+                  >
+                    {preset.label}
+                  </button>
+                ))}
+              </div>
             </div>
             {([DEAL_STAGES.WON, DEAL_STAGES.CLOSED_WON] as string[]).includes(dealStage) && <div className="md:col-span-2"><label className={labelClass} htmlFor="closedWonReason">Won reason <span className="text-rose-500">*</span></label><input id="closedWonReason" className={inputClass} required value={closedWonReason} onChange={(event) => setClosedWonReason(event.target.value)} placeholder="Why did we win this deal?" /></div>}
             {dealStage === DEAL_STAGES.LOST && <div className="md:col-span-2"><label className={labelClass} htmlFor="closedLostReason">Lost reason <span className="text-rose-500">*</span></label><input id="closedLostReason" className={inputClass} required value={closedLostReason} onChange={(event) => setClosedLostReason(event.target.value)} placeholder="Why was this deal lost?" /></div>}

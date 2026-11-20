@@ -545,19 +545,18 @@ class DealService:
 
                     if not is_activity:
                         raise AppException(400, "Activity not created")
-                    
-                    await FastAPICache.get_backend().clear(namespace=DEAL_CACHE_NAMESPACE)
-                    await FastAPICache.get_backend().clear(namespace=DEAL_CACHE_NAMESPACE_BY_ID)
-                    
-                    return True
-
-
 
                 except AppException as e:
                     raise
                 except Exception as e:
-                    
-                    raise AppException(500, "Internal server error")
+                    print("Deal update error:", e)
+                    raise AppException(500, f"Internal server error: {e}")
+
+        await FastAPICache.get_backend().clear(namespace=DEAL_CACHE_NAMESPACE)
+        await FastAPICache.get_backend().clear(namespace=DEAL_CACHE_NAMESPACE_BY_ID)
+        await FastAPICache.get_backend().clear(namespace=LEAD_CACHE_NAMESPACE)
+        await FastAPICache.get_backend().clear(namespace=USER_LEAD_CACHE_NAMESPACE)
+        return True
                 
 
     @retry_transaction
