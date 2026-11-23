@@ -15,11 +15,13 @@ from app.db.models.person_model import PersonModel
 def decrypt_safe(val: Optional[str]) -> Optional[str]:
     if not val:
         return val
-    if isinstance(val, str) and val.startswith("gAAAAA"):
+    # Lead updates historically encrypted values in the service and again in
+    # the Lead model save hook. Unwrap those legacy nested Fernet values too.
+    while isinstance(val, str) and val.startswith("gAAAAA"):
         try:
-            return encryptor.decrypt_data(val)
+            val = encryptor.decrypt_data(val)
         except Exception:
-            return val
+            break
     return val
 
 

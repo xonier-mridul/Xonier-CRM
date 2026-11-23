@@ -4,8 +4,9 @@ import re
 import secrets
 from typing import Literal
 from urllib.parse import urlsplit
+from typing import Literal
 
-from fastapi import APIRouter, Depends, Request, Response
+from fastapi import APIRouter, Depends, Query, Request, Response
 from fastapi.responses import HTMLResponse
 
 from app.core.config import get_setting
@@ -88,3 +89,21 @@ async def outbox(request: Request, company: bool = False):
     if company:
         await deps.permissions(['email:read'])(request)
     return await service.outbox(request.state.user, company)
+
+@router.get('/inbox', dependencies=send_access)
+@limiter.limit('60/minute')
+async def inbox(request: Request, response: Response,
+                folder: Literal["INBOX", "SENT"] = "INBOX",
+                q: str | None = Query(None, max_length=500),
+                pageToken: str | None = Query(None, max_length=2048)):
+    response.headers["Cache-Control"] = "private, no-store"
+    return await service.inbox(request.state.user, folder=folder, query=q, page_token=pageToken)
+
+
+@router.get('/inbox/{message_id}', dependencies=send_access)
+@limiter.limit('60/minute')
+async def inbox_message(request: Request, response: Response, message_id: str):
+    if not re.fullmatch(r"[A-Za-z0-9_-]{1,128}", message_id):
+        raise AppException(400, "Invalid Gmail message ID")
+    response.headers["Cache-Control"] = "private, no-store"
+    return await service.inbox(request.state.user, message_id=message_id)

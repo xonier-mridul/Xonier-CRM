@@ -46,6 +46,8 @@ from app.utils.event_payload_generator import EventPayloadGenerator
 from app.services.lead_status_service import LeadStatusService
 from app.services.commercial_relationship_service import (
     CommercialRelationshipService,
+    decrypt_safe,
+    encrypt_safe,
     serialize_organization,
     serialize_person,
 )
@@ -1311,15 +1313,15 @@ class LeadService:
                 )
 
             if result.get("email"):
-                result["email"] = encryptor.decrypt_data(result["email"])
+                result["email"] = decrypt_safe(result["email"])
             phone = result.get("phone")
             
             if phone:
-                result["phone"] = encryptor.decrypt_data(result["phone"])
-            result["createdBy"]["email"] = encryptor.decrypt_data(result["createdBy"]["email"])
+                result["phone"] = decrypt_safe(result["phone"])
+            result["createdBy"]["email"] = decrypt_safe(result["createdBy"].get("email"))
             creator_phone = result["createdBy"].get("phone")
             if creator_phone:
-                result["createdBy"]["phone"] = encryptor.decrypt_data(result["createdBy"]["phone"])
+                result["createdBy"]["phone"] = decrypt_safe(result["createdBy"]["phone"])
 
             for item in result["assignedTo"]:
                 item["email"] = encryptor.decrypt_data(item["email"])
@@ -1405,7 +1407,8 @@ class LeadService:
                         if key == "email":
                             if val:
                                 normalized_email = str(val).strip().lower()
-                                lead.email = encryptor.encrypt_data(normalized_email)
+                                # The LeadsModel save hook encrypts this field.
+                                lead.email = normalized_email
                                 lead.hashedEmail = hash_value(normalized_email)
                             else:
                                 lead.email = None
@@ -1414,7 +1417,8 @@ class LeadService:
                         if key == "phone":
                             if val:
                                 normalized_phone = str(val).strip()
-                                lead.phone = encryptor.encrypt_data(normalized_phone)
+                                # The LeadsModel save hook encrypts this field.
+                                lead.phone = normalized_phone
                                 lead.hashedPhone = hash_value(normalized_phone)
                             else:
                                 lead.phone = None
@@ -1425,6 +1429,19 @@ class LeadService:
                     organization, person = await CommercialRelationshipService().ensure_for_lead(
                         lead, user["_id"], session=session, cnpj=cnpj
                     )
+                    if person:
+                        person_dirty = False
+                        if "email" in payload:
+                            person.email = encrypt_safe(lead.email.lower()) if lead.email else None
+                            person.hashedEmail = lead.hashedEmail
+                            person_dirty = True
+                        if "phone" in payload:
+                            person.phone = encrypt_safe(lead.phone) if lead.phone else None
+                            person.hashedPhone = lead.hashedPhone
+                            person_dirty = True
+                        if person_dirty:
+                            person.updatedAt = datetime.now(timezone.utc)
+                            await person.save(session=session)
                     if organization:
                         lead.organizationId = organization.id
                     if person:

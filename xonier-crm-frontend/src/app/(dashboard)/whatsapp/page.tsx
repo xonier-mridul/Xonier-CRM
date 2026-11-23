@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import axios from "axios";
 import Image from "next/image";
 import { useSelector } from "react-redux";
+import { useSearchParams } from "next/navigation";
 import { RootState } from "@/src/store";
 import api from "@/src/lib/axios";
 import { FaWhatsapp } from "react-icons/fa";
@@ -27,6 +28,7 @@ export default function WhatsAppPage() {
 
 function WhatsAppInbox() {
   const userId = useSelector((state: RootState) => state.auth.user?._id);
+  const searchParams = useSearchParams();
   const [overview, setOverview] = useState<Overview | null>(null);
   const [connection, setConnection] = useState<Connection>({ status: "disconnected" });
   const [owner, setOwner] = useState("");
@@ -53,10 +55,32 @@ function WhatsAppInbox() {
   const sendLock = useRef(false);
   const sendAttempt = useRef<{ jid: string; text: string; requestId: string } | null>(null);
   const generation = useRef(0);
+  const openedLeadChat = useRef("");
   const bottom = useRef<HTMLDivElement>(null);
   const own = !owner || owner === overview?.currentUser;
   const viewedConnection = own ? connection : overview?.connections.find(item => item.owner === owner);
   const params = owner ? { owner } : {};
+
+  useEffect(() => {
+    const phone = (searchParams.get("phone") || "").replace(/\D/g, "");
+    if (!/^\d{7,15}$/.test(phone)) return;
+    const key = `${phone}:${searchParams.get("name") || ""}`;
+    if (openedLeadChat.current === key) return;
+    openedLeadChat.current = key;
+    generation.current += 1;
+    setOwner("");
+    setView("chats");
+    setQuery("");
+    setMessages([]);
+    setText("");
+    setMessageError("");
+    setSelected({
+      jid: `${phone}@s.whatsapp.net`,
+      name: searchParams.get("name") || `+${phone}`,
+      phone: `+${phone}`,
+      timestamp: 0,
+    });
+  }, [searchParams]);
 
   const refreshConnection = useCallback(async (signal?: AbortSignal) => {
     const [summary, current] = await Promise.all([

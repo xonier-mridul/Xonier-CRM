@@ -428,7 +428,20 @@ const server = http.createServer(async (req, res) => {
         if (state?.status !== 'connected') throw fail(409, 'WhatsApp is disconnected. Link it again before sending.');
         if (!await checkSessionAccess(own)) throw fail(403, 'An active company account is required');
         const aliases = await conversationAliases(own, body.jid);
-        if (!await chats.findOne({ sid: own, jid: { $in: aliases } }) && !await contacts.findOne({ sid: own, jid: { $in: aliases } })) throw fail(404, 'Conversation not found');
+        const knownConversation = await chats.findOne({ sid: own, jid: { $in: aliases } })
+          || await contacts.findOne({ sid: own, jid: { $in: aliases } });
+        let recipientJid = body.jid;
+        if (!knownConversation) {
+          const phone = /^(\d{7,15})@s\.whatsapp\.net$/.exec(body.jid)?.[1];
+          if (!phone) throw fail(404, 'Conversation not found');
+          let matches;
+          try { matches = await state.socket.onWhatsApp(phone); }
+          catch { throw fail(502, 'Could not verify this number on WhatsApp. Please try again.'); }
+          const match = Array.isArray(matches) ? matches.find(item => item?.exists && directJid(item.jid)) : null;
+          if (!match) throw fail(404, 'This number is not registered on WhatsApp.');
+          recipientJid = match.jid;
+          await directory.absorb(own, [{ id: recipientJid, phoneNumber: recipientJid }]);
+        }
         const id = `${own}:${body.requestId}`;
         const existing = await sends.findOne({ _id: id });
         if (existing) {
@@ -438,7 +451,7 @@ const server = http.createServer(async (req, res) => {
         }
         await sends.insertOne({ _id: id, sid: own, jid: body.jid, text: body.text, createdAt: new Date() });
         let sent;
-        try { sent = await state.socket.sendMessage(body.jid, { text: body.text }); }
+        try { sent = await state.socket.sendMessage(recipientJid, { text: body.text }); }
         catch { throw fail(502, 'Send outcome is uncertain. Check your WhatsApp before sending again.'); }
         await sends.updateOne({ _id: id }, { $set: { messageId: sent.key.id } });
         if (await checkSessionAccess(own)) await saveMessages(own, [sent]);

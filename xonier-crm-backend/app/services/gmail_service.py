@@ -1,4 +1,5 @@
 """User-authorized Google/Microsoft sending with one shared CRM history and composer."""
+import asyncio
 import base64
 import hashlib
 import html
@@ -6,7 +7,10 @@ import importlib
 import json
 import secrets
 from datetime import datetime, timedelta, timezone
+from email import policy
+from email.parser import BytesParser
 from email.message import EmailMessage
+from html.parser import HTMLParser
 from urllib.parse import urlencode
 
 import httpx
@@ -19,7 +23,8 @@ from app.utils.custom_exception import AppException
 from app.services import microsoft_mail
 
 SEND_SCOPE = "https://www.googleapis.com/auth/gmail.send"
-SCOPES = ["openid", "email", SEND_SCOPE]
+READ_SCOPE = "https://www.googleapis.com/auth/gmail.readonly"
+SCOPES = ["openid", "email", SEND_SCOPE, READ_SCOPE]
 TOKEN_URL = "https://oauth2.googleapis.com/token"
 USERINFO_URL = "https://openidconnect.googleapis.com/v1/userinfo"
 SEND_URL = "https://gmail.googleapis.com/gmail/v1/users/me/messages/send"
@@ -77,6 +82,27 @@ def make_message(account_email, command, attachments):
     for attachment in attachments:
         message.add_attachment(attachment["content"], maintype="application", subtype="octet-stream", filename=attachment["name"])
     return base64.urlsafe_b64encode(message.as_bytes()).decode()
+
+
+class MailTextParser(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.text = []
+        self.hidden = 0
+
+    def handle_starttag(self, tag, attrs):
+        if tag in {"script", "style", "head"}:
+            self.hidden += 1
+        elif not self.hidden and tag in {"br", "p", "div", "li", "tr"}:
+            self.text.append("\n")
+
+    def handle_endtag(self, tag):
+        if tag in {"script", "style", "head"} and self.hidden:
+            self.hidden -= 1
+
+    def handle_data(self, data):
+        if not self.hidden:
+            self.text.append(data)
 
 
 class GmailService:
@@ -148,12 +174,13 @@ class GmailService:
         old = await database().gmail_connections.find_one(query)
         refresh = token.get("refresh_token")
         # Never reuse a token from a different Google account when switching accounts.
-        if not refresh and old and old.get("provider", "google") == "google" and old.get("googleSubject") == profile["sub"]:
+        if not refresh and old and old.get("provider", "google") == "google" and old.get("googleSubject") == profile["sub"] and (READ_SCOPE not in token.get("scope", "").split() or old.get("inboxGranted")):
             refresh = encryptor.decrypt_data(old["encryptedRefreshToken"])
         if not refresh:
             raise AppException(400, "Google did not grant offline access. Connect again and allow access.")
         await database().gmail_connections.update_one(query, {"$set": {
-            **query, "provider": "google", "accountEmail": profile["email"], "googleSubject": profile["sub"],
+            **query, "provider": "google", "inboxGranted": READ_SCOPE in token.get("scope", "").split(),
+            "accountEmail": profile["email"], "googleSubject": profile["sub"],
             "encryptedRefreshToken": encryptor.encrypt_data(refresh), "needsReconnect": False, "updatedAt": now(),
         }}, upsert=True)
 
@@ -178,6 +205,7 @@ class GmailService:
         return {"configured": any(providers.values()), "providers": providers, "provider": provider,
                 "connected": bool(connection and providers.get(provider) and not connection.get("needsReconnect")),
                 "accountEmail": connection.get("accountEmail") if connection else None,
+                "inboxGranted": bool(provider == "google" and connection.get("inboxGranted")),
                 "needsReconnect": bool(connection and connection.get("needsReconnect")),
                 "canViewCompany": any(role.get("code") in {"COMPANY_ADMIN", "ADMIN"} for role in user.get("userRole", []))}
 
@@ -228,6 +256,78 @@ class GmailService:
         if response.status_code != 200 or not response.json().get("access_token"):
             raise AppException(503, "Unable to refresh Gmail access. Please try again.")
         return response.json()["access_token"]
+
+    async def inbox(self, user, *, message_id=None, page_token=None, query=None, folder="INBOX"):
+        connection = await database().gmail_connections.find_one(scope(user))
+        if not connection or connection.get("provider", "google") != "google" or not connection.get("inboxGranted") or connection.get("needsReconnect"):
+            raise AppException(409, "Connect Gmail and allow inbox access.")
+        require_configured()
+        token = await self.access_token(connection)
+        try:
+            async with httpx.AsyncClient(
+                base_url="https://gmail.googleapis.com/gmail/v1/users/me/",
+                headers={"Authorization": f"Bearer {token}"}, timeout=20,
+            ) as client:
+                async def get(path, params):
+                    response = await client.get(path, params=params)
+                    if response.status_code == 404:
+                        raise AppException(404, "This email is no longer available.")
+                    if response.status_code == 403:
+                        raise AppException(403, "Gmail denied inbox access. Reconnect and allow Gmail reading.")
+                    if response.status_code != 200:
+                        raise AppException(502, "Gmail could not load your mailbox. Try again.")
+                    return response.json()
+
+                if message_id:
+                    result = await get(f"messages/{message_id}", {"format": "raw"})
+                    raw = result["raw"]
+                    mail = BytesParser(policy=policy.default).parsebytes(base64.urlsafe_b64decode(raw + "=" * (-len(raw) % 4)))
+                    part = mail.get_body(preferencelist=("plain", "html"))
+                    body = part.get_content() if part else ""
+                    if part and part.get_content_type() == "text/html":
+                        parser = MailTextParser()
+                        parser.feed(body)
+                        body = "".join(parser.text).strip()
+                    return {"id": message_id, "subject": str(mail.get("Subject", "")),
+                            "from": str(mail.get("From", "")), "to": str(mail.get("To", "")),
+                            "date": str(mail.get("Date", "")), "body": body,
+                            "attachments": [part.get_filename() or "Attachment" for part in mail.iter_attachments()]}
+
+                params = {"maxResults": 20, "labelIds": folder}
+                if page_token:
+                    params["pageToken"] = page_token
+                if query:
+                    params["q"] = query
+                result = await get("messages", params)
+                semaphore = asyncio.Semaphore(5)
+
+                async def summary(item):
+                    async with semaphore:
+                        try:
+                            message = await get(f"messages/{item['id']}", [
+                                ("format", "metadata"), ("metadataHeaders", "From"),
+                                ("metadataHeaders", "To"), ("metadataHeaders", "Subject"),
+                                ("metadataHeaders", "Date"),
+                            ])
+                        except AppException as error:
+                            if error.status_code == 404:
+                                return None
+                            raise
+                    headers = {header["name"].lower(): header["value"] for header in message["payload"].get("headers", [])}
+                    return {"id": item["id"], "subject": headers.get("subject", ""),
+                            "from": headers.get("from", ""), "to": headers.get("to", ""),
+                            "date": headers.get("date", ""), "unread": "UNREAD" in message.get("labelIds", [])}
+
+                rows = await asyncio.gather(
+                    *(summary(item) for item in result.get("messages", [])),
+                    return_exceptions=True,
+                )
+                for row in rows:
+                    if isinstance(row, Exception):
+                        raise row
+                return {"messages": [row for row in rows if row], "nextPageToken": result.get("nextPageToken")}
+        except (httpx.HTTPError, ValueError, KeyError):
+            raise AppException(502, "Gmail could not load your mailbox. Try again.")
 
     async def send(self, user, command, attachments):
         query = scope(user)

@@ -55,7 +55,7 @@ import {
   IoTimeOutline,
 } from "react-icons/io5";
 import { MdOutlineLeaderboard } from "react-icons/md";
-import { FaRegUser, FaIndustry } from "react-icons/fa";
+import { FaRegUser, FaIndustry, FaWhatsapp } from "react-icons/fa";
 import { usePermissions } from "@/src/hooks/usePermissions";
 import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
 import Skeleton from "react-loading-skeleton";
@@ -334,15 +334,16 @@ const LeadViewPage = (): JSX.Element => {
     <div ref={componentRef} className="print:p-6">
       {/* Header Section */}
       <div className="mb-6">
-        <div className="bg-white dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            <div className="flex-1">
-              <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white capitalize">
+        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-gray-800">
+          <div className="p-5 sm:p-6 lg:p-7">
+            <div className="flex flex-col gap-5">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
+                <h1 className="min-w-0 text-2xl font-semibold tracking-tight text-slate-900 dark:text-white sm:text-3xl capitalize">
                   {leadData?.fullName || leadData?.lead_id}
                 </h1>
                 <span
-                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium ${getPriorityColor(
+                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold ${getPriorityColor(
                     leadData?.priority,
                   )}`}
                 >
@@ -350,7 +351,7 @@ const LeadViewPage = (): JSX.Element => {
                   {leadData?.priority}
                 </span>
                 <span
-                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
+                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold ${getStatusColor(
                     leadData?.status,
                   )}`}
                 >
@@ -359,43 +360,55 @@ const LeadViewPage = (): JSX.Element => {
                 </span>
               </div>
               <p
-                className="text-gray-500 dark:text-gray-400 cursor-pointer hover:text-cyan-500 dark:hover:text-cyan-400 transition-colors flex items-center gap-2"
+                className="mt-2 inline-flex max-w-full cursor-pointer items-center gap-2 text-sm text-slate-500 transition-colors hover:text-cyan-600 dark:text-slate-400 dark:hover:text-cyan-400"
                 onClick={() =>
                   handleCopy(leadData ? leadData.lead_id : "text not found")
                 }
               >
                 <IoDocumentText className="w-4 h-4" />
-                {t("lead_id_3")} <span className="font-mono">{leadData?.lead_id}</span>
+                {t("lead_id_3")} <span className="truncate font-mono text-xs sm:text-sm">{leadData?.lead_id}</span>
               </p>
             </div>
 
             {/* Hide action buttons when printing */}
-            <div className="flex flex-wrap items-center justify-center gap-2 print:hidden">
+            <div className="flex flex-col gap-3 border-t border-slate-100 pt-4 print:hidden dark:border-slate-700 sm:flex-row sm:flex-wrap sm:items-center">
+              <div className="flex flex-wrap items-center gap-2">
               {hasPermission(PERMISSIONS.updateLead) && !leadData.inDeal && leadData.status !== SALES_STATUS.DELETE && leadData.status !== "disqualified" && <label className="text-xs font-medium text-slate-500">Stage
-                <select aria-label="Lead stage" value={leadData.status} disabled={isChangingStage} onChange={(event) => void handleStageChange(event.target.value)} className="ml-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-white">
+                <select aria-label="Lead stage" value={leadData.status} disabled={isChangingStage} onChange={(event) => void handleStageChange(event.target.value)} className="ml-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 shadow-sm outline-none transition focus:border-cyan-500 focus:ring-2 focus:ring-cyan-100 disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-white">
                   {leadStatuses.map((stage) => <option key={stage.key} value={stage.key}>{stage.name}</option>)}
                   {!leadStatuses.some((stage) => stage.key === leadData.status) && <option value={leadData.status}>{leadStatusLabel(leadData.status)}</option>}
                 </select>
               </label>}
-              <button type="button" onClick={() => setActiveTab("activity")} className="rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-700 dark:border-slate-600 dark:text-white">Log interaction</button>
-              {hasPermission(PERMISSIONS.createDeal) && !leadData.inDeal && leadData.status !== SALES_STATUS.DELETE && leadData.status !== "disqualified" && <Link href={`/leads/make-deal/${leadData.id}`} className="rounded-lg border border-emerald-200 px-4 py-2 text-sm font-medium text-emerald-700 dark:border-emerald-700 dark:text-emerald-300">Convert to Deal</Link>}
+              <button type="button" onClick={() => setActiveTab("activity")} className="rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:hover:bg-slate-700">Log interaction</button>
+              {leadData?.phone && leadData.phone.replace(/\D/g, "").length >= 7 ? (
+                <Link href={`/whatsapp?phone=${encodeURIComponent(leadData.phone.replace(/\D/g, ""))}&name=${encodeURIComponent(leadData.fullName || "Lead")}`} className="inline-flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50/60 px-3.5 py-2 text-sm font-medium text-emerald-700 transition hover:border-emerald-300 hover:bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950/20 dark:text-emerald-300 dark:hover:bg-emerald-950/40">
+                  <FaWhatsapp className="h-4 w-4" /> WhatsApp
+                </Link>
+              ) : (
+                <button type="button" disabled title="No phone number is available for this lead" className="inline-flex cursor-not-allowed items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3.5 py-2 text-sm font-medium text-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-500">
+                  <FaWhatsapp className="h-4 w-4" /> WhatsApp
+                </button>
+              )}
+              {hasPermission(PERMISSIONS.createDeal) && !leadData.inDeal && leadData.status !== SALES_STATUS.DELETE && leadData.status !== "disqualified" && <Link href={`/leads/make-deal/${leadData.id}`} className="rounded-lg border border-emerald-200 bg-emerald-50/50 px-3.5 py-2 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-50 dark:border-emerald-700 dark:text-emerald-300">Convert to Deal</Link>}
+              </div>
+              <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
               {hasPermission(PERMISSIONS.updateLead) &&
               leadData.status !== SALES_STATUS.DELETE ? (
                 <Link
                   href={`/leads/update/${leadData.id}`}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg transition-colors"
+                  className="inline-flex items-center gap-2 rounded-lg bg-cyan-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-cyan-700"
                 >
                   <MdOutlineEdit className="w-4 h-4" />
                   {t("update_lead")}
                 </Link>
               ) : (
-                <span className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-600 opacity-60 text-white rounded-lg cursor-not-allowed">
+                <span className="inline-flex cursor-not-allowed items-center gap-2 rounded-lg bg-cyan-600 px-4 py-2 text-sm font-semibold text-white opacity-60">
                   <MdOutlineEdit className="w-4 h-4" />
                   {t("update_lead")}
                 </span>
               )}
               {hasPermission(PERMISSIONS.updateLead) && !leadData.inDeal && leadData.status !== SALES_STATUS.DELETE && leadData.status !== "disqualified" && (
-                <button type="button" onClick={() => setDisqualifyOpen(true)} className="inline-flex items-center gap-2 rounded-lg border border-rose-200 px-4 py-2 text-rose-600 transition-colors hover:bg-rose-50 dark:border-rose-900 dark:text-rose-300 dark:hover:bg-rose-950/30">
+                <button type="button" onClick={() => setDisqualifyOpen(true)} className="inline-flex items-center gap-2 rounded-lg border border-rose-200 bg-white px-3.5 py-2 text-sm font-medium text-rose-600 transition-colors hover:bg-rose-50 dark:border-rose-900 dark:bg-slate-800 dark:text-rose-300 dark:hover:bg-rose-950/30">
                   <IoCheckmarkCircle className="h-4 w-4" /> Disqualify
                 </button>
               )}
@@ -426,19 +439,21 @@ const LeadViewPage = (): JSX.Element => {
               </div> */}
               
                 {hasPermission(PERMISSIONS.deleteLead) && (
-                <div className=" border border-slate-200 py-2 hover:border-red-400  text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-400 dark:bg-red-400 dark:text-white rounded-xl bg-white/60 right-0 top-full w-30  transition-all  duration-300 cursor-pointer">
+                <div className="rounded-lg border border-slate-200 bg-white text-rose-600 transition-colors hover:border-rose-200 hover:bg-rose-50 dark:border-slate-600 dark:bg-slate-800 dark:text-rose-300 dark:hover:bg-rose-950/30">
                     <button
                       onClick={() => handleDelete(leadData.id)}
-                      className="w-full flex items-center gap-2 px-4 transition-colors cursor-pointer"
+                      className="flex w-full cursor-pointer items-center gap-2 px-3.5 py-2 text-sm font-medium transition-colors"
                     >
                       <MdDeleteOutline className="w-4 h-4" />
                       {t("delete")}
                     </button>
                 </div>
                 )}
+              </div>
             </div>
           </div>
         </div>
+      </div>
       </div>
 
       <div className="metric-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
