@@ -220,6 +220,12 @@ async function persistMessagingData(sid, { chats: chatList = [], messages: messa
         setOnInsertFields.profileUrl = null;
       }
 
+      if (c.profileImageUrl) {
+        setFields.profileImageUrl = c.profileImageUrl;
+      } else {
+        setOnInsertFields.profileImageUrl = null;
+      }
+
       if (c.preview) {
         setFields.preview = c.preview;
       } else {
@@ -364,7 +370,9 @@ async function syncSessionData(sid) {
                 headline: c.headline || '',
                 handle: c.handle || null,
                 profileUrl: c.profileUrl || null,
+                ...(c.profileImageUrl ? { profileImageUrl: c.profileImageUrl } : {}),
               },
+              ...(c.profileImageUrl ? {} : { $setOnInsert: { profileImageUrl: null } }),
             },
             upsert: true,
           },
@@ -480,6 +488,7 @@ function connectionView(row, sid = null) {
     headline: row.headline || null,
     handle: row.handle || null,
     profileUrl: row.profileUrl || null,
+          profileImageUrl: row.profileImageUrl || null,
     status: state?.status || row.status || 'disconnected',
     browserActive: Boolean(state?.session && !state.session.closed),
     lastSyncedAt: row.lastSyncedAt || null,
@@ -622,6 +631,7 @@ const server = http.createServer(async (req, res) => {
                 headline: profile.headline || null,
                 handle: profile.handle || null,
                 profileUrl: profile.profileUrl || null,
+                profileImageUrl: profile.profileImageUrl || null,
                 memberUrn: profile.memberUrn || null,
                 consentAt: new Date(),
                 linkedAt: new Date(),

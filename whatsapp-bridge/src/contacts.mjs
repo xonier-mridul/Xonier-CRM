@@ -10,7 +10,7 @@ export function displayContact(chat, contact = {}) {
   const savedName = typeof contact.name === 'string' ? contact.name.trim() : '';
   const group = chat.jid.endsWith('@g.us');
   const groupName = typeof chat.name === 'string' && chat.name !== legacyId ? chat.name : '';
-  return { ...chat, phone, name: group ? groupName || 'WhatsApp group' : savedName || phone || 'Contact syncing…' };
+  return { ...chat, phone, profilePicUrl: contact.profilePicUrl || chat.profilePicUrl || null, name: group ? groupName || 'WhatsApp group' : savedName || phone || 'Contact syncing…' };
 }
 
 export class ContactDirectory {
@@ -43,11 +43,16 @@ export class ContactDirectory {
           previous.push(...phoneRows);
         }
         const name = typeof contact.name === 'string' && contact.name.trim() ? contact.name.trim() : previous.find(r => r.name)?.name;
+        const profilePicUrl = typeof contact.profilePicUrl === 'string' && /^https:\/\//i.test(contact.profilePicUrl)
+          ? contact.profilePicUrl
+          : typeof contact.imgUrl === 'string' && /^https:\/\//i.test(contact.imgUrl) ? contact.imgUrl : undefined;
         for (const jid of aliases) {
           const prev = ops.get(jid) || {};
           ops.set(jid, {
             ...(prev.phoneNumber || phoneNumber ? { phoneNumber: phoneNumber || prev.phoneNumber } : {}),
             ...(name !== undefined || prev.name !== undefined ? { name: name ?? prev.name } : {}),
+            ...(profilePicUrl || prev.profilePicUrl ? { profilePicUrl: profilePicUrl || prev.profilePicUrl } : {}),
+            ...(typeof contact.status === 'string' ? { about: contact.status } : {}),
           });
         }
       }
@@ -92,7 +97,9 @@ export class ContactDirectory {
       if (!names.has(phone) && typeof alias.name === 'string' && alias.name.trim()) names.set(phone, alias.name);
     }
     return batch.map(chat => {
-      const contact = byJid.get(chat.jid) || {};
+      const phone = phoneFromJid(recoveredPhones.get(chat.jid)) || phoneFromJid(chat.jid);
+      const phoneContact = phone ? aliases.find(alias => alias.phoneNumber === phone) : null;
+      const contact = byJid.get(chat.jid) || phoneContact || {};
       const phoneNumber = contact.phoneNumber || recoveredPhones.get(chat.jid);
       return displayContact(chat, { ...contact, phoneNumber, name: contact.name || names.get(phoneNumber) });
     });

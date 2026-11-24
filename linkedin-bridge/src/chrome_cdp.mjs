@@ -187,6 +187,7 @@ export class ChromeSession {
       headline: chat.headline || existing.headline || '',
       handle: chat.handle || existing.handle || null,
       profileUrl: chat.profileUrl || existing.profileUrl || null,
+      profileImageUrl: chat.profileImageUrl || existing.profileImageUrl || null,
       preview: (chat.timestamp || 0) >= (existing.timestamp || 0)
         ? (chat.preview || existing.preview || '')
         : (existing.preview || chat.preview || ''),
@@ -961,6 +962,7 @@ export class ChromeSession {
         const snippetEl = card.querySelector('.msg-conversation-card__message-snippet, .msg-conversation-card__message-snippet-body, p');
         const profileLink = card.querySelector('a[href*="/in/"]');
         const profileUrl = profileLink?.href || null;
+        const profileImageUrl = card.querySelector('img[src*="licdn.com"]')?.currentSrc || card.querySelector('img[src*="licdn.com"]')?.src || null;
         const handleMatch = profileUrl?.match(/\\/in\\/([^/?#]+)/i);
 
         chats.push({
@@ -970,6 +972,7 @@ export class ChromeSession {
           headline: '',
           handle: handleMatch?.[1] ? decodeURIComponent(handleMatch[1]) : null,
           profileUrl,
+          profileImageUrl,
           preview: clean(snippetEl?.textContent).slice(0, 180),
           timestamp: nowSec - chats.length,
         });
@@ -988,6 +991,7 @@ export class ChromeSession {
             headline: '',
             handle: headerHandleMatch?.[1] ? decodeURIComponent(headerHandleMatch[1]) : null,
             profileUrl: headerProfileLink,
+            profileImageUrl: document.querySelector('.msg-thread img[src*="licdn.com"]')?.currentSrc || document.querySelector('.msg-thread img[src*="licdn.com"]')?.src || null,
             preview: '',
             timestamp: nowSec,
           });
@@ -1238,6 +1242,52 @@ export class ChromeSession {
           return map;
         };
         const resolve = (map, val) => (typeof val === 'string' ? map.get(val) : val) || null;
+        const profileImageUrl = (profile, map) => {
+          const candidates = [];
+          const visited = new WeakSet();
+          const seenRefs = new Set();
+          const safeUrl = value => {
+            try {
+              const url = new URL(value, location.origin);
+              return url.protocol === 'https:' && /(^|\\.)licdn\\.com$/i.test(url.hostname) ? url.href : null;
+            } catch { return null; }
+          };
+          const visit = (value, depth = 0) => {
+            if (!value || depth > 6) return;
+            if (typeof value === 'string') {
+              const url = safeUrl(value);
+              if (url) candidates.push({ url, width: 0 });
+              else if (!seenRefs.has(value)) {
+                seenRefs.add(value);
+                const resolved = map.get(value);
+                if (resolved) visit(resolved, depth + 1);
+              }
+              return;
+            }
+            if (typeof value !== 'object' || visited.has(value)) return;
+            visited.add(value);
+            const vector = value['com.linkedin.common.VectorImage'] || value['com.linkedin.voyager.common.VectorImage'] || value.vectorImage || value;
+            if (typeof vector.rootUrl === 'string' && Array.isArray(vector.artifacts)) {
+              for (const artifact of vector.artifacts) {
+                const segment = artifact?.fileIdentifyingUrlPathSegment;
+                if (segment) {
+                  const url = safeUrl(vector.rootUrl + segment);
+                  if (url) candidates.push({ url, width: Number(artifact.width || 0) });
+                }
+                for (const direct of [artifact?.url, artifact?.downloadUrl]) {
+                  const url = typeof direct === 'string' && safeUrl(direct);
+                  if (url) candidates.push({ url, width: Number(artifact.width || 0) });
+                }
+              }
+            }
+            for (const [key, child] of Object.entries(value)) {
+              if (typeof child === 'string' && /(?:url|image|picture|photo|artifact|asset|vector)/i.test(key)) visit(child, depth + 1);
+              else if (child && typeof child === 'object') visit(child, depth + 1);
+            }
+          };
+          for (const [key, value] of Object.entries(profile || {})) if (/(picture|image|avatar|photo)/i.test(key)) visit(value);
+          return candidates.sort((a, b) => b.width - a.width)[0]?.url || null;
+        };
         const extractId = (urn) => {
           const s = String(urn || '');
           const paren = s.match(/,([^)]+)\\)/);
@@ -1277,6 +1327,7 @@ export class ChromeSession {
                 headline: String(prof.headline || prof.occupation || ''),
                 handle,
                 profileUrl: handle ? 'https://www.linkedin.com/in/' + handle + '/' : null,
+                profileImageUrl: profileImageUrl(prof, cMap),
               });
             };
             for (const item of connJson.included || []) {
@@ -1292,11 +1343,28 @@ export class ChromeSession {
         return contacts;
       })()`).catch(() => []);
 
+      const syncedContacts = Array.isArray(contacts) ? contacts : [];
+      const contactPhotos = new Map();
+      const chatPhotos = new Map();
+      for (const contact of syncedContacts) {
+        if (contact.handle && contact.profileImageUrl) {
+          contactPhotos.set(contact.handle.toLowerCase(), contact.profileImageUrl);
+        }
+      }
+      for (const chat of this.capturedChats.values()) {
+        if (chat.handle && chat.profileImageUrl) {
+          chatPhotos.set(chat.handle.toLowerCase(), chat.profileImageUrl);
+        }
+      }
+      const withProfilePhoto = (row, photos) => ({
+        ...row,
+        profileImageUrl: row.profileImageUrl || photos.get(row.handle?.toLowerCase()) || null,
+      });
       return {
         ok: true,
-        chats: [...this.capturedChats.values()],
+        chats: [...this.capturedChats.values()].map(chat => withProfilePhoto(chat, contactPhotos)),
         messages: [...this.capturedMessages.values()],
-        contacts: Array.isArray(contacts) ? contacts : [],
+        contacts: syncedContacts.map(contact => withProfilePhoto(contact, chatPhotos)),
       };
     });
   }

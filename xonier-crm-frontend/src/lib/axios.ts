@@ -74,10 +74,20 @@ api.interceptors.response.use(
           api.defaults.headers.common["Authorization"] = `Bearer ${data.access_token}`;
         }
 
-        store.dispatch(setAuthState(data));
-
-        if (data?.userRole?.some((r: any) => r.code === SUPER_ADMIN_ROLE_CODE)) {
-          store.dispatch(setIsAdmin());
+        // The refresh response has roles but does not populate the company plan.
+        // Replacing the profile with it makes feature-gated sidebar links vanish.
+        try {
+          const profile = await axios.get(
+            `${process.env.NEXT_PUBLIC_BASE_URL}/auth/me`,
+            { withCredentials: true, headers: data?.access_token ? { Authorization: `Bearer ${data.access_token}` } : undefined }
+          );
+          const user = profile.data.data;
+          store.dispatch(setAuthState(user));
+          if (user?.userRole?.some((r: any) => r.code === SUPER_ADMIN_ROLE_CODE)) {
+            store.dispatch(setIsAdmin());
+          }
+        } catch {
+          // A temporary profile error must not replace the working full profile.
         }
 
         processQueue(null);

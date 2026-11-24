@@ -136,6 +136,55 @@ function resolveRef(index, ref) {
   return null;
 }
 
+function extractProfileImageUrl(index, profile) {
+  const candidates = [];
+  const visited = new WeakSet();
+  const seenRefs = new Set();
+  const safeUrl = value => {
+    try {
+      const url = new URL(value, 'https://www.linkedin.com');
+      return url.protocol === 'https:' && /(^|\.)licdn\.com$/i.test(url.hostname) ? url.href : null;
+    } catch { return null; }
+  };
+  const visit = (value, depth = 0) => {
+    if (!value || depth > 6) return;
+    if (typeof value === 'string') {
+      const url = safeUrl(value);
+      if (url) candidates.push(url);
+      else if (!seenRefs.has(value)) {
+        seenRefs.add(value);
+        const resolved = index.get(value);
+        if (resolved) visit(resolved, depth + 1);
+      }
+      return;
+    }
+    if (typeof value !== 'object' || visited.has(value)) return;
+    visited.add(value);
+    const vector = value['com.linkedin.common.VectorImage'] || value['com.linkedin.voyager.common.VectorImage'] || value.vectorImage || value;
+    if (typeof vector.rootUrl === 'string' && Array.isArray(vector.artifacts)) {
+      for (const artifact of vector.artifacts) {
+        const segment = artifact?.fileIdentifyingUrlPathSegment;
+        if (segment) {
+          // LinkedIn's signed artifact path continues the root verbatim.
+          const url = safeUrl(vector.rootUrl + segment);
+          if (url) candidates.push({ url, width: Number(artifact.width || 0) });
+        }
+        for (const direct of [artifact?.url, artifact?.downloadUrl]) {
+          const url = typeof direct === 'string' && safeUrl(direct);
+          if (url) candidates.push({ url, width: Number(artifact.width || 0) });
+        }
+      }
+    }
+    for (const [key, child] of Object.entries(value)) {
+      if (typeof child === 'string' && /(?:url|image|picture|photo|artifact|asset|vector)/i.test(key)) visit(child, depth + 1);
+      else if (child && typeof child === 'object') visit(child, depth + 1);
+    }
+  };
+  for (const [key, value] of Object.entries(profile || {})) if (/(picture|image|avatar|photo)/i.test(key)) visit(value);
+  const normalized = candidates.map(item => typeof item === 'string' ? { url: item, width: 0 } : item).sort((a, b) => b.width - a.width);
+  return normalized[0]?.url || null;
+}
+
 function normalizeIdentity(selfIdentity = {}) {
   const memberUrn = String(selfIdentity.memberUrn || '').trim();
   const profileId = String(selfIdentity.profileId || extractProfileId(memberUrn) || '').trim();
@@ -182,6 +231,7 @@ function extractParticipantInfo(index, rawParticipant, self) {
       headline,
       handle,
       profileUrl,
+      profileImageUrl: extractProfileImageUrl(index, entity),
       urn,
       profileId,
       distance,
@@ -229,6 +279,7 @@ function extractParticipantInfo(index, rawParticipant, self) {
     headline,
     handle,
     profileUrl,
+    profileImageUrl: extractProfileImageUrl(index, legacyMini),
     urn,
     profileId,
     distance,
@@ -332,6 +383,7 @@ export function parseLinkedInMessagingPayload(payload, selfIdentity = {}) {
       headline: chat.headline || prev.headline || '',
       handle: chat.handle || prev.handle || null,
       profileUrl: chat.profileUrl || prev.profileUrl || null,
+      profileImageUrl: chat.profileImageUrl || prev.profileImageUrl || null,
       preview: chat.timestamp >= prev.timestamp ? (chat.preview || prev.preview || '') : (prev.preview || chat.preview || ''),
       timestamp: Math.max(chat.timestamp || 0, prev.timestamp || 0),
     });
@@ -363,6 +415,7 @@ export function parseLinkedInMessagingPayload(payload, selfIdentity = {}) {
     const headline = others.length <= 1 ? (primary.headline || '') : '';
     const handle = others.length <= 1 ? (primary.handle || null) : null;
     const profileUrl = others.length <= 1 ? (primary.profileUrl || null) : null;
+    const profileImageUrl = others.length <= 1 ? (primary.profileImageUrl || null) : null;
 
     let timestamp = toUnixSeconds(conv.lastActivityAt || conv.lastReadAt || 0);
     let preview = '';
@@ -396,6 +449,7 @@ export function parseLinkedInMessagingPayload(payload, selfIdentity = {}) {
       headline,
       handle,
       profileUrl,
+      profileImageUrl,
       preview,
       timestamp: timestamp || Math.floor(Date.now() / 1000),
     });

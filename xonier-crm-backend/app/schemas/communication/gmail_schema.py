@@ -10,6 +10,7 @@ class GmailSend(BaseModel):
     subject: str = Field(min_length=1, max_length=250)
     body: str = Field(min_length=1, max_length=100000)
     leadId: str | None = Field(default=None, pattern=r"^[a-f0-9]{24}$")
+    replyToMessageId: str | None = Field(default=None, pattern=r"^[A-Za-z0-9_-]{1,128}$")
 
     @field_validator('subject')
     @classmethod

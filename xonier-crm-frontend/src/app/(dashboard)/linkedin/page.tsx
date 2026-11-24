@@ -129,6 +129,7 @@ type Chat = {
   headline?: string;
   handle?: string | null;
   profileUrl?: string | null;
+  profileImageUrl?: string | null;
   preview?: string;
   timestamp: number;
 };
@@ -139,6 +140,7 @@ type Contact = {
   headline?: string;
   handle?: string | null;
   profileUrl?: string | null;
+  profileImageUrl?: string | null;
 };
 
 type Message = {
@@ -170,6 +172,19 @@ const statusLabel: Record<string, string> = {
   disconnected: "Disconnected",
   error: "Session needs attention",
 };
+
+function LinkedInAvatar({ name, src, size = "md" }: { name: string; src?: string | null; size?: "sm" | "md" }) {
+  const initials = name.trim().split(/\s+/).slice(0, 2).map(part => part[0]).join("").toUpperCase() || "LI";
+  let safeSrc: string | undefined;
+  try {
+    const parsed = src ? new URL(src) : null;
+    if (parsed?.protocol === "https:" && parsed.hostname.endsWith(".licdn.com")) safeSrc = parsed.href;
+  } catch { /* Ignore invalid profile image URLs. */ }
+  return <span className={`relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-sky-100 font-semibold text-sky-800 ring-1 ring-inset ring-sky-200 dark:bg-sky-950 dark:text-sky-200 dark:ring-sky-800 ${size === "sm" ? "h-10 w-10 text-xs" : "h-11 w-11 text-sm"}`} aria-label={`${name} profile photo`}>
+    <span aria-hidden="true">{initials}</span>
+    {safeSrc && <img key={safeSrc} src={safeSrc} alt="" loading="lazy" referrerPolicy="no-referrer" className="absolute inset-0 h-full w-full object-cover" onError={event => { event.currentTarget.style.display = "none"; }} />}
+  </span>;
+}
 
 export default function LinkedInPage() {
   const userId = useSelector((state: RootState) => state.auth.user?._id);
@@ -210,6 +225,7 @@ function LinkedInWorkspace() {
   const [chatError, setChatError] = useState("");
   const [messageError, setMessageError] = useState("");
   const [refreshCount, setRefreshCount] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
 
   const sendLock = useRef(false);
   const sendAttempt = useRef<{ threadId: string; text: string; requestId: string } | null>(null);
@@ -573,6 +589,34 @@ function LinkedInWorkspace() {
     }
   };
 
+  const refreshPageData = async () => {
+    if (refreshing) return;
+    setRefreshing(true);
+    setError("");
+    setConnectionError("");
+    setChatError("");
+    setMessageError("");
+    try {
+      const [chatResult, contactResult, messageResult] = await Promise.all([
+        api.get<Chat[]>("/linkedin/chats", { params }),
+        tab === "contacts" ? api.get<Contact[]>("/linkedin/contacts", { params }) : Promise.resolve(null),
+        selected ? api.get<Message[]>("/linkedin/messages", { params: { threadId: selected.threadId, ...params } }) : Promise.resolve(null),
+      ]);
+      await refreshConnection();
+      setChats(chatResult.data);
+      setChatsLoaded(true);
+      if (contactResult) {
+        setContacts(contactResult.data);
+        setContactsLoaded(true);
+      }
+      if (messageResult) setMessages(messageResult.data);
+    } catch (err) {
+      setError(errorMessage(err));
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   const send = async () => {
     if (!selected || !text.trim() || sendLock.current || !own) return;
     sendLock.current = true;
@@ -616,24 +660,55 @@ function LinkedInWorkspace() {
 
   return (
     <div className="-m-2 space-y-4 text-slate-800 dark:text-slate-100">
-      <header className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <FaLinkedin size={32} className="text-[#0A66C2]" />
+      <header className="flex flex-wrap items-center gap-x-5 gap-y-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 dark:border-slate-700 dark:bg-slate-800 sm:px-5">
+        <div className="flex shrink-0 items-center gap-3">
+          <FaLinkedin size={30} className="text-[#0A66C2]" />
           <div>
-            <h1 className="text-2xl font-bold">LinkedIn</h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400">
-              Sign in and run your LinkedIn inbox, connections, and feed right inside Xonier CRM.
-            </p>
+            <h1 className="text-lg font-semibold tracking-tight">LinkedIn</h1>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400">Inbox, connections &amp; feed</p>
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
+        {overview?.admin && <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2 border-l border-slate-200 pl-4 dark:border-slate-700 sm:pl-5">
+          <label htmlFor="linkedin-owner" className="shrink-0 text-xs font-semibold text-slate-500 dark:text-slate-400">Company</label>
+          <select
+            id="linkedin-owner"
+            value={owner}
+            onChange={event => {
+              generation.current += 1;
+              setOwner(event.target.value);
+              setChats([]);
+              setContacts([]);
+              setChatsLoaded(false);
+              setChatError("");
+              setMessageError("");
+              setSelected(null);
+              setMessages([]);
+              setText("");
+              if (event.target.value && tab === "browser") setTab("chats");
+            }}
+            className="max-w-[220px] rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium dark:border-slate-600 dark:bg-slate-800"
+          >
+            <option value="">My LinkedIn</option>
+            {overview.connections
+              .filter(item => item.owner !== overview.currentUser)
+              .map(item => (
+                <option key={item.owner} value={item.owner}>
+                  {item.ownerName || `Agent …${item.owner?.slice(-6)}`}
+                  {item.profileName ? ` (${item.profileName})` : ""} · {statusLabel[item.status] || item.status}
+                </option>
+              ))}
+          </select>
+          <span className="hidden min-w-0 flex-1 truncate text-xs text-slate-500 xl:block">Viewing synced team activity</span>
+        </div>}
+        <div className="flex min-w-0 items-center gap-2 sm:border-l sm:border-slate-200 sm:pl-4 dark:sm:border-slate-700">
+          <span className="hidden min-w-0 max-w-[260px] md:block"><span className="block truncate text-xs font-semibold text-slate-800 dark:text-slate-100">{viewedConnection?.profileName || (own ? "My LinkedIn" : "Agent LinkedIn")}{viewedConnection?.handle ? ` · @${viewedConnection.handle}` : ""}</span><span className="mt-0.5 flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400"><span className={`h-1.5 w-1.5 rounded-full ${viewedConnection?.status === "connected" ? "bg-emerald-500" : "bg-amber-400"}`} />{loading ? "Checking…" : statusLabel[viewedConnection?.status || "disconnected"] || viewedConnection?.status}</span></span>
           {own && connection.status === "connected" && (
             <>
               <button
                 type="button"
                 onClick={() => window.open(liveUrl, "_blank", "noopener,noreferrer")}
                 title="Open current LinkedIn page in a new browser tab"
-                className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
               >
                 <ExternalLink size={15} />
                 Open in New Tab
@@ -642,23 +717,33 @@ function LinkedInWorkspace() {
                 type="button"
                 disabled={syncing}
                 onClick={() => void syncNow()}
-                className="flex items-center gap-2 rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-sm font-medium text-sky-700 hover:bg-sky-100 disabled:opacity-50 dark:border-sky-800 dark:bg-sky-950/40 dark:text-sky-300"
+                className="flex items-center gap-2 rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-xs font-semibold text-sky-700 hover:bg-sky-100 disabled:opacity-50 dark:border-sky-800 dark:bg-sky-950/40 dark:text-sky-300"
               >
                 <RefreshCw size={15} className={syncing ? "animate-spin" : ""} />
-                {syncing ? "Syncing…" : "Sync LinkedIn"}
+                {syncing ? "Syncing…" : "Sync"}
               </button>
             </>
           )}
+          {(own && connection.status === "connected" || viewedConnection?.owner || connection.status === "login_browser") && (
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => void disconnect()}
+              title="Disconnect LinkedIn"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-rose-200 px-2.5 py-2 text-xs font-medium text-rose-600 transition-colors hover:bg-rose-50 disabled:opacity-50 dark:border-rose-900 dark:text-rose-300 dark:hover:bg-rose-950/30"
+            >
+              <Unplug size={14} /><span className="hidden lg:inline">Disconnect</span>
+            </button>
+          )}
           <button
-            onClick={() => {
-              setError("");
-              setSyncNotice("");
-              setRefreshCount(count => count + 1);
-            }}
-            className="rounded-lg border border-slate-200 p-2 dark:border-slate-600"
+            type="button"
+            disabled={refreshing}
+            onClick={() => void refreshPageData()}
+            className="rounded-lg border border-slate-200 p-2 text-slate-600 disabled:opacity-50 dark:border-slate-600 dark:text-slate-300"
             aria-label="Refresh LinkedIn"
+            title="Refresh synced data"
           >
-            <RefreshCw size={18} />
+            <RefreshCw size={18} className={refreshing ? "animate-spin" : ""} />
           </button>
         </div>
       </header>
@@ -688,74 +773,8 @@ function LinkedInWorkspace() {
         </div>
       )}
 
-      {overview?.admin && (
-        <section className="flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800">
-          <label htmlFor="linkedin-owner" className="text-sm font-semibold">
-            Company connections
-          </label>
-          <select
-            id="linkedin-owner"
-            value={owner}
-            onChange={event => {
-              generation.current += 1;
-              setOwner(event.target.value);
-              setChats([]);
-              setContacts([]);
-              setChatsLoaded(false);
-              setChatError("");
-              setMessageError("");
-              setSelected(null);
-              setMessages([]);
-              setText("");
-              if (event.target.value && tab === "browser") setTab("chats");
-            }}
-            className="max-w-full rounded-lg border border-slate-200 bg-transparent px-3 py-2 text-sm dark:border-slate-600"
-          >
-            <option value="">My LinkedIn</option>
-            {overview.connections
-              .filter(item => item.owner !== overview.currentUser)
-              .map(item => (
-                <option key={item.owner} value={item.owner}>
-                  {item.ownerName || `Agent …${item.owner?.slice(-6)}`}
-                  {item.profileName ? ` (${item.profileName})` : ""} · {statusLabel[item.status] || item.status}
-                </option>
-              ))}
-          </select>
-          <p className="text-xs text-slate-500">
-            You can view connected agents’ synced chats & connections. Replies use your own LinkedIn.
-          </p>
-        </section>
-      )}
-
-      <section className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-800">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h2 className="font-semibold">
-              {own ? "My LinkedIn" : "Agent LinkedIn"}
-              {viewedConnection?.profileName ? ` · ${viewedConnection.profileName}` : ""}
-              {viewedConnection?.handle ? ` (@${viewedConnection.handle})` : ""}
-            </h2>
-            {viewedConnection?.headline && (
-              <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{viewedConnection.headline}</p>
-            )}
-            <p className="mt-1 text-sm text-sky-700 dark:text-sky-300">
-              {loading ? "Checking connection…" : statusLabel[viewedConnection?.status || "disconnected"] || viewedConnection?.status}
-            </p>
-          </div>
-          {(viewedConnection?.owner || connection.status === "login_browser") && (
-            <button
-              disabled={busy}
-              onClick={() => void disconnect()}
-              className="flex items-center gap-2 rounded-lg border border-red-200 px-3 py-2 text-sm text-red-600 disabled:opacity-50"
-            >
-              <Unplug size={16} />
-              Disconnect
-            </button>
-          )}
-        </div>
-
-        {own && connection.status !== "connected" && (
-          <div className="mt-5 space-y-5">
+      {own && connection.status !== "connected" && <section className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-800">
+          <div className="space-y-5">
             {connection.status === "login_browser" ? (
               <div className="space-y-3">
                 <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-sky-50 px-4 py-3 text-sm text-sky-900 dark:bg-sky-950/30 dark:text-sky-200">
@@ -923,8 +942,7 @@ function LinkedInWorkspace() {
               </div>
             )}
           </div>
-        )}
-      </section>
+      </section>}
 
       <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 px-4 py-2.5 dark:border-slate-700">
@@ -936,7 +954,7 @@ function LinkedInWorkspace() {
                 setRefreshCount(c => c + 1);
               }}
               className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 ${
-                tab === "chats" ? "bg-white text-[#0A66C2] shadow-sm dark:bg-slate-700 dark:text-sky-300" : "text-slate-500"
+                tab === "chats" ? "bg-white text-[#0A66C2] ring-1 ring-slate-200 dark:bg-slate-700 dark:text-sky-300 dark:ring-slate-600" : "text-slate-500"
               }`}
             >
               <MessageSquare size={15} /> Chats
@@ -945,7 +963,7 @@ function LinkedInWorkspace() {
               type="button"
               onClick={() => setTab("contacts")}
               className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 ${
-                tab === "contacts" ? "bg-white text-[#0A66C2] shadow-sm dark:bg-slate-700 dark:text-sky-300" : "text-slate-500"
+                tab === "contacts" ? "bg-white text-[#0A66C2] ring-1 ring-slate-200 dark:bg-slate-700 dark:text-sky-300 dark:ring-slate-600" : "text-slate-500"
               }`}
             >
               <Users size={15} /> Connections
@@ -955,7 +973,7 @@ function LinkedInWorkspace() {
                 type="button"
                 onClick={() => setTab("browser")}
                 className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 ${
-                  tab === "browser" ? "bg-white text-[#0A66C2] shadow-sm dark:bg-slate-700 dark:text-sky-300" : "text-slate-500"
+                  tab === "browser" ? "bg-white text-[#0A66C2] ring-1 ring-slate-200 dark:bg-slate-700 dark:text-sky-300 dark:ring-slate-600" : "text-slate-500"
                 }`}
               >
                 <Globe size={15} /> Live LinkedIn
@@ -983,7 +1001,7 @@ function LinkedInWorkspace() {
             />
           </div>
         ) : tab === "contacts" ? (
-          <div className="flex h-[580px] flex-col">
+          <div className="flex h-[calc(100dvh-220px)] min-h-[560px] flex-col">
             <div className="border-b border-slate-200 p-3 dark:border-slate-700">
               <label className="flex items-center gap-2 rounded-lg bg-slate-50 px-3 py-2 dark:bg-slate-900">
                 <Search size={16} />
@@ -1015,7 +1033,8 @@ function LinkedInWorkspace() {
                 return list.map(c => {
                   const matchedChat = chats.find(ch => ch.handle && c.handle && ch.handle === c.handle);
                   return (
-                    <div key={c.contactId} className="flex flex-wrap items-center justify-between gap-3 px-5 py-3.5 hover:bg-slate-50 dark:hover:bg-slate-700/40">
+                    <div key={c.contactId} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700/40">
+                      <LinkedInAvatar name={c.name} src={c.profileImageUrl} size="sm" />
                       <div className="min-w-0 flex-1">
                         <p className="truncate font-semibold">{c.name}</p>
                         {c.headline && <p className="mt-0.5 truncate text-xs text-slate-500 dark:text-slate-400">{c.headline}</p>}
@@ -1052,7 +1071,7 @@ function LinkedInWorkspace() {
             </div>
           </div>
         ) : (
-          <div className="grid h-[580px] md:grid-cols-[310px_1fr]">
+          <div className="grid h-[calc(100dvh-220px)] min-h-[560px] md:grid-cols-[310px_1fr]">
             <aside className={`${selected ? "hidden md:flex" : "flex"} min-h-0 flex-col border-r border-slate-200 dark:border-slate-700`}>
               <label className="m-3 flex items-center gap-2 rounded-lg bg-slate-50 px-3 py-2 dark:bg-slate-900">
                 <Search size={16} />
@@ -1099,8 +1118,9 @@ function LinkedInWorkspace() {
                           : "hover:bg-slate-50 dark:hover:bg-slate-700"
                       }`}
                     >
-                      <div className="flex justify-between gap-2">
-                        <span className="truncate font-medium">{chat.name}</span>
+                      <div className="flex items-center gap-3">
+                        <LinkedInAvatar name={chat.name} src={chat.profileImageUrl} size="sm" />
+                        <span className="min-w-0 flex-1 truncate font-medium">{chat.name}</span>
                         <span className="shrink-0 text-xs text-slate-400">{formatTime(chat.timestamp)}</span>
                       </div>
                       {chat.headline && (
@@ -1128,6 +1148,7 @@ function LinkedInWorkspace() {
                     >
                       Back
                     </button>
+                    <LinkedInAvatar name={selected.name} src={selected.profileImageUrl} size="sm" />
                     <div className="min-w-0 flex-1">
                       <h3 className="truncate font-semibold">{selected.name}</h3>
                       {selected.headline && (
@@ -1212,9 +1233,7 @@ function LinkedInWorkspace() {
                 <div className="m-auto p-8 text-center text-slate-500">
                   <FaLinkedin size={48} className="mx-auto mb-4 text-[#0A66C2]" />
                   <p>Select a LinkedIn conversation to read or reply.</p>
-                  <p className="mt-2 text-xs">
-                    You can also open the <strong>Live LinkedIn</strong> tab to browse your feed, send connection requests, or post updates right from Xonier CRM.
-                  </p>
+                  <p className="mt-2 text-xs">Use the Live LinkedIn tab to browse your feed and manage your profile.</p>
                 </div>
               )}
             </div>
@@ -1222,9 +1241,6 @@ function LinkedInWorkspace() {
         )}
       </section>
 
-      <p className="text-xs text-slate-500 dark:text-slate-400">
-        LinkedIn integration uses a private browser session inside Xonier CRM. Avoid high-volume automated messaging to keep your LinkedIn account in good standing.
-      </p>
     </div>
   );
 }

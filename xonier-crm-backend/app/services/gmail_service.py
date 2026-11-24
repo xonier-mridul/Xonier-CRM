@@ -10,6 +10,7 @@ from datetime import datetime, timedelta, timezone
 from email import policy
 from email.parser import BytesParser
 from email.message import EmailMessage
+from email.utils import parseaddr
 from html.parser import HTMLParser
 from urllib.parse import urlencode
 
@@ -68,7 +69,7 @@ def digest(value):
     return hashlib.sha256(value.encode()).hexdigest()
 
 
-def make_message(account_email, command, attachments):
+def make_message(account_email, command, attachments, reply_header=None, references=None):
     message = EmailMessage()
     message["From"] = account_email
     message["To"] = ", ".join(map(str, command.to))
@@ -78,6 +79,9 @@ def make_message(account_email, command, attachments):
     if command.bcc:
         message["Bcc"] = ", ".join(map(str, command.bcc))
     message["Subject"] = command.subject
+    if reply_header:
+        message["In-Reply-To"] = reply_header
+        message["References"] = f"{references} {reply_header}".strip() if references else reply_header
     message.set_content(command.body)
     for attachment in attachments:
         message.add_attachment(attachment["content"], maintype="application", subtype="octet-stream", filename=attachment["name"])
@@ -284,13 +288,16 @@ class GmailService:
                     mail = BytesParser(policy=policy.default).parsebytes(base64.urlsafe_b64decode(raw + "=" * (-len(raw) % 4)))
                     part = mail.get_body(preferencelist=("plain", "html"))
                     body = part.get_content() if part else ""
+                    html_part = mail.get_body(preferencelist=("html",))
+                    body_html = html_part.get_content() if html_part else None
                     if part and part.get_content_type() == "text/html":
                         parser = MailTextParser()
                         parser.feed(body)
                         body = "".join(parser.text).strip()
                     return {"id": message_id, "subject": str(mail.get("Subject", "")),
                             "from": str(mail.get("From", "")), "to": str(mail.get("To", "")),
-                            "date": str(mail.get("Date", "")), "body": body,
+                            "replyTo": str(mail.get("Reply-To", "")),
+                            "date": str(mail.get("Date", "")), "body": body, "bodyHtml": body_html,
                             "attachments": [part.get_filename() or "Attachment" for part in mail.iter_attachments()]}
 
                 params = {"maxResults": 20, "labelIds": folder}
@@ -299,7 +306,7 @@ class GmailService:
                 if query:
                     params["q"] = query
                 result = await get("messages", params)
-                semaphore = asyncio.Semaphore(5)
+                semaphore = asyncio.Semaphore(10)
 
                 async def summary(item):
                     async with semaphore:
@@ -351,7 +358,33 @@ class GmailService:
             from app.services.lead_service import LeadService
             await LeadService().get_by_id(command.leadId, user)
         token = await self.access_token(connection)
-        raw = make_message(connection["accountEmail"], command, attachments)
+        reply_header = references = thread_id = None
+        if command.replyToMessageId:
+            if provider != "google" or not connection.get("inboxGranted"):
+                raise AppException(409, "Connect Gmail with inbox access to reply")
+            try:
+                async with httpx.AsyncClient(timeout=20) as client:
+                    reply_response = await client.get(
+                        f"https://gmail.googleapis.com/gmail/v1/users/me/messages/{command.replyToMessageId}",
+                        params={"format": "raw"}, headers={"Authorization": f"Bearer {token}"})
+            except httpx.HTTPError as exc:
+                raise AppException(502, "Gmail could not load the original email. Try again.") from exc
+            if reply_response.status_code != 200:
+                raise AppException(404, "Original email is unavailable. Refresh your inbox and try again.")
+            original = reply_response.json()
+            original_mail = BytesParser(policy=policy.default).parsebytes(base64.urlsafe_b64decode(
+                original["raw"] + "=" * (-len(original["raw"]) % 4)))
+            recipient = parseaddr(str(original_mail.get("Reply-To") or original_mail.get("From") or ""))[1].lower()
+            if recipient != str(command.to[0]).lower() or len(command.to) != 1:
+                raise AppException(400, "Reply recipient does not match the original email")
+            original_subject = str(original_mail.get("Subject", ""))
+            expected_subject = original_subject if original_subject.lower().startswith("re:") else f"Re: {original_subject or '(No subject)'}"
+            if command.subject != expected_subject:
+                raise AppException(400, "Reply subject does not match the original email")
+            reply_header = str(original_mail.get("Message-ID", ""))
+            references = str(original_mail.get("References", ""))
+            thread_id = original.get("threadId")
+        raw = make_message(connection["accountEmail"], command, attachments, reply_header, references)
         microsoft_content = microsoft_mail.mime_payload(raw) if provider == "microsoft" else None
         record = {
             "_id": ObjectId(), "companyId": query["companyId"], "gmailUserId": query["userId"],
@@ -375,7 +408,7 @@ class GmailService:
                 if provider == "microsoft":
                     response = await client.post(microsoft_mail.SEND_URL, headers={"Authorization": f"Bearer {token}", "Content-Type": "text/plain"}, content=microsoft_content)
                 else:
-                    response = await client.post(SEND_URL, headers={"Authorization": f"Bearer {token}"}, json={"raw": raw})
+                    response = await client.post(SEND_URL, headers={"Authorization": f"Bearer {token}"}, json={"raw": raw, **({"threadId": thread_id} if thread_id else {})})
         except httpx.HTTPError:
             await receipts.update_one({"_id": request_key}, {"$set": {"gmailOutcome": "unknown"}})
             await history.update_one({"_id": record["_id"]}, {"$set": {"gmailOutcome": "unknown", "error_message": "Send outcome is uncertain. Check your mailbox Sent folder before sending again."}})

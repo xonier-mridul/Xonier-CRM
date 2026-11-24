@@ -35,6 +35,7 @@ const messages = db.collection('whatsapp_messages');
 const sends = db.collection('whatsapp_sends');
 const contacts = db.collection('whatsapp_contacts');
 const directory = new ContactDirectory(contacts);
+const profilePhotoLocks = new Map();
 await Promise.all([
   contacts.createIndex({ sid: 1, jid: 1 }, { unique: true }),
   connections.createIndex({ company: 1, owner: 1 }, { unique: true }),
@@ -135,6 +136,25 @@ async function saveMessages(sid, batch) {
       update: { $set: row } } })), { ordered: true });
   }
   await directory.map(sid, [...mappings].map(([lid, pn]) => ({ lid, pn })));
+}
+
+async function refreshProfilePhotos(sid, socket, jids) {
+  const targets = [...new Set((jids || []).filter(jid => directJid(jid) && !jid.endsWith('@lid')))];
+  for (const jid of targets) {
+    const key = `${sid}:${jid}`;
+    const last = profilePhotoLocks.get(key) || 0;
+    if (Date.now() - last < 6 * 60 * 60 * 1000) continue;
+    profilePhotoLocks.set(key, Date.now());
+    try {
+      const profilePicUrl = await socket.profilePictureUrl(jid, 'image', 5000);
+      if (typeof profilePicUrl === 'string' && /^https:\/\//i.test(profilePicUrl)) {
+        const phoneNumber = `+${jid.split('@')[0].split(':')[0]}`;
+        const profilePicFetchedAt = new Date();
+        await contacts.updateOne({ sid, jid }, { $set: { phoneNumber, profilePicUrl, profilePicFetchedAt }, $setOnInsert: { sid, jid } }, { upsert: true });
+        await contacts.updateMany({ sid, phoneNumber }, { $set: { profilePicUrl, profilePicFetchedAt } });
+      }
+    } catch { /* Private, missing or temporarily unavailable photos retain the initials fallback. */ }
+  }
 }
 
 async function storedAliases(sid, jids) {
@@ -271,8 +291,14 @@ async function connect(sid, company, owner, attempt = 0) {
       }
     }));
     socket.ev.on('messages.upsert', guarded(async ({ messages: batch }) => saveMessages(sid, batch)));
-    socket.ev.on('contacts.upsert', guarded(batch => directory.absorb(sid, batch)));
-    socket.ev.on('contacts.update', guarded(batch => directory.absorb(sid, batch)));
+    socket.ev.on('contacts.upsert', guarded(async batch => {
+      await directory.absorb(sid, batch);
+      await refreshProfilePhotos(sid, socket, batch.flatMap(contact => [contact.id, contact.phoneNumber]));
+    }));
+    socket.ev.on('contacts.update', guarded(async batch => {
+      await directory.absorb(sid, batch);
+      await refreshProfilePhotos(sid, socket, batch.flatMap(contact => [contact.id, contact.phoneNumber]));
+    }));
     socket.ev.on('lid-mapping.update', guarded(mapping => directory.map(sid, [mapping])));
     socket.ev.on('messaging-history.set', guarded(async ({ chats: batch, contacts: people, lidPnMappings, messages: history }) => {
       if (batch?.length) {
@@ -280,7 +306,10 @@ async function connect(sid, company, owner, attempt = 0) {
         for (let offset = 0; offset < rows.length; offset += 200) {
           await chats.bulkWrite(rows.slice(offset, offset + 200).map(chat => ({ updateOne: {
             filter: { sid, jid: chat.id },
-            update: { ...(chat.name ? { $set: { name: chat.name } } : {}), $setOnInsert: { sid, jid: chat.id, timestamp: 0 } },
+            update: { ...((chat.name || Number.isFinite(chat.unreadCount)) ? { $set: {
+              ...(chat.name ? { name: chat.name } : {}),
+              ...(Number.isFinite(chat.unreadCount) ? { unreadCount: Math.max(0, chat.unreadCount) } : {}),
+            } } : {}), $setOnInsert: { sid, jid: chat.id, timestamp: 0 } },
             upsert: true,
           } })));
         }
@@ -290,9 +319,17 @@ async function connect(sid, company, owner, attempt = 0) {
       if (!await checkSessionAccess(sid)) return;
       await directory.absorb(sid, people);
       await directory.map(sid, lidPnMappings);
+      await refreshProfilePhotos(sid, socket, (people || []).flatMap(contact => [contact.id, contact.phoneNumber]));
     }));
     socket.ev.on('chats.update', guarded(async batch => {
-      for (const chat of batch) if (safeJid(chat.id) && chat.name) await chats.updateOne({ sid, jid: chat.id }, { $set: { name: chat.name } });
+      for (const chat of batch) if (safeJid(chat.id)) {
+        const set = {};
+        if (chat.name) set.name = chat.name;
+        if (Number.isFinite(chat.unreadCount)) set.unreadCount = Math.max(0, chat.unreadCount);
+        if (Object.keys(set).length) await chats.updateOne({ sid, jid: chat.id }, {
+          $set: set, $setOnInsert: { sid, jid: chat.id, timestamp: 0 },
+        }, { upsert: true });
+      }
     }));
     socket.ev.on('messages.update', guarded(async batch => {
       for (const { key, update } of batch) {
@@ -352,6 +389,41 @@ const server = http.createServer(async (req, res) => {
       data = { admin: actor.admin, currentUser: actor.user, connections: (await connections.find(filter).toArray()).map(row => connectionView(row)) };
     } else if (req.method === 'GET' && url.pathname === '/connection') {
       data = connectionView(await connections.findOne({ _id: scope(actor) }), true);
+    } else if (req.method === 'GET' && url.pathname === '/profile') {
+      const jid = url.searchParams.get('jid');
+      if (!directJid(jid)) throw fail(400, 'Invalid WhatsApp profile');
+      const aliases = await directory.conversationAliases(sid, jid);
+      const targetJid = aliases.find(alias => alias.endsWith('@s.whatsapp.net')) || jid;
+      const [contact, chat] = await Promise.all([
+        contacts.findOne({ sid, jid: { $in: aliases } }), chats.findOne({ sid, jid: { $in: aliases } }),
+      ]);
+      const state = live.get(sid);
+      let profilePicUrl = contact?.profilePicUrl || null;
+      let about = typeof contact?.about === 'string' ? contact.about : null;
+      if (state?.socket && state.status === 'connected') {
+        try {
+          const [photo, statuses] = await Promise.all([
+            state.socket.profilePictureUrl(targetJid, 'image', 5000).catch(() => undefined),
+            state.socket.fetchStatus(targetJid).catch(() => undefined),
+          ]);
+          if (photo) profilePicUrl = photo;
+          const status = statuses?.find(item => item.id === targetJid)?.status;
+          if (typeof status === 'string') about = status || null;
+          const phoneNumber = phoneFromJid(targetJid);
+          const profilePicFetchedAt = new Date();
+          await contacts.updateOne({ sid, jid: targetJid }, {
+            $set: { ...(phoneNumber ? { phoneNumber } : {}), ...(profilePicUrl ? { profilePicUrl, profilePicFetchedAt } : {}), ...(about !== null ? { about } : {}) },
+            $setOnInsert: { sid, jid: targetJid },
+          }, { upsert: true });
+          if (phoneNumber) await contacts.updateMany({ sid, phoneNumber }, {
+            $set: { ...(profilePicUrl ? { profilePicUrl, profilePicFetchedAt } : {}), ...(about !== null ? { about } : {}) },
+          });
+        } catch { /* Return cached profile details when WhatsApp does not share them. */ }
+      }
+      data = {
+        jid, name: contact?.name || chat?.name || phoneFromJid(targetJid) || 'WhatsApp contact',
+        phone: phoneFromJid(contact?.phoneNumber) || phoneFromJid(targetJid), profilePicUrl, about,
+      };
     } else if (req.method === 'POST' && url.pathname === '/connect') {
       limit(`${scope(actor)}:connect`, 6);
       const body = await readBody(req);
@@ -374,7 +446,23 @@ const server = http.createServer(async (req, res) => {
     } else if (req.method === 'GET' && url.pathname === '/chats') {
       data = await chats.find({ sid }, { projection: { _id: 0, sid: 0 } }).sort({ timestamp: -1 }).limit(1000).toArray();
       const phones = await storedAliases(sid, data.map(chat => chat.jid).filter(jid => jid.endsWith('@lid')));
+      const state = live.get(sid);
+      if (state?.socket && state.status === 'connected') void refreshProfilePhotos(sid, state.socket, data.slice(0, 50).flatMap(chat => [chat.jid, phones.get(chat.jid)]));
       data = mergeChatAliases(await directory.decorate(sid, data, phones)).slice(0, 200);
+    } else if (req.method === 'POST' && url.pathname === '/chats/read') {
+      const body = await readBody(req);
+      if (!safeJid(body.jid)) throw fail(400, 'Invalid conversation');
+      const state = live.get(sid);
+      if (state?.socket && state.status === 'connected') {
+        const aliases = await conversationAliases(sid, body.jid);
+        const recent = await messages.find({ sid, jid: { $in: aliases }, fromMe: false })
+          .sort({ timestamp: -1 }).limit(100).toArray();
+        if (recent.length) await state.socket.readMessages(recent.map(message => ({
+          remoteJid: message.jid, id: message.messageId, fromMe: false,
+        })));
+      }
+      await chats.updateMany({ sid, jid: { $in: await conversationAliases(sid, body.jid) } }, { $set: { unreadCount: 0 } });
+      data = { success: true };
     } else if (req.method === 'GET' && url.pathname === '/contacts') {
       const q = (url.searchParams.get('q') || '').trim();
       if (q.length === 1) {
@@ -389,6 +477,8 @@ const server = http.createServer(async (req, res) => {
         ] } : { sid };
         const rows = await contacts.find(filter, { projection: { _id: 0, sid: 0 } }).limit(q ? 120 : 5000).toArray();
         const phones = await storedAliases(sid, rows.map(c => c.jid).filter(jid => jid.endsWith('@lid')));
+        const state = live.get(sid);
+        if (state?.socket && state.status === 'connected') void refreshProfilePhotos(sid, state.socket, rows.slice(0, 50).flatMap(contact => [contact.jid, contact.phoneNumber, phones.get(contact.jid)]));
         const seen = new Map();
         for (const c of rows) {
           const pnJid = c.phoneNumber || phones.get(c.jid) || (phoneFromJid(c.jid) ? c.jid : null);
@@ -397,7 +487,8 @@ const server = http.createServer(async (req, res) => {
           const name = typeof c.name === 'string' && c.name.trim() ? c.name.trim() : null;
           if (!name && !phone) continue;
           const prev = seen.get(jid);
-          if (!prev || (!prev.name && name)) seen.set(jid, { jid, name: name || prev?.name || null, phone: phone || prev?.phone || null });
+          const profilePicUrl = c.profilePicUrl || prev?.profilePicUrl || null;
+          if (!prev || (!prev.name && name) || (!prev.profilePicUrl && profilePicUrl)) seen.set(jid, { jid, name: name || prev?.name || null, phone: phone || prev?.phone || null, profilePicUrl });
         }
         data = [...seen.values()]
           .sort((a, b) => (a.name ? 0 : 1) - (b.name ? 0 : 1) || (a.name || a.phone || '').localeCompare(b.name || b.phone || '', undefined, { sensitivity: 'base' }))

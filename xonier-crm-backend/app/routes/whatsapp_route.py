@@ -66,6 +66,14 @@ async def connection(request: Request):
     return await bridge(request, "GET", "/connection")
 
 
+@router.get("/profile")
+async def profile(request: Request, jid: str = Query(..., min_length=3, max_length=160), owner: str | None = None):
+    params = {"jid": jid}
+    if owner:
+        params["owner"] = owner
+    return await bridge(request, "GET", "/profile", params=params)
+
+
 class ConnectWhatsApp(BaseModel):
     consent: Literal[True]
 
@@ -83,6 +91,15 @@ async def disconnect(request: Request, owner: str | None = None):
 @router.get("/chats")
 async def chats(request: Request, owner: str | None = None):
     return await bridge(request, "GET", "/chats", params={"owner": owner} if owner else None)
+
+
+class ReadChat(BaseModel):
+    jid: str = Field(min_length=3, max_length=160)
+
+
+@router.post("/chats/read")
+async def read_chat(request: Request, command: ReadChat):
+    return await bridge(request, "POST", "/chats/read", body=command.model_dump())
 
 
 @router.get("/contacts")
