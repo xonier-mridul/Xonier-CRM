@@ -1,13 +1,16 @@
 "use client";
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { Lead } from "@/src/types/leads/leads.types";
-import { useLeadStatuses } from "@/src/hooks/useLeadStatuses";
-import { SALES_STATUS } from "@/src/constants/enum";
+import type { User } from "@/src/types/auth/auth.types";
+import type { useLeadStatuses } from "@/src/hooks/useLeadStatuses";
+import { PERMISSIONS, SALES_STATUS } from "@/src/constants/enum";
 import { MdDeleteOutline, MdOutlineEdit } from "react-icons/md";
-import { FaRegEye } from "react-icons/fa";
+import { FaRegEye, FaWhatsapp } from "react-icons/fa";
+import { IoMailOutline } from "react-icons/io5";
 import Link from "next/link";
 import StatusBadge from "@/src/components/common/Status";
 import { Inbox } from "lucide-react";
+import { usePermissions } from "@/src/hooks/usePermissions";
 
 // Tunables — matching Task Board (CategoryBoard.tsx)
 const DRAG_ACTIVATE_DELAY = 80; // ms cursor must dwell in a column before it's highlighted
@@ -16,12 +19,56 @@ const SCROLL_MAX_SPEED = 32; // px per frame at the very edge
 const SCROLL_MIN_SPEED = 4;
 
 interface LeadKanbanBoardProps {
+  stageState: ReturnType<typeof useLeadStatuses>;
   leads: Lead[];
   onStatusChange: (leadId: string, newStatus: string) => Promise<boolean>;
   onDelete?: (leadId: string, leadName: string) => Promise<void> | void;
 }
 
-const AssignedToAvatar = ({ user }: { user: any }) => {
+export function LeadKanbanSkeleton({ label = "Loading leads" }: { label?: string } = {}) {
+  const bar = "rounded-full bg-slate-200/80 dark:bg-slate-700";
+
+  return (
+    <div role="status" className="min-h-64 overflow-hidden">
+      <span className="sr-only">{label}</span>
+      <div aria-hidden="true" className="flex gap-4 p-2">
+        {Array.from({ length: 5 }, (_, column) => (
+          <div key={column} className="w-[300px] shrink-0 rounded-xl border border-slate-200 bg-slate-50/70 dark:border-slate-700 dark:bg-slate-900/40">
+            <div className="flex items-center justify-between rounded-t-xl border-b border-slate-200 bg-cyan-50/80 px-3 py-3 dark:border-slate-700 dark:bg-cyan-950/40">
+              <div className={`${bar} h-3 w-24`} />
+              <div className={`${bar} h-5 w-8`} />
+            </div>
+            <div className="space-y-3 p-2">
+              {[0, 1, 2].map(card => (
+                <div key={card} className="relative isolate overflow-hidden rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+                  <div className="pointer-events-none absolute inset-0 bg-linear-to-r from-transparent via-cyan-100/60 to-transparent opacity-0 motion-safe:animate-[lead-kanban-shimmer_1.8s_ease-in-out_infinite] dark:via-cyan-300/10" style={{ animationDelay: `${column * 90 + card * 65}ms` }} />
+                  <div className={`${bar} h-3.5 w-3/5`} />
+                  <div className={`${bar} mt-3 h-2.5 w-4/5`} />
+                  <div className="mt-4 flex gap-2">
+                    <div className="h-7 w-7 rounded-lg bg-cyan-100/80 dark:bg-cyan-950" />
+                    <div className="h-7 w-7 rounded-lg bg-emerald-100/80 dark:bg-emerald-950" />
+                  </div>
+                  <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3 dark:border-slate-700">
+                    <div className={`${bar} h-5 w-5`} />
+                    <div className={`${bar} h-4 w-16`} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+      <style>{`
+        @keyframes lead-kanban-shimmer {
+          from { transform: translateX(-100%); opacity: 1; }
+          to { transform: translateX(100%); opacity: 1; }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+const AssignedToAvatar = ({ user }: { user?: User | null }) => {
   if (!user) return null;
   const initials = `${user.firstName?.charAt(0) ?? ""}${user.lastName?.charAt(0) ?? ""}`.toUpperCase();
   return (
@@ -34,8 +81,9 @@ const AssignedToAvatar = ({ user }: { user: any }) => {
   );
 };
 
-const LeadKanbanBoard: React.FC<LeadKanbanBoardProps> = ({ leads, onStatusChange, onDelete }) => {
-  const { statuses, label, loading: statusesLoading, error: statusError, refresh: refreshStatuses } = useLeadStatuses();
+const LeadKanbanBoard: React.FC<LeadKanbanBoardProps> = ({ stageState, leads, onStatusChange, onDelete }) => {
+  const { statuses, label, loading: statusesLoading, error: statusError, refresh: refreshStatuses } = stageState;
+  const { hasPermission } = usePermissions();
   const COLUMNS = useMemo(
     () => [
       ...[...statuses]
@@ -74,10 +122,10 @@ const LeadKanbanBoard: React.FC<LeadKanbanBoardProps> = ({ leads, onStatusChange
   const dragCounterRef = useRef<Record<string, number>>({});
   const dragActivateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const [boardData, setBoardData] = useState<Record<string, Lead[]>>({});
+  const [boardOverride, setBoardOverride] = useState<{ leads: Lead[]; columns: typeof COLUMNS; data: Record<string, Lead[]> } | null>(null);
 
-  // Sync leads to columns whenever leads prop changes
-  useEffect(() => {
+  // Derive the regular board data from props. Keep only drag updates in state.
+  const derivedBoardData = useMemo(() => {
     const newBoardData: Record<string, Lead[]> = {};
     COLUMNS.forEach((col) => {
       newBoardData[col.id] = [];
@@ -93,8 +141,9 @@ const LeadKanbanBoard: React.FC<LeadKanbanBoardProps> = ({ leads, onStatusChange
       }
     });
 
-    setBoardData(newBoardData);
+    return newBoardData;
   }, [leads, COLUMNS]);
+  const boardData = boardOverride?.leads === leads && boardOverride.columns === COLUMNS ? boardOverride.data : derivedBoardData;
 
   // ---------------- Auto scroll engine (rAF) ----------------
   const tickScroll = () => {
@@ -265,20 +314,22 @@ const LeadKanbanBoard: React.FC<LeadKanbanBoardProps> = ({ leads, onStatusChange
     const updatedLead: Lead = { ...lead, status: targetStatusId as SALES_STATUS };
 
     // Optimistically update board state immediately
-    setBoardData((prev) => {
-      const sourceKey = prev[sourceStatus] ? sourceStatus : SALES_STATUS.NEW;
-      const sourceList = (prev[sourceKey] || []).filter((item) => item.id !== lead.id);
-      const destList = [updatedLead, ...(prev[targetStatusId] || []).filter((item) => item.id !== lead.id)];
-      return {
-        ...prev,
+    const sourceKey = previousBoardData[sourceStatus] ? sourceStatus : SALES_STATUS.NEW;
+    const sourceList = (previousBoardData[sourceKey] || []).filter((item) => item.id !== lead.id);
+    const destList = [updatedLead, ...(previousBoardData[targetStatusId] || []).filter((item) => item.id !== lead.id)];
+    setBoardOverride({
+      leads,
+      columns: COLUMNS,
+      data: {
+        ...previousBoardData,
         [sourceKey]: sourceList,
         [targetStatusId]: destList,
-      };
+      },
     });
 
     const success = await onStatusChange(lead.id, targetStatusId);
     if (!success) {
-      setBoardData(previousBoardData);
+      setBoardOverride({ leads, columns: COLUMNS, data: previousBoardData });
     }
   };
 
@@ -289,7 +340,7 @@ const LeadKanbanBoard: React.FC<LeadKanbanBoardProps> = ({ leads, onStatusChange
     dragLeadRef.current = null;
   };
 
-  if (statusError)
+  if (statusError && statuses.length === 0)
     return (
       <div role="alert" className="p-4 text-red-600">
         {statusError}{" "}
@@ -298,7 +349,7 @@ const LeadKanbanBoard: React.FC<LeadKanbanBoardProps> = ({ leads, onStatusChange
         </button>
       </div>
     );
-  if (statusesLoading) return <div className="h-96 flex items-center justify-center">Loading board...</div>;
+  if (statusesLoading) return <LeadKanbanSkeleton />;
 
   return (
     <div
@@ -361,10 +412,22 @@ const LeadKanbanBoard: React.FC<LeadKanbanBoardProps> = ({ leads, onStatusChange
                     onDragEnd={handleDragEnd}
                     className="bg-white dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md hover:border-cyan-300 dark:hover:border-cyan-700 transition-all duration-150 cursor-grab active:cursor-grabbing select-none group"
                   >
-                    <div className="flex justify-between items-start mb-2">
-                      <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-100 truncate pr-2 group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors">
-                        {lead.fullName || lead.lead_id || "Unnamed Lead"}
-                      </h4>
+                    <div className="flex justify-between items-start mb-2 gap-2">
+                      <div className="min-w-0">
+                        <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-100 truncate group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors">
+                          {lead.fullName || lead.lead_id || "Unnamed Lead"}
+                        </h4>
+                        {lead.employeeRole && (
+                          <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400 truncate" title={lead.employeeRole}>
+                            {lead.employeeRole}
+                          </p>
+                        )}
+                        {lead.companyName && (
+                          <p className="mt-0.5 text-xs font-medium text-slate-600 dark:text-slate-300 truncate" title={lead.companyName}>
+                            {lead.companyName}
+                          </p>
+                        )}
+                      </div>
                       <div className="flex gap-1 shrink-0">
                         <Link
                           href={`/leads/view/${lead.id}`}
@@ -403,6 +466,41 @@ const LeadKanbanBoard: React.FC<LeadKanbanBoardProps> = ({ leads, onStatusChange
 
                     <div className="text-xs text-slate-500 dark:text-slate-400 mb-3 truncate">
                       {lead.email}
+                    </div>
+
+                    <div className="mb-3 flex items-center gap-2" aria-label="Contact actions">
+                      {hasPermission(PERMISSIONS.emailProspects) && (lead.email ? (
+                        <Link
+                          href={`/emailManagement/mail?to=${encodeURIComponent(lead.email)}&leadId=${encodeURIComponent(lead.id)}`}
+                          draggable={false}
+                          onClick={(e) => e.stopPropagation()}
+                          title={`Email ${lead.fullName || "this lead"}`}
+                          aria-label={`Email ${lead.fullName || "this lead"}`}
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-cyan-200 bg-cyan-50 text-cyan-700 transition hover:bg-cyan-100 dark:border-cyan-800 dark:bg-cyan-950/30 dark:text-cyan-300 dark:hover:bg-cyan-950/60"
+                        >
+                          <IoMailOutline size={16} />
+                        </Link>
+                      ) : (
+                        <button type="button" disabled draggable={false} title="No email address is available" aria-label="Email unavailable: no email address" className="inline-flex h-8 w-8 cursor-not-allowed items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-500">
+                          <IoMailOutline size={16} />
+                        </button>
+                      ))}
+                      {lead.phone && lead.phone.replace(/\D/g, "").length >= 7 ? (
+                        <Link
+                          href={`/whatsapp?phone=${encodeURIComponent(lead.phone.replace(/\D/g, ""))}&name=${encodeURIComponent(lead.fullName || "Lead")}`}
+                          draggable={false}
+                          onClick={(e) => e.stopPropagation()}
+                          title={`WhatsApp ${lead.fullName || "this lead"}`}
+                          aria-label={`WhatsApp ${lead.fullName || "this lead"}`}
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-700 transition hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-300 dark:hover:bg-emerald-950/60"
+                        >
+                          <FaWhatsapp size={15} />
+                        </Link>
+                      ) : (
+                        <button type="button" disabled draggable={false} title="No valid phone number is available" aria-label="WhatsApp unavailable: no phone number" className="inline-flex h-8 w-8 cursor-not-allowed items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-500">
+                          <FaWhatsapp size={15} />
+                        </button>
+                      )}
                     </div>
 
                     <div className="flex flex-wrap gap-1.5 mb-3">

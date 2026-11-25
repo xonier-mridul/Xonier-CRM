@@ -126,7 +126,7 @@ class AuthController:
 
             user_name = f"{result['user']["firstName"]} {result['user']["lastName"]}"
 
-            return successResponse(200, f"{user_name} logged in successfully", {**result["user"], "accessToken": result["access_token"], "refreshToken": result["refresh_token"]})
+            return successResponse(200, f"{user_name} logged in successfully", {**result["user"], "accessToken": result["access_token"], "refreshToken": result["refresh_token"]}, include_session_tokens=True)
 
 
         except AppException as e:
@@ -151,7 +151,7 @@ class AuthController:
 
             user_name = f"{result['user']["firstName"]} {result['user']["lastName"]}"
 
-            return successResponse(200, f"{user_name} logged in successfully", {**result["user"], "accessToken": result["access_token"], "refreshToken": result["refresh_token"]})
+            return successResponse(200, f"{user_name} logged in successfully", {**result["user"], "accessToken": result["access_token"], "refreshToken": result["refresh_token"]}, include_session_tokens=True)
 
 
         except AppException as e:
@@ -538,7 +538,7 @@ class AuthController:
                 **result["user"],
                 "accessToken": result["access_token"],
                 "refreshToken": result["refresh_token"],
-            })
+            }, include_session_tokens=True)
 
         except AppException as e:
             response.delete_cookie(key="accessToken", **JWT_OPTIONS)

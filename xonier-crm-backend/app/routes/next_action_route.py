@@ -115,7 +115,12 @@ def output(action: NextActionModel, owner: UserModel | None = None) -> dict:
 @router.get("/{entity_type}/{entity_id}/owners", dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active), Depends(dependencies.company_context), Depends(dependencies.feature_access(FEATURE.CRM))])
 async def list_owners(request: Request, entity_type: str, entity_id: str):
     await require_record(request, entity_type, entity_id, write=True)
-    users = await UserModel.find({"deletedAt": None, "status": "active"}).sort("firstName").to_list()
+    company_id = PydanticObjectId(request.state.user["companyId"])
+    users = await UserModel.find({
+        "companyId": company_id,
+        "deletedAt": None,
+        "status": "active",
+    }).sort("firstName").to_list()
     return {"data": [{"id": str(user.id), "name": " ".join(filter(None, [user.firstName, user.lastName]))} for user in users]}
 
 
@@ -380,11 +385,15 @@ async def log_lead_interaction(request: Request, entity_id: str, payload: LeadIn
 async def create_action(request: Request, entity_type: str, entity_id: str, payload: NextActionInput):
     record_id = await require_record(request, entity_type, entity_id, write=True)
     owner_id = object_id(payload.ownerId)
-    owner = await UserModel.find_one({"_id": owner_id, "deletedAt": None})
-    if not owner or str(owner.companyId) != str(request.state.user["companyId"]):
+    company_id = PydanticObjectId(request.state.user["companyId"])
+    owner = await UserModel.find_one({
+        "_id": owner_id,
+        "companyId": company_id,
+        "deletedAt": None,
+        "status": "active",
+    })
+    if not owner:
         raise AppException(422, "Owner must be an active user in this company")
-    if str(owner.status).lower().split(".")[-1] != "active":
-        raise AppException(422, "Owner must be active")
     due_at = payload.dueAt
     if payload.localDueAt is not None:
         if payload.localDueAt.tzinfo is not None:
@@ -401,7 +410,7 @@ async def create_action(request: Request, entity_type: str, entity_id: str, payl
     if due_at is None or due_at <= datetime.now(timezone.utc):
         raise AppException(422, "Due date must be in the future")
     action = NextActionModel(
-        companyId=PydanticObjectId(request.state.user["companyId"]),
+        companyId=company_id,
         entityType=entity_type, entityId=record_id, kind=payload.kind,
         title=payload.title, dueAt=due_at, ownerId=owner_id,
         createdById=PydanticObjectId(request.state.user["_id"]),

@@ -76,7 +76,7 @@ const DealViewPage = (): JSX.Element => {
   const { label: stageLabel } = useDealStages();
   const currency = useCompanyCurrency();
   const { t } = useTranslation();
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [dealData, setDealData] = useState<Deal | null>(null);
   const [linkedQuotes, setLinkedQuotes] = useState<Quotation[]>([]);
   const [isPrinting, setIsPrinting] = useState(false);
@@ -110,7 +110,25 @@ const DealViewPage = (): JSX.Element => {
   };
 
   useEffect(() => {
-    if (id) getDealData(id as string);
+    if (!id) return;
+    let cancelled = false;
+    const loadDeal = async () => {
+      try {
+        const result = await dealService.getById(id as string);
+        if (!cancelled && result.status === 200) setDealData(result.data.data);
+      } catch (error) {
+        if (cancelled) return;
+        if (axios.isAxiosError(error)) {
+          extractErrorMessages(error);
+        } else {
+          toast.error("Something went wrong");
+        }
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    };
+    void loadDeal();
+    return () => { cancelled = true; };
   }, [id]);
 
   useEffect(() => {
@@ -290,6 +308,7 @@ const DealViewPage = (): JSX.Element => {
   }
 
   const { lead_id: lead } = dealData;
+  const contactEmail = dealData.person?.email || dealData.lead_id?.email || dealData.organization?.email;
   const date = formatDate(dealData?.createDate);
 
   return (
@@ -360,6 +379,15 @@ const DealViewPage = (): JSX.Element => {
               {/* Hide action buttons when printing */}
            
                 <div className="flex flex-wrap items-center gap-2 print:hidden">
+                {hasPermission(PERMISSIONS.emailProspects) && (contactEmail ? (
+                  <Link href={`/emailManagement/mail?to=${encodeURIComponent(contactEmail)}`} aria-label="Email deal contact" title={`Email ${contactEmail}`} className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-cyan-200 bg-cyan-50 text-cyan-700 transition hover:border-cyan-300 hover:bg-cyan-100 dark:border-cyan-800 dark:bg-cyan-950/30 dark:text-cyan-300 dark:hover:bg-cyan-950/50">
+                    <IoMailOutline className="h-5 w-5" />
+                  </Link>
+                ) : (
+                  <button type="button" disabled aria-label="Email unavailable: no contact email address" title="No email address is available for this deal contact" className="inline-flex h-10 w-10 cursor-not-allowed items-center justify-center rounded-lg border border-gray-200 bg-gray-50 text-gray-400 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-500">
+                    <IoMailOutline className="h-5 w-5" />
+                  </button>
+                ))}
                 {hasPermission(PERMISSIONS.updateDeal) &&
                   dealData.status !== DEAL_STATUS.DELETE && (
                     <>

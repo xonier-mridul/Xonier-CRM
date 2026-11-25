@@ -269,6 +269,7 @@ class DealService:
                 return v
  
             cache_query = {k: serialize_for_cache(v) for k, v in query.items()}
+            cache_query["listOrderVersion"] = 2
  
             cache_key = cache_key_generator_with_id(prefix=DEAL_CACHE_NAMESPACE, filters=cache_query, page=int(page), limit=int(limit), userId=user["_id"])
  
@@ -282,7 +283,7 @@ class DealService:
                 limit=int(limit),
                 filters=query,
                 populate=["createdBy", "lead_id", "lead_id.assignedTo", "updatedBy", "assignedTo"],
-                sort=["-createdAt", "-_id"]
+                sort=["-updatedAt", "-createdAt", "-_id"]
             )
  
             if not result:

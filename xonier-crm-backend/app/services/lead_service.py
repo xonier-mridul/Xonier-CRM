@@ -1,3 +1,4 @@
+import logging
 from app.utils.record_visibility import DELETED_STATUSES, live_lead_filter
 from app.utils.transaction_retry import retry_transaction
 from typing import Dict, Any, List
@@ -54,6 +55,35 @@ from app.services.commercial_relationship_service import (
 from app.db.models.organization_model import OrganizationModel
 from app.db.models.person_model import PersonModel
 from app.utils.lead_assignment_access import can_assign_leads, require_lead_assigner, require_lower_assignee
+
+
+_POPULATED_USER_FIELDS = {"createdBy", "updatedBy", "assignedTo", "deletedBy", "disqualifiedBy"}
+_SAFE_LEAD_USER_FIELDS = {"id", "firstName", "lastName"}
+_SENSITIVE_RESPONSE_FIELDS = {"password", "refreshToken", "hashedEmail", "hashedPhone"}
+
+
+def _sanitize_lead_response(value: Any, field_name: str | None = None) -> Any:
+    """Keep populated user references minimal and strip secrets from all nested data."""
+    if field_name in _POPULATED_USER_FIELDS:
+        if isinstance(value, list):
+            return [_sanitize_lead_response(item, field_name) for item in value]
+        if isinstance(value, dict):
+            return {
+                key: value[key]
+                for key in _SAFE_LEAD_USER_FIELDS
+                if key in value
+            }
+        return value
+
+    if isinstance(value, dict):
+        return {
+            key: _sanitize_lead_response(item, key)
+            for key, item in value.items()
+            if key not in _SENSITIVE_RESPONSE_FIELDS
+        }
+    if isinstance(value, list):
+        return [_sanitize_lead_response(item) for item in value]
+    return value
 
 
 class LeadService:
@@ -1005,7 +1035,8 @@ class LeadService:
             cache_query = {k: serialize_for_cache(v) for k, v in query.items()}
             # Bump the list-cache shape after updating visibility rules, so older
             # cached lead values cannot survive.
-            cache_query["callTimelineFollowUpVersion"] = 6
+            cache_query["callTimelineFollowUpVersion"] = 7
+            cache_query["listOrderVersion"] = 2
 
             key = cache_key_generator_with_id(
                 prefix=LEAD_CACHE_NAMESPACE,
@@ -1025,7 +1056,7 @@ class LeadService:
                     # Stale cache — fall through to re-fetch
                     pass
                 else:
-                    return cached_data
+                    return _sanitize_lead_response(cached_data)
 
            
          
@@ -1034,7 +1065,7 @@ class LeadService:
                 limit=int(limit),
                 filters=query,
                 populate=["createdBy", "updatedBy", "assignedTo"],
-                sort=["-createdAt", "-_id"]
+                sort=["-updatedAt", "-createdAt", "-_id"]
             )
 
             if not result:
@@ -1048,7 +1079,9 @@ class LeadService:
 
            
 
-            result = jsonable_encoder(result, exclude={"hashedEmail", "hashedPhone"})
+            result = _sanitize_lead_response(
+                jsonable_encoder(result, exclude={"hashedEmail", "hashedPhone"})
+            )
 
             for item in result["data"]:
                 if item.get("email"):
@@ -1188,6 +1221,7 @@ class LeadService:
                 for k, v in query.items()
             }
 
+            cache_query["listOrderVersion"] = 2
             key = cache_key_generator_with_id(
                 prefix=USER_LEAD_CACHE_NAMESPACE,
                 filters=cache_query,
@@ -1202,13 +1236,15 @@ class LeadService:
                 return json.loads(cache)
 
             result = await self.repo.get_all(
-                page=int(page), limit=int(limit), filters=query, sort=["-createdAt", "-_id"]
+                page=int(page), limit=int(limit), filters=query, sort=["-updatedAt", "-createdAt", "-_id"]
             )
 
             if not result:
                 raise AppException(404, "Leads data not found")
 
-            result = jsonable_encoder(result, exclude={"hashedEmail", "hashedPhone"})
+            result = _sanitize_lead_response(
+                jsonable_encoder(result, exclude={"hashedEmail", "hashedPhone"})
+            )
 
             for item in result["data"]:
                 if item.get("email"):
@@ -1259,13 +1295,15 @@ class LeadService:
                 limit=int(limit),
                 filters=query,
                 populate=["createdBy", "updatedBy"],
-                sort=["-createdAt", "-_id"],
+                sort=["-updatedAt", "-createdAt", "-_id"],
             )
 
             if not result:
                 raise AppException(404, "Leads data not found")
 
-            result = jsonable_encoder(result, exclude={"hashedEmail", "hashedPhone"})
+            result = _sanitize_lead_response(
+                jsonable_encoder(result, exclude={"hashedEmail", "hashedPhone"})
+            )
 
             for item in result["data"]:
                 if item.get("email"):
@@ -1302,6 +1340,7 @@ class LeadService:
             result = result.model_dump(
                 mode="json", exclude={"hashedEmail"}
             )
+            result = _sanitize_lead_response(result)
 
             for item in result.get("assignedTo") or []:
                 if str(item.get("id")) == str(user["_id"]):
@@ -1318,14 +1357,6 @@ class LeadService:
             
             if phone:
                 result["phone"] = decrypt_safe(result["phone"])
-            result["createdBy"]["email"] = decrypt_safe(result["createdBy"].get("email"))
-            creator_phone = result["createdBy"].get("phone")
-            if creator_phone:
-                result["createdBy"]["phone"] = decrypt_safe(result["createdBy"]["phone"])
-
-            for item in result["assignedTo"]:
-                item["email"] = encryptor.decrypt_data(item["email"])
-
             organization_id = result.get("organizationId")
             person_id = result.get("personId")
             organization = (
@@ -1482,7 +1513,7 @@ class LeadService:
                     is_assigner = False
                    
                     lead = await self.repo.find_by_id(
-                        PydanticObjectId(leadId), populate=["createdBy", "assignedTo"]
+                        PydanticObjectId(leadId), session=session
                     )
 
                     if not lead:
@@ -1498,7 +1529,8 @@ class LeadService:
                         raise AppException(400, "Disqualified leads cannot be moved through the pipeline")
 
                     for item in lead.assignedTo or []:
-                        if str(item.id) == str(user["_id"]):
+                        assigned_id = getattr(getattr(item, "ref", None), "id", None) or getattr(item, "id", None)
+                        if str(assigned_id) == str(user["_id"]):
                             is_assigner = True
 
                     if not is_admin_or_manager and not (lead.isAssigned and is_assigner):
@@ -1527,16 +1559,20 @@ class LeadService:
                     if not is_activity:
                         raise AppException(400, "Activity log failed")
 
-                    await FastAPICache.get_backend().clear(namespace=LEAD_CACHE_NAMESPACE)
-                    await FastAPICache.get_backend().clear(namespace=USER_LEAD_CACHE_NAMESPACE) 
-
-                    return lead.model_dump(mode="json")
+                    result = {"status": resolved_status, "fullName": lead.fullName, "lead_id": lead.lead_id}
 
                 except AppException as e:
                     raise e
 
                 except Exception as e:
                     raise AppException(status_code=500, message=f"Internal server error: {e}")
+
+        for namespace in (LEAD_CACHE_NAMESPACE, USER_LEAD_CACHE_NAMESPACE):
+            try:
+                await FastAPICache.get_backend().clear(namespace=namespace)
+            except Exception:
+                logging.getLogger(__name__).warning("Could not invalidate lead cache: %s", namespace)
+        return result
 
     @retry_transaction
     async def disqualify(self, leadId: str, reason: str, user: Dict[str, Any]):
@@ -1568,7 +1604,7 @@ class LeadService:
                     raise AppException(400, "Activity log failed")
                 await FastAPICache.get_backend().clear(namespace=LEAD_CACHE_NAMESPACE)
                 await FastAPICache.get_backend().clear(namespace=USER_LEAD_CACHE_NAMESPACE)
-                return lead.model_dump(mode="json")
+                return _sanitize_lead_response(lead.model_dump(mode="json"))
 
 
     async def update_connect_status(self, leadId:str, user:Dict[str, Any], payload: Dict[str, Any]):
@@ -1677,7 +1713,7 @@ class LeadService:
                     await FastAPICache.get_backend().clear(namespace=LEAD_CACHE_NAMESPACE)
                     await FastAPICache.get_backend().clear(namespace=USER_LEAD_CACHE_NAMESPACE) 
 
-                    return lead.model_dump(mode="json")
+                    return _sanitize_lead_response(lead.model_dump(mode="json"))
 
 
                 except AppException as e:

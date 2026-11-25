@@ -51,7 +51,7 @@ import { LeadEngagementStatus } from "@/src/constants/enum";
 import UserSelect from "@/src/components/common/userselect";
 import { useTranslation } from "react-i18next";
 import { HiOutlineViewBoards, HiOutlineTable } from "react-icons/hi";
-import LeadKanbanBoard from "./LeadKanbanBoard";
+import LeadKanbanBoard, { LeadKanbanSkeleton } from "./LeadKanbanBoard";
 import PageLimit from "../../common/PageLimit";
 import CallablePhone from "../../common/CallablePhone";
 
@@ -91,7 +91,9 @@ const AssignedToPill = ({
 };
 
 const LeadContent = (): JSX.Element => {
-  const { statuses: leadStatuses, options: leadStatusOptions, label: leadStatusLabel } = useLeadStatuses();
+  const stageState = useLeadStatuses();
+  const { statuses: leadStatuses, options: leadStatusOptions, label: leadStatusLabel } = stageState;
+  const finalStageKey = leadStatuses.find(stage => stage.type === "final")?.key || "__no_final__";
   const { t } = useTranslation();
   const authUser = useSelector((state: RootState) => state.auth.user);
   const assignmentRoles = authUser?.userRole || [];
@@ -134,6 +136,8 @@ const LeadContent = (): JSX.Element => {
 
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const leadFetchSequence = useRef({ all: 0, won: 0, lost: 0, assigned: 0 });
+  const activeLeadLoadingSequence = useRef(0);
   const [leadData, setLeadData] = useState<Lead[]>([]);
   const [wonLeadData, setWonLeadData] = useState<Lead[]>([]);
   const [lostLeadData, setLostLeadData] = useState<Lead[]>([]);
@@ -241,95 +245,170 @@ const LeadContent = (): JSX.Element => {
     : baseLeadData.filter((item) => item.createdBy?.id === salesPersonFilter),
   [baseLeadData, salesPersonFilter]);
 
-  const getLeadData = async (showLoading = true): Promise<void> => {
+  const fetchAllLeadPages = async (leadFilters: Record<string, any>) => {
+    const batchSize = 200;
+    const firstResponse = await LeadService.getAll(1, batchSize, leadFilters);
+    const firstPage = firstResponse.data.data;
+    const totalPages = Math.max(1, Number(firstPage.totalPages) || 1);
+    const leads = [...(firstPage.data || [])];
+
+    // Fetch in small groups so the board can show every matching lead without
+    // sending an unbounded limit or flooding the API with requests.
+    for (let firstPageNumber = 2; firstPageNumber <= totalPages; firstPageNumber += 5) {
+      const pageNumbers = Array.from(
+        { length: Math.min(5, totalPages - firstPageNumber + 1) },
+        (_, index) => firstPageNumber + index,
+      );
+      const pageResponses = await Promise.all(
+        pageNumbers.map((page) => LeadService.getAll(page, batchSize, leadFilters)),
+      );
+      pageResponses.forEach((response) => leads.push(...(response.data.data.data || [])));
+    }
+
+    const uniqueLeads = Array.from(
+      new Map<string, Lead>(leads.map((lead): [string, Lead] => [lead.id, lead])).values(),
+    );
+    return {
+      ...firstResponse,
+      data: {
+        ...firstResponse.data,
+        data: { ...firstPage, data: uniqueLeads },
+      },
+    };
+  };
+
+  const getLeadData = async (showLoading = true, allPages = viewMode === "kanban"): Promise<void> => {
+    const requestId = ++leadFetchSequence.current.all;
+    const loadingId = showLoading ? ++activeLeadLoadingSequence.current : null;
     if (showLoading) setIsLoading(true);
     try {
-      const result = await LeadService.getAll(currentPage, pageLimit, getLeadFilters());
+      const result = allPages
+        ? await fetchAllLeadPages(getLeadFilters())
+        : await LeadService.getAll(currentPage, pageLimit, getLeadFilters());
+      if (requestId !== leadFetchSequence.current.all) return;
       if (result.status === 200) {
         const data = result.data.data;
         setLeadData(data.data);
-        setCurrentPage(Number(data.page));
-        setPageLimit(Number(data.limit));
-        setTotalPages(Number(data.totalPages));
+        if (!allPages) {
+          setCurrentPage(Number(data.page));
+          setPageLimit(Number(data.limit));
+        }
+        setTotalPages(allPages
+          ? Math.max(1, Math.ceil(Number(data.total ?? data.data.length) / pageLimit))
+          : Number(data.totalPages));
         setTotalLeads(typeof data.total === "number" ? data.total : null);
         setLeadCounts(typeof data.finalCount === "number" && typeof data.ongoingCount === "number" ? { final: data.finalCount, ongoing: data.ongoingCount } : null);
       }
     } catch (error) {
+      if (requestId !== leadFetchSequence.current.all) return;
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
       if (axios.isAxiosError(error)) setErr(extractErrorMessages(error));
       else setErr(["Something went wrong"]);
     } finally {
-      if (showLoading) setIsLoading(false);
+      if (loadingId !== null && loadingId === activeLeadLoadingSequence.current) setIsLoading(false);
     }
   };
 
-  const getWonLeadData = async (showLoading = true): Promise<void> => {
+  const getWonLeadData = async (showLoading = true, allPages = viewMode === "kanban"): Promise<void> => {
+    const requestId = ++leadFetchSequence.current.won;
+    const loadingId = showLoading ? ++activeLeadLoadingSequence.current : null;
     if (showLoading) setIsLoading(true);
     try {
-      const result = await LeadService.getAll(currentWonPage, wonPageLimit, {
+      const leadFilters = {
         ...getLeadFilters(),
-        status: leadStatuses.find(s => s.type === "final")?.key || "__no_final__",
-      });
+        status: finalStageKey,
+      };
+      const result = allPages
+        ? await fetchAllLeadPages(leadFilters)
+        : await LeadService.getAll(currentWonPage, wonPageLimit, leadFilters);
+      if (requestId !== leadFetchSequence.current.won) return;
       if (result.status === 200) {
         const data = result.data.data;
         setWonLeadData(data.data);
-        setWonCurrentPage(Number(data.page));
-        setWonPageLimit(Number(data.limit));
-        setWonTotalPages(Number(data.totalPages));
+        if (!allPages) {
+          setWonCurrentPage(Number(data.page));
+          setWonPageLimit(Number(data.limit));
+        }
+        setWonTotalPages(allPages
+          ? Math.max(1, Math.ceil(Number(data.total ?? data.data.length) / wonPageLimit))
+          : Number(data.totalPages));
       }
     } catch (error) {
+      if (requestId !== leadFetchSequence.current.won) return;
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
       if (axios.isAxiosError(error)) setErr(extractErrorMessages(error));
       else setErr(["Something went wrong"]);
     } finally {
-      if (showLoading) setIsLoading(false);
+      if (loadingId !== null && loadingId === activeLeadLoadingSequence.current) setIsLoading(false);
     }
   };
 
-  const getLostLeadData = async (showLoading = true): Promise<void> => {
+  const getLostLeadData = async (showLoading = true, allPages = viewMode === "kanban"): Promise<void> => {
+    const requestId = ++leadFetchSequence.current.lost;
+    const loadingId = showLoading ? ++activeLeadLoadingSequence.current : null;
     if (showLoading) setIsLoading(true);
     try {
-      const result = await LeadService.getAll(currentLostPage, lostPageLimit, {
+      const leadFilters = {
         ...getLeadFilters(),
         status: SALES_STATUS.LOST,
-      });
+      };
+      const result = allPages
+        ? await fetchAllLeadPages(leadFilters)
+        : await LeadService.getAll(currentLostPage, lostPageLimit, leadFilters);
+      if (requestId !== leadFetchSequence.current.lost) return;
       if (result.status === 200) {
         const data = result.data.data;
         setLostLeadData(data.data);
-        setLostCurrentPage(Number(data.page));
-        setLostPageLimit(Number(data.limit));
-        setLostTotalPages(Number(data.totalPages));
+        if (!allPages) {
+          setLostCurrentPage(Number(data.page));
+          setLostPageLimit(Number(data.limit));
+        }
+        setLostTotalPages(allPages
+          ? Math.max(1, Math.ceil(Number(data.total ?? data.data.length) / lostPageLimit))
+          : Number(data.totalPages));
       }
     } catch (error) {
+      if (requestId !== leadFetchSequence.current.lost) return;
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
       if (axios.isAxiosError(error)) setErr(extractErrorMessages(error));
       else setErr(["Something went wrong"]);
     } finally {
-      if (showLoading) setIsLoading(false);
+      if (loadingId !== null && loadingId === activeLeadLoadingSequence.current) setIsLoading(false);
     }
   };
 
-  const getAssignedLeadData = async (showLoading = true): Promise<void> => {
+  const getAssignedLeadData = async (showLoading = true, allPages = viewMode === "kanban"): Promise<void> => {
+    const requestId = ++leadFetchSequence.current.assigned;
+    const loadingId = showLoading ? ++activeLeadLoadingSequence.current : null;
     if (showLoading) setIsLoading(true);
     try {
-      const result = await LeadService.getAll(currentAssignedPage, assignedPageLimit, {
+      const leadFilters = {
         ...getLeadFilters(),
         isAssigned: true,
         assignee: assignFilter || undefined,
-      });
+      };
+      const result = allPages
+        ? await fetchAllLeadPages(leadFilters)
+        : await LeadService.getAll(currentAssignedPage, assignedPageLimit, leadFilters);
+      if (requestId !== leadFetchSequence.current.assigned) return;
       if (result.status === 200) {
         const data = result.data.data;
         setAssignedLeadData(data.data);
-        setAssignedCurrentPage(Number(data.page));
-        setAssignedPageLimit(Number(data.limit));
-        setAssignedTotalPages(Number(data.totalPages));
+        if (!allPages) {
+          setAssignedCurrentPage(Number(data.page));
+          setAssignedPageLimit(Number(data.limit));
+        }
+        setAssignedTotalPages(allPages
+          ? Math.max(1, Math.ceil(Number(data.total ?? data.data.length) / assignedPageLimit))
+          : Number(data.totalPages));
       }
     } catch (error) {
+      if (requestId !== leadFetchSequence.current.assigned) return;
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
       if (axios.isAxiosError(error)) setErr(extractErrorMessages(error));
       else setErr(["Something went wrong"]);
     } finally {
-      if (showLoading) setIsLoading(false);
+      if (loadingId !== null && loadingId === activeLeadLoadingSequence.current) setIsLoading(false);
     }
   };
 
@@ -341,6 +420,8 @@ const LeadContent = (): JSX.Element => {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
     }
   };
+
+  const activeFinalStageKey = currentTab === TAB.WON ? finalStageKey : null;
 
   useEffect(() => {
     if (currentTab === TAB.ALL) {
@@ -363,7 +444,8 @@ const LeadContent = (): JSX.Element => {
     currentAssignedPage,
     assignedPageLimit,
     assignFilter,
-    leadStatuses,
+    activeFinalStageKey,
+    viewMode,
   ]);
   useEffect(() => {
     getUserData();
@@ -938,10 +1020,16 @@ const isIndeterminate =
     const prevLostLeadData = lostLeadData;
     const prevAssignedLeadData = assignedLeadData;
 
-    const updateStatusInList = (list: Lead[]) =>
-      list.map((lead) =>
-        lead.id === leadId ? { ...lead, status: newStatus as SALES_STATUS } : lead
-      );
+    const updatedAt = new Date().toISOString();
+    const updateStatusInList = (list: Lead[]) => {
+      const lead = list.find(item => item.id === leadId);
+      if (!lead) return list;
+
+      return [
+        { ...lead, status: newStatus, updatedAt },
+        ...list.filter(item => item.id !== leadId),
+      ];
+    };
 
     setLeadData(updateStatusInList);
     setWonLeadData(updateStatusInList);
@@ -964,7 +1052,11 @@ const isIndeterminate =
       setWonLeadData(prevWonLeadData);
       setLostLeadData(prevLostLeadData);
       setAssignedLeadData(prevAssignedLeadData);
-      toast.error("Failed to update status");
+      const status = axios.isAxiosError(error) ? error.response?.status : undefined;
+      const messages = status && status >= 400 && status < 500 && axios.isAxiosError(error)
+        ? extractErrorMessages(error)
+        : undefined;
+      toast.error((Array.isArray(messages) ? messages[0] : messages) || "Failed to update status");
       return false;
     }
   };
@@ -1322,13 +1414,15 @@ const isIndeterminate =
               <p className="text-gray-500 dark:text-gray-400">{t("create_edit_or_remove_leads")}</p>
             </div>
             <div className="flex items-center gap-4">
-               <PageLimit
-                setLimitOpen={setLimitOpen}
-                pageLimit={pageLimitMap[currentTab] ?? pageLimit}
-                limitOpen={limitOpen}
-                limits={limits}
-                handleLimit={handleLimit}
-              />
+              {viewMode === "table" && (
+                <PageLimit
+                  setLimitOpen={setLimitOpen}
+                  pageLimit={pageLimitMap[currentTab] ?? pageLimit}
+                  limitOpen={limitOpen}
+                  limits={limits}
+                  handleLimit={handleLimit}
+                />
+              )}
               {/* <select
                 value={pageLimitMap[currentTab] ?? pageLimit}
                 className="bg-slate-50 outline-none text-slate-500 dark:bg-gray-600 dark:text-white/70 px-3 py-2.5 rounded-lg border border-slate-900/10 "
@@ -1737,11 +1831,16 @@ const isIndeterminate =
 
           {viewMode === "kanban" ? (
             <div className="mt-4 w-full min-w-0 overflow-x-hidden">
-              <LeadKanbanBoard
-                leads={currentLeadData}
-                onStatusChange={handleStatusChange}
-                onDelete={isAdmin ? handleDelete : undefined}
-              />
+              {isLoading ? (
+                <LeadKanbanSkeleton />
+              ) : (
+                <LeadKanbanBoard
+                  stageState={stageState}
+                  leads={currentLeadData}
+                  onStatusChange={handleStatusChange}
+                  onDelete={isAdmin ? handleDelete : undefined}
+                />
+              )}
             </div>
           ) : currentTab !== TAB.ASSIGNED ? (
             <div className="overflow-x-scroll custom-scrollbar">
@@ -1859,10 +1958,10 @@ const isIndeterminate =
             </div>
           )}
 
-          {currentTab === TAB.ALL && <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={(p) => setCurrentPage(p)} className="w-full" />}
-          {currentTab === TAB.WON && <Pagination currentPage={currentWonPage} totalPages={wonTotalPages} onPageChange={(p) => setWonCurrentPage(p)} className="w-full" />}
-          {currentTab === TAB.LOST && <Pagination currentPage={currentLostPage} totalPages={lostTotalPages} onPageChange={(p) => setLostCurrentPage(p)} className="w-full" />}
-          {currentTab === TAB.ASSIGNED && <Pagination currentPage={currentAssignedPage} totalPages={assignedTotalPages} onPageChange={(p) => setAssignedCurrentPage(p)} className="w-full" />}
+          {viewMode === "table" && currentTab === TAB.ALL && <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={(p) => setCurrentPage(p)} className="w-full" />}
+          {viewMode === "table" && currentTab === TAB.WON && <Pagination currentPage={currentWonPage} totalPages={wonTotalPages} onPageChange={(p) => setWonCurrentPage(p)} className="w-full" />}
+          {viewMode === "table" && currentTab === TAB.LOST && <Pagination currentPage={currentLostPage} totalPages={lostTotalPages} onPageChange={(p) => setLostCurrentPage(p)} className="w-full" />}
+          {viewMode === "table" && currentTab === TAB.ASSIGNED && <Pagination currentPage={currentAssignedPage} totalPages={assignedTotalPages} onPageChange={(p) => setAssignedCurrentPage(p)} className="w-full" />}
         </div>
       </div>
     </>

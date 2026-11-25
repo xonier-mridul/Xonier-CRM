@@ -98,7 +98,7 @@ const LeadViewPage = (): JSX.Element => {
   const { t } = useTranslation();
   const { label: leadStatusLabel, statuses: leadStatuses } = useLeadStatuses();
   const [err, setErr] = useState<string | string[]>("");
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [leadData, setLeadData] = useState<Lead | null>(null);
   const [isPrinting, setIsPrinting] = useState(false);
   const [activeTab, setActiveTab] = useState<
@@ -139,8 +139,28 @@ const LeadViewPage = (): JSX.Element => {
   };
 
   useEffect(() => {
-    getLeadData();
-  }, []);
+    if (!id) return;
+    let cancelled = false;
+    const loadLead = async () => {
+      try {
+        const result = await LeadService.getById(id);
+        if (!cancelled && result.status === 200) setLeadData(result.data.data);
+      } catch (error) {
+        if (cancelled) return;
+        if (axios.isAxiosError(error)) {
+          const messages = extractErrorMessages(error);
+          setErr(messages);
+          toast.error(`${messages}`);
+        } else {
+          setErr(["Something went wrong"]);
+        }
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    };
+    void loadLead();
+    return () => { cancelled = true; };
+  }, [id]);
 
   useEffect(() => {
     if (activeTab !== "activity" || !id) return;
@@ -380,6 +400,15 @@ const LeadViewPage = (): JSX.Element => {
                 </select>
               </label>}
               <button type="button" onClick={() => setActiveTab("activity")} className="rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:hover:bg-slate-700">Log interaction</button>
+              {hasPermission(PERMISSIONS.emailProspects) && (leadData.email ? (
+                <Link href={`/emailManagement/mail?to=${encodeURIComponent(leadData.email)}&leadId=${encodeURIComponent(leadData.id)}`} aria-label={`Email ${leadData.fullName || "lead"}`} title="Email this lead" className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-cyan-200 bg-cyan-50 text-cyan-700 transition hover:border-cyan-300 hover:bg-cyan-100 dark:border-cyan-800 dark:bg-cyan-950/30 dark:text-cyan-300 dark:hover:bg-cyan-950/50">
+                  <IoMailOutline className="h-5 w-5" />
+                </Link>
+              ) : (
+                <button type="button" disabled aria-label="Email unavailable: this lead has no email address" title="No email address is available for this lead" className="inline-flex h-10 w-10 cursor-not-allowed items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-500">
+                  <IoMailOutline className="h-5 w-5" />
+                </button>
+              ))}
               {leadData?.phone && leadData.phone.replace(/\D/g, "").length >= 7 ? (
                 <Link href={`/whatsapp?phone=${encodeURIComponent(leadData.phone.replace(/\D/g, ""))}&name=${encodeURIComponent(leadData.fullName || "Lead")}`} className="inline-flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50/60 px-3.5 py-2 text-sm font-medium text-emerald-700 transition hover:border-emerald-300 hover:bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950/20 dark:text-emerald-300 dark:hover:bg-emerald-950/40">
                   <FaWhatsapp className="h-4 w-4" /> WhatsApp

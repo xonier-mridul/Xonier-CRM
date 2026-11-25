@@ -15,6 +15,20 @@ type Action = {
   completedAt: string | null;
 };
 
+function apiErrorMessage(error: unknown, fallback: string): string {
+  if (!error || typeof error !== "object" || !("response" in error)) return fallback;
+  const response = (error as { response?: { data?: { message?: unknown; detail?: unknown } } }).response;
+  const apiMessage = response?.data?.message ?? response?.data?.detail;
+  if (typeof apiMessage === "string" && apiMessage.trim()) return apiMessage;
+  if (Array.isArray(apiMessage)) {
+    const messages = apiMessage
+      .map((item) => item && typeof item === "object" && "msg" in item ? String(item.msg) : "")
+      .filter(Boolean);
+    if (messages.length) return messages.join(" ");
+  }
+  return fallback;
+}
+
 export default function NextActions({ entityType, entityId, canEdit, defaultOwnerId, promptOnOpen, onActionCreated }: {
   entityType: EntityType;
   entityId: string;
@@ -79,8 +93,8 @@ export default function NextActions({ entityType, entityId, canEdit, defaultOwne
       setPromptNext(false);
       onActionCreated?.();
       await load();
-    } catch {
-      setError("Could not save this action. Check the date and owner.");
+    } catch (error) {
+      setError(apiErrorMessage(error, "Could not save this action. Check the date and owner."));
     } finally {
       setBusy(false);
     }
