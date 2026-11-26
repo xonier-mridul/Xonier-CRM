@@ -87,7 +87,7 @@ export default function Page() {
   // ── Not found ──
   if (!isLoading && !data) {
     return (
-      <div className="p-6 flex justify-center items-center min-h-[60vh]">
+      <div className="flex justify-center items-center min-h-[60vh]">
         <div className="bg-white dark:bg-gray-800 w-full max-w-md rounded-2xl p-8 shadow-xl border border-gray-100 dark:border-gray-700 text-center">
           <div className="w-14 h-14 bg-red-50 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
             <MessageSquareX size={26} className="text-red-500" />

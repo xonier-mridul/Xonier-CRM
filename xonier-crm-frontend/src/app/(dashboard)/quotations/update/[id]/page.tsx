@@ -318,7 +318,7 @@ const formatDate = (s: string) =>
   }
 
   return (
-    <div className="p-6 min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen">
 
       <div className="mb-5 flex items-start justify-between">
         <div>

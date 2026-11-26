@@ -321,7 +321,7 @@ const DeletedUsersPage = (): JSX.Element => {
   // ── Render ───────────────────────────────────────────────────────────────
 
   return (
-    <div className=" p-6 min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300 rounded-2xl">
+    <div className="min-h-screen space-y-6">
 
       {/* ── Page header ── */}
       <div className="mb-6 bg-rose-50 dark:bg-rose-900/20 rounded-xl border border-rose-200 dark:border-rose-800 p-6">
@@ -602,7 +602,7 @@ const DeletedUsersPage = (): JSX.Element => {
                   onClick={() => setCurrentPage(p)}
                   className={`rounded-md w-8 h-8 text-sm font-semibold transition-colors duration-150
                     ${p === currentPage
-                      ? "bg-rose-600 text-white shadow-sm"
+                      ? "bg-[#01728e] text-white shadow-sm"
                       : "text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
                     }`}
                 >

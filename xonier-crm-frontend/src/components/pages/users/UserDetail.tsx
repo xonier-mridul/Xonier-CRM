@@ -1039,7 +1039,7 @@ const language = i18n.resolvedLanguage ?? "en";
   return (
     <div className="flex flex-col gap-6 font-sans">
       <div className="relative bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl overflow-hidden">
-        <div className="h-28 bg-linear-to-b from-[#16c2cf]  relative">
+        <div className="h-28 bg-linear-to-b from-[#01728e]  relative">
           <div
             className="absolute inset-0 opacity-20"
             style={{
@@ -2595,7 +2595,7 @@ const language = i18n.resolvedLanguage ?? "en";
               <div className="space-y-5">
                 <div className="relative bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl overflow-hidden">
                   <div
-                    className="h-20 relative bg-gradient-to-r from-[#16c2cf] to-[#0fb8a5] "
+                    className="h-20 relative bg-gradient-to-r from-[#01728e] to-[#015d73] "
                     
                   >
                     {/* <div
@@ -2796,7 +2796,7 @@ const language = i18n.resolvedLanguage ?? "en";
                             {t("company_admin")}
                           </h3>
                           <div className="flex items-center gap-3 p-3.5 bg-slate-50 dark:bg-gray-700/50 rounded-xl border border-slate-100 dark:border-gray-700">
-                            <div className="w-9 h-9 rounded-full bg-gradient-to-r from-[#16c2cf] to-[#0fb8a5]  flex items-center justify-center text-white font-bold text-sm shrink-0">
+                            <div className="w-9 h-9 rounded-full bg-gradient-to-r from-[#01728e] to-[#015d73]  flex items-center justify-center text-white font-bold text-sm shrink-0">
                               {
                                 (companyData as any).primary_admin
                                   .firstName?.[0]

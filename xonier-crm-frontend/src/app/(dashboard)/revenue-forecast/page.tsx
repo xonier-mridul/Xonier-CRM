@@ -138,7 +138,7 @@ export default function RevenueForecastPage() {
       : 0;
 
   return (
-    <main className="space-y-6 p-4 sm:p-6">
+    <main className="space-y-6">
       {/* Header */}
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>

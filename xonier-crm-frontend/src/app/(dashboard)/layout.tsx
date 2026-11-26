@@ -31,7 +31,7 @@ export default function RootLayout({
         <NavBar />
 
         {/* Page content — offset by navbar height (h-14 = 56px) + spacing */}
-        <main className="flex-1 mt-16 p-6 overflow-auto  ">
+        <main className="crm-dashboard-main flex-1 mt-16 p-6 overflow-auto">
           {children}
         </main>
       </div>

@@ -246,7 +246,7 @@ const DealViewPage = (): JSX.Element => {
 
   if (isLoading) {
     return (
-      <div className="p-6 flex flex-col gap-6 animate-pulse">
+      <div className="flex flex-col gap-6 animate-pulse">
         <Skeleton
           height={120}
           borderRadius={12}

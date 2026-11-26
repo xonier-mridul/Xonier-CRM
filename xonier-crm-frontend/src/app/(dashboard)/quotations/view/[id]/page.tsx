@@ -300,7 +300,7 @@ const Page = (): JSX.Element => {
 
   if (isLoading) {
     return (
-      <div className="p-6 flex flex-col gap-6">
+      <div className="flex flex-col gap-6">
         <Skeleton height={120} borderRadius={12} className="dark:bg-gray-700 w-full" />
         <Skeleton height={60} borderRadius={12} className="dark:bg-gray-700 w-full" />
         <div className="flex items-start gap-6">
@@ -352,7 +352,7 @@ const Page = (): JSX.Element => {
   ].includes(quoteData.quotationStatus);
 
   return (
-    <div className="p-6 min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen">
 
       <div className="mb-5">
         <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6">
@@ -577,7 +577,7 @@ const Page = (): JSX.Element => {
                 </h2>
 
                 <div className="flex items-start gap-4 mb-5">
-                  <div className="w-12 h-12 rounded-full bg-linear-to-br from-[#16c2cf] to-[#0fb8a5] flex items-center justify-center text-white font-bold text-lg shrink-0">
+                  <div className="w-12 h-12 rounded-full bg-linear-to-br from-[#01728e] to-[#015d73] flex items-center justify-center text-white font-bold text-lg shrink-0">
                     {quoteData.customerName.charAt(0).toUpperCase()}
                   </div>
                   <div>
@@ -943,7 +943,7 @@ const Page = (): JSX.Element => {
 
                           {history.performedBy && (
                             <div className="flex items-center gap-2 mt-2">
-                              <div className="w-5 h-5 rounded-full bg-linear-to-br from-[#16c2cf] to-[#0fb8a5] flex items-center justify-center text-white text-xs font-bold">
+                              <div className="w-5 h-5 rounded-full bg-linear-to-br from-[#01728e] to-[#015d73] flex items-center justify-center text-white text-xs font-bold">
                                 {getInitials(history.performedBy)}
                               </div>
                               <span className="text-xs text-gray-500 dark:text-gray-400">
@@ -977,7 +977,7 @@ const Page = (): JSX.Element => {
                       <p className="font-semibold text-sm text-gray-900 dark:text-white mb-1">{t("quotation_created")}</p>
                       <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">{formatDateTime(quoteData.createdAt)}</p>
                       <div className="flex items-center gap-2">
-                        <div className="w-5 h-5 rounded-full bg-linear-to-br from-[#16c2cf] to-[#0fb8a5] flex items-center justify-center text-white text-xs font-bold">
+                        <div className="w-5 h-5 rounded-full bg-linear-to-br from-[#01728e] to-[#015d73] flex items-center justify-center text-white text-xs font-bold">
                           {getInitials(quoteData.createdBy)}
                         </div>
                         <span className="text-xs text-gray-500 dark:text-gray-400">{t("by")} {getFullName(quoteData.createdBy)}</span>
@@ -996,7 +996,7 @@ const Page = (): JSX.Element => {
                         <p className="font-semibold text-sm text-gray-900 dark:text-white mb-1">{t("last_updated")}</p>
                         <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">{formatDateTime(quoteData.updatedAt)}</p>
                         <div className="flex items-center gap-2">
-                          <div className="w-5 h-5 rounded-full bg-linear-to-br from-[#16c2cf] to-[#0fb8a5] flex items-center justify-center text-white text-xs font-bold">
+                          <div className="w-5 h-5 rounded-full bg-linear-to-br from-[#01728e] to-[#015d73] flex items-center justify-center text-white text-xs font-bold">
                             {getInitials(quoteData.updatedBy)}
                           </div>
                           <span className="text-xs text-gray-500 dark:text-gray-400">{t("by")} {getFullName(quoteData.updatedBy)}</span>
@@ -1060,7 +1060,7 @@ const Page = (): JSX.Element => {
           <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5">
             <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">{t("created_by")}</h3>
             <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-full bg-linear-to-br from-[#16c2cf] to-[#0fb8a5] flex items-center justify-center text-white font-bold shrink-0">
+              <div className="w-11 h-11 rounded-full bg-linear-to-br from-[#01728e] to-[#015d73] flex items-center justify-center text-white font-bold shrink-0">
                 {getInitials(quoteData.createdBy)}
               </div>
               <div className="min-w-0">

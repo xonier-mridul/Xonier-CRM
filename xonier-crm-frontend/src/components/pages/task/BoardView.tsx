@@ -69,7 +69,7 @@ export default function BoardView({
       categoriesMap.set(task.category.id, {
         id: task.category.id,
         name: task.category.name,
-        color: task.category.color ?? "#0891b2",
+        color: task.category.color ?? "#01728e",
         icon: task.category.icon ?? "",
       });
     }

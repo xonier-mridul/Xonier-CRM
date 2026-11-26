@@ -36,12 +36,12 @@ const PIPELINE_COLORS: Record<DealPipelineStage, string> = {
 
 const SOURCE_COLORS = [
   "#6366f1", "#8b5cf6", "#ec4899", "#f97316",
-  "#22c55e", "#06b6d4", "#eab308", "#a855f7",
+  "#22c55e", "#01728e", "#eab308", "#a855f7",
 ];
 
 const STATUS_COLORS: Record<string, string> = {
   new: "#6366f1", contacted: "#eab308", qualified: "#8b5cf6",
-  proposal: "#06b6d4", won: "#22c55e", lost: "#ef4444", delete: "#94a3b8",
+  proposal: "#01728e", won: "#22c55e", lost: "#ef4444", delete: "#94a3b8",
 };
 
 const STATUS_BADGE: Record<string, string> = {
@@ -89,7 +89,7 @@ function capitalize(s: string): string {
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-xl px-3 py-2.5 shadow-xl text-xs">
+    <div className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs shadow-lg dark:border-slate-700 dark:bg-slate-900">
       <p className="font-semibold text-gray-700 dark:text-gray-200 mb-1.5">{label}</p>
       {payload.map((p: any) => (
         <div key={p.name} className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
@@ -111,14 +111,14 @@ const Skeleton = ({ className }: { className?: string }) => (
 const SectionTitle = ({ title, sub }: { title: string; sub?: string }) => (
   <div className="mb-4">
     <h2 className="text-sm font-semibold text-gray-800 dark:text-white">{title}</h2>
-    {sub && <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{sub}</p>}
+    {sub && <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{sub}</p>}
   </div>
 );
 
 function UnauthorizedView() {
   const { t } = useTranslation();
   return (
-    <div className="mt-10 min-h-screen">
+    <div className="min-h-screen">
       <div className="bg-white mb-10 dark:bg-gray-700 dark:backdrop-blur-sm p-6 rounded-xl border border-slate-900/10 w-full">
         <div className="p-10 flex flex-col items-center text-center">
           <div className="relative mb-8">
@@ -127,7 +127,7 @@ function UnauthorizedView() {
               <ShieldOff className="w-10 h-10 text-red-500 dark:text-red-400" strokeWidth={1.5} />
             </div>
             <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-white dark:bg-gray-800 border-2 border-gray-100 dark:border-gray-800 flex items-center justify-center">
-              <Lock className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+              <Lock className="w-4 h-4 text-slate-500 dark:text-slate-400" />
             </div>
           </div>
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-red-50 dark:bg-red-900/30 text-red-500 dark:text-red-400 border border-red-100 dark:border-red-800 mb-4 tracking-widest uppercase">
@@ -248,7 +248,7 @@ const dealTrendData: TrendData[] =
 
   if (loading) {
     return (
-      <div className="mt-10 flex flex-col gap-6 p-6 bg-gray-50 dark:bg-gray-700 min-h-screen">
+      <div className="flex flex-col gap-6 min-h-screen">
         <div className="grid grid-cols-4 gap-4">
           {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-32" />)}
         </div>
@@ -275,7 +275,7 @@ const dealTrendData: TrendData[] =
 
   if (error) {
     return (
-      <div className="mt-10 flex items-center justify-center h-96">
+      <div className="flex items-center justify-center h-96">
         <div className="flex flex-col items-center gap-3 text-center">
           <AlertCircle className="w-10 h-10 text-red-400" />
           <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{error}</p>
@@ -304,7 +304,7 @@ if (!isAdminRole && (!leads || !deals || !enquiries)) return null;
       barPct: Math.min(((data.companies?.active ?? 0) / Math.max(data.companies?.total ?? 1, 1)) * 100, 100),
       color: "#6366f1",
       icon: <Users className="w-4 h-4" />,
-      iconBg: "bg-cyan-500",
+      iconBg: "bg-indigo-50 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300",
       link: "/companies",
       show: true,
     },
@@ -315,7 +315,7 @@ if (!isAdminRole && (!leads || !deals || !enquiries)) return null;
       barPct: Math.min(((data.users?.active ?? 0) / Math.max(data.users?.total ?? 1, 1)) * 100, 100),
       color: "#22c55e",
       icon: <Users className="w-4 h-4" />,
-      iconBg: "bg-green-500",
+      iconBg: "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300",
       link: "/users",
       show: hasPermission(PERMISSIONS.readUser),
     },
@@ -326,7 +326,7 @@ if (!isAdminRole && (!leads || !deals || !enquiries)) return null;
       barPct: 100,
       color: "#ec4899",
       icon: <DollarSign className="w-4 h-4" />,
-      iconBg: "bg-pink-500",
+      iconBg: "bg-pink-50 text-pink-700 dark:bg-pink-950/50 dark:text-pink-300",
       link: "/subscriptions",
       show: true,
     },
@@ -338,7 +338,7 @@ if (!isAdminRole && (!leads || !deals || !enquiries)) return null;
       barPct: Math.min(((leads?.active ?? 0) / Math.max(leads?.total ?? 1, 1)) * 100, 100),
       color: "#6366f1",
       icon: <TrendingUp className="w-4 h-4" />,
-      iconBg: "bg-cyan-500",
+      iconBg: "bg-indigo-50 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300",
       link: "/leads",
       show: Boolean(leads) && hasPermission(PERMISSIONS.readLead),
     },
@@ -349,7 +349,7 @@ if (!isAdminRole && (!leads || !deals || !enquiries)) return null;
       barPct: Math.min(((deals?.active ?? 0) / Math.max(deals?.total ?? 1, 1)) * 100, 100),
       color: "#ec4899",
       icon: <Handshake className="w-4 h-4" />,
-      iconBg: "bg-pink-500",
+      iconBg: "bg-pink-50 text-pink-700 dark:bg-pink-950/50 dark:text-pink-300",
       link: "/deals",
       show: Boolean(deals) && hasPermission(PERMISSIONS.readDeal),
     },
@@ -360,7 +360,7 @@ if (!isAdminRole && (!leads || !deals || !enquiries)) return null;
       barPct: Math.min(((users?.active ?? 0) / Math.max(users?.total ?? 1, 1)) * 100, 100),
       color: "#22c55e",
       icon: <Users className="w-4 h-4" />,
-      iconBg: "bg-green-500",
+      iconBg: "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300",
       link: "/users",
       show: Boolean(users) && hasPermission(PERMISSIONS.readUser),
     },
@@ -371,7 +371,7 @@ if (!isAdminRole && (!leads || !deals || !enquiries)) return null;
       barPct: Math.min(((enquiries?.assigned ?? 0) / Math.max(enquiries?.total ?? 1, 1)) * 100, 100),
       color: "#f97316",
       icon: <MessageSquare className="w-4 h-4" />,
-      iconBg: "bg-orange-500",
+      iconBg: "bg-orange-50 text-orange-700 dark:bg-orange-950/50 dark:text-orange-300",
       link: "/enquiry",
       show: Boolean(enquiries) && hasPermission(PERMISSIONS.readEnquiry),
     },
@@ -382,16 +382,16 @@ console.log("data.role:", data?.role, "isAdmin:", isAdmin);
 
   return (
     
-    <div className="mt-10">
+    <div>
       
-      <div className="bg-white mb-10 dark:bg-gray-700 dark:backdrop-blur-sm p-6 rounded-xl border border-slate-900/10 w-full flex flex-col gap-5">
+      <div className="w-full flex flex-col gap-5">
 
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">
               {isAdmin ? "Sales Dashboard" : `Welcome Back, ${data.user?.firstName ?? ""} ${data.user?.lastName ?? ""}`}
             </h1>
-            <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5 flex items-center gap-2">
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 flex items-center gap-2">
               {new Date(data.period.start).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
               {" – "}
               {new Date(data.period.end).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
@@ -401,7 +401,7 @@ console.log("data.role:", data?.role, "isAdmin:", isAdmin);
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <div className="flex items-center bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-800 rounded-xl p-1 gap-0.5">
+            <div className="flex items-center gap-0.5 rounded-xl border border-slate-200 bg-white p-1 dark:border-slate-700 dark:bg-slate-900">
               {(["today", "this_week", "this_month", "this_year"] as const).map((f) => (
                 <button
                   key={f}
@@ -419,7 +419,7 @@ console.log("data.role:", data?.role, "isAdmin:", isAdmin);
             <button
               onClick={() => load(true)}
               disabled={refreshing}
-              className="p-2 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-800 text-gray-400 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors disabled:opacity-50"
+              className="rounded-xl border border-slate-200 bg-white p-2 text-slate-500 transition-colors hover:border-cyan-300 hover:text-cyan-700 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400 dark:hover:text-cyan-300"
             >
               <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
             </button>
@@ -429,17 +429,17 @@ console.log("data.role:", data?.role, "isAdmin:", isAdmin);
         <div className="grid grid-cols-4 gap-4">
           {kpiCards.map((card) => (
             <Link key={card.label} href={card.link}>
-              <div className="relative overflow-hidden bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5 hover:shadow-md dark:hover:shadow-gray-900 transition-shadow duration-200">
+              <div className="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-5 shadow-2xs transition-shadow duration-200 hover:shadow-sm dark:border-slate-700 dark:bg-slate-900/60">
                 <div className="flex items-start justify-between mb-3">
-                  <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">{card.label}</p>
-                  <span className={`w-8 h-8 rounded-xl flex items-center justify-center text-white flex-shrink-0 ${card.iconBg}`}>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{card.label}</p>
+                  <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${card.iconBg}`}>
                     {card.icon}
                   </span>
                 </div>
                 <p className="font-mono text-3xl font-bold text-gray-900 dark:text-white tracking-tight leading-none">
                   {card.value}
                 </p>
-                <p className="text-xs text-gray-400 dark:text-gray-500 mt-1.5 leading-relaxed">{card.sub}</p>
+                <p className="mt-1.5 text-xs leading-relaxed text-slate-500 dark:text-slate-400">{card.sub}</p>
                 <div className="mt-4 h-1 rounded-full bg-gray-100 dark:bg-gray-800">
                   <div className="h-1 rounded-full transition-all duration-700"
                     style={{ width: `${card.barPct}%`, background: card.color }} />
@@ -453,13 +453,13 @@ console.log("data.role:", data?.role, "isAdmin:", isAdmin);
         {leads && deals && enquiries ? (
           <>
         <div className="grid grid-cols-3 gap-4">
-          <div className="col-span-2 bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
+          <div className="col-span-2 rounded-2xl border border-slate-200/80 bg-white p-5 shadow-2xs dark:border-slate-700 dark:bg-slate-900/60">
             <div className="flex items-center justify-between mb-5">
               <div>
                 <h2 className="text-sm font-semibold text-gray-800 dark:text-white">
                   {trendTab === "leads" ? "Lead Trend" : "Deal Trend"}
                 </h2>
-                <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                   {trendTab === "leads" ? "Monthly lead volume" : "Monthly deal volume"}
                 </p>
               </div>
@@ -512,7 +512,7 @@ console.log("data.role:", data?.role, "isAdmin:", isAdmin);
             </ResponsiveContainer>
           </div>
 
-          <div className="bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
+          <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-2xs dark:border-slate-700 dark:bg-slate-900/60">
             <SectionTitle title={t("lead_sources")} sub="Distribution by channel" />
             {sourceChartData.length > 0 ? (
               <>
@@ -539,7 +539,7 @@ console.log("data.role:", data?.role, "isAdmin:", isAdmin);
                         <span className="text-xs text-gray-500 dark:text-gray-400">{item.name}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-mono text-gray-400 dark:text-gray-500">{item.value.toLocaleString()}</span>
+                        <span className="text-xs font-mono text-slate-500 dark:text-slate-400">{item.value.toLocaleString()}</span>
                         <span className="text-xs font-semibold text-gray-700 dark:text-gray-300 w-10 text-right">
                           {((item.value / totalLeads) * 100).toFixed(1)}%
                         </span>
@@ -557,11 +557,11 @@ console.log("data.role:", data?.role, "isAdmin:", isAdmin);
         </div>
 
         <div className="grid grid-cols-12 gap-4">
-          <div className="col-span-6 bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
+          <div className="col-span-6 rounded-2xl border border-slate-200/80 bg-white p-5 shadow-2xs dark:border-slate-700 dark:bg-slate-900/60">
             <div className="flex items-start justify-between mb-1">
               <div>
                 <h2 className="text-sm font-semibold text-gray-800 dark:text-white">{t("deal_pipeline")}</h2>
-                <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{t("deals_by_stage")}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{t("deals_by_stage")}</p>
               </div>
               <span className="flex items-center gap-1.5 text-xs font-semibold text-pink-600 dark:text-pink-400 bg-pink-50 dark:bg-pink-950 px-3 py-1.5 rounded-lg">
                 <DollarSign className="w-3 h-3" />
@@ -597,11 +597,11 @@ console.log("data.role:", data?.role, "isAdmin:", isAdmin);
             </ResponsiveContainer>
           </div>
 
-          <div className="col-span-6 bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
+          <div className="col-span-6 rounded-2xl border border-slate-200/80 bg-white p-5 shadow-2xs dark:border-slate-700 dark:bg-slate-900/60">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h2 className="text-sm font-semibold text-gray-800 dark:text-white">{t("latest_leads")}</h2>
-                <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{t("most_recent_pipeline_entries")}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{t("most_recent_pipeline_entries")}</p>
               </div>
               {hasPermission(PERMISSIONS.readLead) && (
                 <Link href="/leads">
@@ -615,7 +615,7 @@ console.log("data.role:", data?.role, "isAdmin:", isAdmin);
               <thead>
                 <tr className="border-b border-gray-100 dark:border-gray-800">
                   {["Lead ID", "Source", "Status", "Time"].map((h) => (
-                    <th key={h} className="text-left text-xs font-semibold text-gray-400 dark:text-gray-500 pb-3 pr-4">{h}</th>
+                    <th key={h} className="text-left text-xs font-semibold text-slate-500 dark:text-slate-400 pb-3 pr-4">{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -642,7 +642,7 @@ console.log("data.role:", data?.role, "isAdmin:", isAdmin);
                         {leadStatusLabel(lead.status)}
                       </span>
                     </td>
-                    <td className="py-3 text-xs text-gray-400 dark:text-gray-500 whitespace-nowrap">
+                    <td className="py-3 text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">
                       {relTime(lead.createdAt)}
                     </td>
                   </tr>
@@ -658,7 +658,7 @@ console.log("data.role:", data?.role, "isAdmin:", isAdmin);
               label: "Total Revenue",
               value: fmtCurrency(deals.totalRevenue ?? 0),
               sub: "Across all closed deals",
-              color: "#22c55e", bg: "bg-emerald-500",
+              color: "#22c55e", bg: "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300",
               barPct: (deals.totalRevenue ?? 0) > 0 ? 100 : 0,
               icon: <DollarSign className="w-4 h-4" />,
             },
@@ -666,7 +666,7 @@ console.log("data.role:", data?.role, "isAdmin:", isAdmin);
               label: "Monthly Revenue",
               value: fmtCurrency(deals.periodRevenue ?? 0),
               sub: "Revenue this period",
-              color: "#8b5cf6", bg: "bg-violet-500",
+              color: "#8b5cf6", bg: "bg-violet-50 text-violet-700 dark:bg-violet-950/50 dark:text-violet-300",
               barPct: (deals.periodRevenue ?? 0) > 0 ? 100 : 0,
               icon: <BarChart2 className="w-4 h-4" />,
             },
@@ -674,21 +674,21 @@ console.log("data.role:", data?.role, "isAdmin:", isAdmin);
               label: "Pipeline Value",
               value: fmtCurrency(pipelineTotalAmount),
               sub: `Across ${deals.active} active deals`,
-              color: "#ec4899", bg: "bg-pink-500",
+              color: "#ec4899", bg: "bg-pink-50 text-pink-700 dark:bg-pink-950/50 dark:text-pink-300",
               barPct: pipelineTotalAmount > 0 ? 100 : 0,
               icon: <ShieldCheck className="w-4 h-4" />,
             },
           ].map((card) => (
             <div key={card.label}
-              className="bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5 hover:shadow-md dark:hover:shadow-gray-900 transition-shadow duration-200">
+              className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-2xs transition-shadow duration-200 hover:shadow-sm dark:border-slate-700 dark:bg-slate-900/60">
               <div className="flex items-start justify-between mb-3">
-                <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">{card.label}</p>
-                <span className={`w-8 h-8 rounded-xl flex items-center justify-center text-white flex-shrink-0 ${card.bg}`}>
+                <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{card.label}</p>
+                <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${card.bg}`}>
                   {card.icon}
                 </span>
               </div>
               <p className="font-mono text-2xl font-bold text-gray-900 dark:text-white tracking-tight leading-none">{card.value}</p>
-              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1.5">{card.sub}</p>
+              <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400">{card.sub}</p>
               <div className="mt-4 h-1 rounded-full bg-gray-100 dark:bg-gray-800">
                 <div className="h-1 rounded-full transition-all duration-700" style={{ width: `${card.barPct}%`, background: card.color }} />
               </div>
@@ -697,7 +697,7 @@ console.log("data.role:", data?.role, "isAdmin:", isAdmin);
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <div className="bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
+          <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-2xs dark:border-slate-700 dark:bg-slate-900/60">
             <SectionTitle title={t("lead_status_breakdown")} sub="Current distribution across all statuses" />
             <div className="flex flex-col gap-3">
               {(data.leadStatusBreakdown ?? []).map((item) => {
@@ -728,7 +728,7 @@ console.log("data.role:", data?.role, "isAdmin:", isAdmin);
             </div>
           </div>
 
-          <div className="bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
+          <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-2xs dark:border-slate-700 dark:bg-slate-900/60">
             <SectionTitle title={t("activity_snapshot")} sub="Key metrics at a glance" />
             <div className="grid grid-cols-2 gap-3">
               {[
@@ -755,16 +755,16 @@ console.log("data.role:", data?.role, "isAdmin:", isAdmin);
 
         ) : isAdmin ? (
   // Super admin sees a placeholder where lead/deal sections would be
-  <div className="bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-8 flex flex-col items-center justify-center gap-2">
+  <div className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-slate-200/80 bg-white p-8 shadow-2xs dark:border-slate-700 dark:bg-slate-900/60">
     <ShieldCheck className="w-8 h-8 text-cyan-400" />
     <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">{t("admin_overview")}</p>
-    <p className="text-xs text-gray-400 dark:text-gray-500 text-center max-w-sm">
+    <p className="text-xs text-slate-500 dark:text-slate-400 text-center max-w-sm">
       {t("lead_and_deal_analytics_are_available")}
     </p>
   </div>
 ) : null}
 
-        <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
+              <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-2xs dark:border-slate-700 dark:bg-slate-900/60">
           <div className="flex justify-between items-center mb-4">
             <SectionTitle title={t("top_performers")} sub="Ranked by closed deal revenue" />
             {resolvedPerformers.length > 0 && (
@@ -780,7 +780,7 @@ console.log("data.role:", data?.role, "isAdmin:", isAdmin);
             )}
           </div>
           {resolvedPerformers.length === 0 ? (
-            <div className="py-10 text-center text-sm text-gray-400 dark:text-gray-500">
+            <div className="py-10 text-center text-sm text-slate-500 dark:text-slate-400">
               No closed deals or leaderboard data yet
             </div>
           ) : (
@@ -818,13 +818,13 @@ console.log("data.role:", data?.role, "isAdmin:", isAdmin);
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800">
               <div>
                 <h2 className="text-lg font-semibold text-gray-800 dark:text-white">{t("leaderboard")}</h2>
-                <p className="text-xs text-gray-400 dark:text-gray-500">Ranked by closed deal revenue</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Ranked by closed deal revenue</p>
               </div>
               <button onClick={() => setLeaderboard(false)} className="text-gray-400 hover:text-red-500 transition-colors">✕</button>
             </div>
             <div className="p-6 space-y-3 max-h-[400px] overflow-y-auto">
               {resolvedPerformers.length === 0 ? (
-                <div className="py-8 text-center text-sm text-gray-400 dark:text-gray-500">
+                <div className="py-8 text-center text-sm text-slate-500 dark:text-slate-400">
                   No closed deals or leaderboard data yet
                 </div>
               ) : (

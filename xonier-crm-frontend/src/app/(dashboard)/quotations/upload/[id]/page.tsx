@@ -308,10 +308,10 @@ const DealFileUpload = (): JSX.Element => {
   const errorCount = files.filter((f) => f.status === "error").length;
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6">
       {/* ✅ Header Card */}
       <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
-        <div className="bg-gradient-to-br from-[#16c2cf] to-[#0fb8a5] dark:to-cyan-700 px-8 py-5">
+        <div className="bg-gradient-to-br from-[#01728e] to-[#015d73] dark:to-cyan-700 px-8 py-5">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-lg">
               📎

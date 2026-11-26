@@ -236,7 +236,7 @@ export default function OrganizationDetailPage() {
   const totalPipeline = deals.reduce((acc, d) => acc + (Number(d.amount) || 0), 0);
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6">
       {/* Top Header */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl border border-slate-200 dark:border-gray-700 p-6 flex flex-wrap items-start justify-between gap-4">
         <div className="space-y-2">

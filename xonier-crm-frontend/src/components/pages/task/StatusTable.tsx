@@ -231,7 +231,7 @@ const StatusTable = ({
                   const statusDotColor =
                     s.color && s.color.toLowerCase() !== "#ffffff"
                       ? s.color
-                      : "#0891b2";
+                      : "#01728e";
 
                   return (
                     <tr

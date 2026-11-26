@@ -541,7 +541,7 @@ const page = (): JSX.Element => {
   );
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6">
 
       {/* ── Field Mapping Modal ── */}
       <FieldMappingModal
@@ -556,7 +556,7 @@ const page = (): JSX.Element => {
 
       {/* ── Header card ── */}
       <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
-        <div className="bg-gradient-to-br from-[#16c2cf] to-[#0fb8a5] dark:to-cyan-700 px-8 py-5">
+        <div className="bg-gradient-to-br from-[#01728e] to-[#015d73] dark:to-cyan-700 px-8 py-5">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-white/60 backdrop-blur-sm flex items-center justify-center text-lg">
               📊
@@ -902,7 +902,7 @@ const page = (): JSX.Element => {
                   key={i}
                   onClick={() => setCurrentPage(i + 1)}
                   className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors
-                    ${currentPage === i + 1 ? "bg-cyan-600 text-white shadow-sm" : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"}`}
+                    ${currentPage === i + 1 ? "bg-[#01728e] text-white shadow-sm" : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"}`}
                 >
                   {i + 1}
                 </button>

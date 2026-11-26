@@ -27,7 +27,7 @@ export default function TicketUpdates() {
           aria-label={t("email_notifications")}
           onClick={() => setEnabled((prev) => !prev)}
           className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-            enabled ? "bg-gradient-to-r from-[#1BA2C3] to-[#33BF8B]" : "bg-gray-200"
+            enabled ? "bg-gradient-to-r from-[#01728e] to-[#33BF8B]" : "bg-gray-200"
           }`}
         >
           <motion.span

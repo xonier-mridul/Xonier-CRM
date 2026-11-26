@@ -9,9 +9,9 @@ import { toast } from "react-toastify";
 import { ArrowLeft, Plus, Pencil, Trash2, Layers, ArrowRight, Check, CheckCircle2, CircleDashed, Search, X, LockKeyhole, ArrowUpRight, Flag, Loader2 } from "lucide-react";
 import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
 
-const empty: LeadStatusInput = { name: "", type: "ongoing", color: "#0891b2", order: 0, probability: 25 };
+const empty: LeadStatusInput = { name: "", type: "ongoing", color: "#01728e", order: 0, probability: 25 };
 const probabilityPresets = [0, 10, 25, 50, 75, 100];
-const colors = ["#64748b", "#0891b2", "#2563eb", "#4f46e5", "#9333ea", "#d97706", "#059669", "#e11d48"];
+const colors = ["#64748b", "#01728e", "#2563eb", "#4f46e5", "#9333ea", "#d97706", "#059669", "#e11d48"];
 const inputClass = "mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none transition focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/10 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100";
 
 function TypeBadge({ type }: { type: LeadStatus["type"] }) {

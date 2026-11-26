@@ -224,7 +224,7 @@ function Avatar({ link, name, title }: { link: string, name?: string; title?: st
     "#3b82f6",
     "#8b5cf6",
     "#ec4899",
-    "#06b6d4",
+    "#01728e",
     "#10b981",
     "#f59e0b",
     "#ef4444",
@@ -844,7 +844,7 @@ export default function TaskViewPage() {
   const displayCategory = boardCategory ?? focusedTask.category;
 
   return (
-    <div className="p-6 min-h-screen bg-gray-50/40 dark:bg-gray-900/20">
+    <div className="min-h-screen">
       {/* <div className="flex items-center gap-2 mb-5">
         <button
           onClick={() => router.back()}

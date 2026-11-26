@@ -154,7 +154,7 @@ const VARIANT_STYLES: Record<
     iconBox:
       "bg-cyan-50 text-cyan-600 ring-cyan-500/20 dark:bg-cyan-500/10 dark:text-cyan-400 dark:ring-cyan-500/25",
     confirmBtn:
-      "bg-cyan-600 text-white hover:bg-cyan-700 active:bg-cyan-800 shadow-[0_1px_2px_rgba(8,145,178,0.28),inset_0_1px_0_rgba(255,255,255,0.14)] focus-visible:ring-cyan-500/50",
+      "bg-cyan-600 text-white hover:bg-cyan-700 active:bg-cyan-800 shadow-[0_1px_2px_rgba(1,114,142,0.28),inset_0_1px_0_rgba(255,255,255,0.14)] focus-visible:ring-cyan-500/50",
     checkboxCardChecked:
       "border-cyan-200/90 bg-cyan-50/50 dark:border-cyan-500/30 dark:bg-cyan-500/[0.07]",
     checkboxBoxChecked:

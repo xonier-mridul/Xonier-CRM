@@ -294,7 +294,7 @@ const LeadViewPage = (): JSX.Element => {
 
   if (isLoading) {
     return (
-      <div className="p-6 flex flex-col gap-6 animate-pulse">
+      <div className="flex flex-col gap-6 animate-pulse">
         <Skeleton height={120} borderRadius={12} className="dark:bg-gray-700 w-full" />
         <Skeleton height={60} borderRadius={12} className="dark:bg-gray-700 w-full" />
         <div className="flex items-start gap-6">
@@ -336,7 +336,7 @@ const LeadViewPage = (): JSX.Element => {
   }
 
   return (
-  <div className="p-6 min-h-screen">
+  <div className="min-h-screen">
     {/* Global print styles: fixes gap-based whitespace at page breaks */}
     <style>{`
       @media print {

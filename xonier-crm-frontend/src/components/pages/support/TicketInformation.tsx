@@ -21,7 +21,7 @@ function FieldBlock({ label, value }: { label: string; value: string }) {
 function AttachmentRow({ attachment }: { attachment: Attachment }) {
   const { t } = useTranslation();
   return (
-    <div className="flex items-center justify-between rounded-xl border border-gray-100 p-4 hover:border-[#1BA2C3]/30 hover:bg-gray-50 transition-colors">
+    <div className="flex items-center justify-between rounded-xl border border-gray-100 p-4 hover:border-[#01728e]/30 hover:bg-gray-50 transition-colors">
       <div className="flex items-center gap-3 min-w-0">
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-red-50 text-red-500">
           <FiFile size={16} />
@@ -35,7 +35,7 @@ function AttachmentRow({ attachment }: { attachment: Attachment }) {
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
         aria-label={t("download_file")}
-        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-gray-400 hover:bg-[#1BA2C3]/10 hover:text-[#1BA2C3] transition-colors"
+        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-gray-400 hover:bg-[#01728e]/10 hover:text-[#01728e] transition-colors"
       >
         <FiDownload size={16} />
       </motion.button>

@@ -312,7 +312,7 @@ export default function RaiseTicketForm({ isAdmin = false }: RaiseTicketFormProp
         {/* Priority */}
         <div>
           <label className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-700">
-            <FiFlag className="text-[#1BA2C3]" size={14} />
+            <FiFlag className="text-[#01728e]" size={14} />
             {t("priority")}
           </label>
           <div className="flex flex-wrap gap-3">
@@ -353,7 +353,7 @@ export default function RaiseTicketForm({ isAdmin = false }: RaiseTicketFormProp
         {/* Attachments */}
         <div>
           <label className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-700">
-            <FiPaperclip className="text-[#1BA2C3]" size={14} />
+            <FiPaperclip className="text-[#01728e]" size={14} />
             {t("attachments")}
           </label>
 
@@ -367,11 +367,11 @@ export default function RaiseTicketForm({ isAdmin = false }: RaiseTicketFormProp
             onClick={() => fileInputRef.current?.click()}
             className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed p-8 text-center transition-colors ${
               isDragging
-                ? "border-[#1BA2C3] bg-[#1BA2C3]/5"
-                : "border-gray-200 hover:border-[#1BA2C3]/40 hover:bg-gray-50"
+                ? "border-[#01728e] bg-[#01728e]/5"
+                : "border-gray-200 hover:border-[#01728e]/40 hover:bg-gray-50"
             }`}
           >
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#1BA2C3]/10 text-[#1BA2C3]">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#01728e]/10 text-[#01728e]">
               <FiUpload size={18} />
             </div>
             <p className="text-sm font-medium text-gray-700">{t("upload_drag_drop")}</p>
@@ -441,7 +441,7 @@ export default function RaiseTicketForm({ isAdmin = false }: RaiseTicketFormProp
             disabled={isSubmitting}
             whileHover={{ scale: isSubmitting ? 1 : 1.02 }}
             whileTap={{ scale: isSubmitting ? 1 : 0.98 }}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#1BA2C3] to-[#33BF8B] px-6 py-3 text-sm font-semibold text-white shadow-sm hover:shadow-md transition-shadow disabled:opacity-70"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#01728e] to-[#33BF8B] px-6 py-3 text-sm font-semibold text-white shadow-sm hover:shadow-md transition-shadow disabled:opacity-70"
           >
             {isSubmitting ? (
               <>
@@ -504,7 +504,7 @@ function FormField({ label, htmlFor, icon: Icon, error, children }: FormFieldPro
   return (
     <div>
       <label htmlFor={htmlFor} className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-700">
-        {Icon && <Icon className="text-[#1BA2C3]" size={14} />}
+        {Icon && <Icon className="text-[#01728e]" size={14} />}
         {label}
       </label>
       {children}
@@ -523,7 +523,7 @@ function inputClasses(hasError: boolean): string {
   return `w-full rounded-xl border bg-gray-50 px-4 py-3 text-sm text-gray-700 outline-none transition-all focus:bg-white focus:ring-2 ${
     hasError
       ? "border-red-300 focus:border-red-400 focus:ring-red-100"
-      : "border-gray-200 focus:border-[#1BA2C3] focus:ring-[#1BA2C3]/20"
+      : "border-gray-200 focus:border-[#01728e] focus:ring-[#01728e]/20"
   }`;
 }
 
@@ -531,6 +531,6 @@ function selectClasses(hasError: boolean): string {
   return `w-full appearance-none rounded-xl border bg-gray-50 px-4 py-3 text-sm text-gray-700 outline-none transition-all focus:bg-white focus:ring-2 ${
     hasError
       ? "border-red-300 focus:border-red-400 focus:ring-red-100"
-      : "border-gray-200 focus:border-[#1BA2C3] focus:ring-[#1BA2C3]/20"
+      : "border-gray-200 focus:border-[#01728e] focus:ring-[#01728e]/20"
   }`;
 }

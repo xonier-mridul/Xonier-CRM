@@ -767,7 +767,7 @@ const fetchTaskAll = useCallback(async (silent = false) => {
 
                         const isOverdue = task.dueDate && new Date(task.dueDate) < new Date();
                         const statusColor = getColorOption(task?.status?.color);
-                        const statusDotColor = task?.status?.color && task.status.color.toLowerCase() !== "#ffffff" ? task.status.color : "#0891b2";
+                        const statusDotColor = task?.status?.color && task.status.color.toLowerCase() !== "#ffffff" ? task.status.color : "#01728e";
 
                         return (
                           <tr key={task.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-700/40 transition-colors group">

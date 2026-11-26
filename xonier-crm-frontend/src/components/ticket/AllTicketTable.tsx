@@ -106,7 +106,7 @@ function AssignModal({ isOpen, selectedCount, onAssign, onClose }: AssignModalPr
           {/* Header */}
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#1BA2C3]/10 text-[#1BA2C3]">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#01728e]/10 text-[#01728e]">
                 <FiUserPlus size={18} />
               </div>
               <div>
@@ -137,7 +137,7 @@ function AssignModal({ isOpen, selectedCount, onAssign, onClose }: AssignModalPr
               value={searchAgent}
               onChange={(e) => setSearchAgent(e.target.value)}
               placeholder={t("search_agents_placeholder") ?? ""}
-              className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2.5 pl-9 pr-4 text-sm text-gray-700 outline-none focus:border-[#1BA2C3] focus:bg-white focus:ring-2 focus:ring-[#1BA2C3]/20 transition-all"
+              className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2.5 pl-9 pr-4 text-sm text-gray-700 outline-none focus:border-[#01728e] focus:bg-white focus:ring-2 focus:ring-[#01728e]/20 transition-all"
             />
           </div>
 
@@ -154,7 +154,7 @@ function AssignModal({ isOpen, selectedCount, onAssign, onClose }: AssignModalPr
                   onClick={() => onAssign(agent.id)}
                   className="flex w-full items-center gap-3 rounded-xl p-3 text-left hover:bg-gray-50 transition-colors"
                 >
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#1BA2C3]/20 to-[#33BF8B]/20 text-[#1BA2C3] text-xs font-bold">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#01728e]/20 to-[#33BF8B]/20 text-[#01728e] text-xs font-bold">
                     {agent.name.split(" ").map((n) => n[0]).join("")}
                   </div>
                   <div>
@@ -314,7 +314,7 @@ export default function AllTicketsTable() {
                   onClick={() => setIsAssignModalOpen(true)}
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
-                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#33BF8B] to-[#1BA2C3] px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:shadow-md transition-shadow whitespace-nowrap"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#33BF8B] to-[#01728e] px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:shadow-md transition-shadow whitespace-nowrap"
                 >
                   <FiUsers size={16} />
                   {t("assign_selected", { count: selectedCount })}
@@ -326,7 +326,7 @@ export default function AllTicketsTable() {
               onClick={() => router.push("/support/raiseTicket")}
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#1BA2C3] to-[#33BF8B] px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:shadow-md transition-shadow whitespace-nowrap"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#01728e] to-[#33BF8B] px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:shadow-md transition-shadow whitespace-nowrap"
             >
               <FiPlus size={16} />
               {t("raise_ticket")}
@@ -347,7 +347,7 @@ export default function AllTicketsTable() {
               onChange={(e) => handleSearchChange(e.target.value)}
               placeholder={t("search_tickets_placeholder") ?? ""}
               aria-label={t("search_tickets_placeholder")}
-              className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2.5 pl-10 pr-4 text-sm text-gray-700 outline-none focus:border-[#1BA2C3] focus:bg-white focus:ring-2 focus:ring-[#1BA2C3]/20 transition-all"
+              className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2.5 pl-10 pr-4 text-sm text-gray-700 outline-none focus:border-[#01728e] focus:bg-white focus:ring-2 focus:ring-[#01728e]/20 transition-all"
             />
           </div>
 
@@ -360,7 +360,7 @@ export default function AllTicketsTable() {
               value={statusFilter}
               onChange={(e) => handleFilterChange(e.target.value as TicketStatus | "ALL")}
               aria-label={t("filter_by_status")}
-              className="w-full appearance-none rounded-xl border border-gray-200 bg-gray-50 py-2.5 pl-9 pr-8 text-sm font-medium text-gray-700 outline-none focus:border-[#1BA2C3] focus:bg-white focus:ring-2 focus:ring-[#1BA2C3]/20 transition-all md:w-56"
+              className="w-full appearance-none rounded-xl border border-gray-200 bg-gray-50 py-2.5 pl-9 pr-8 text-sm font-medium text-gray-700 outline-none focus:border-[#01728e] focus:bg-white focus:ring-2 focus:ring-[#01728e]/20 transition-all md:w-56"
             >
               {FILTER_OPTIONS.map((option) => (
                 <option key={option} value={option}>
@@ -386,7 +386,7 @@ export default function AllTicketsTable() {
                         paginatedTickets.every((t) => selectedIds.has(t.id))
                       }
                       onChange={toggleSelectAll}
-                      className="h-4 w-4 rounded border-gray-300 text-[#1BA2C3] focus:ring-[#1BA2C3] cursor-pointer"
+                      className="h-4 w-4 rounded border-gray-300 text-[#01728e] focus:ring-[#01728e] cursor-pointer"
                     />
                   </label>
                 </th>
@@ -415,7 +415,7 @@ export default function AllTicketsTable() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.25, delay: index * 0.04 }}
                       className={`border-b border-gray-50 last:border-0 transition-colors ${
-                        isSelected ? "bg-[#1BA2C3]/5" : "hover:bg-gray-50/70"
+                        isSelected ? "bg-[#01728e]/5" : "hover:bg-gray-50/70"
                       }`}
                     >
                       {/* Select Checkbox */}
@@ -425,7 +425,7 @@ export default function AllTicketsTable() {
                             type="checkbox"
                             checked={isSelected}
                             onChange={() => toggleSelect(ticket.id)}
-                            className="h-4 w-4 relative rounded border-gray-300 text-[#1BA2C3] focus:ring-[#1BA2C3] cursor-pointer"
+                            className="h-4 w-4 relative rounded border-gray-300 text-[#01728e] focus:ring-[#01728e] cursor-pointer"
                           />
                           {/* {isSelected && (
                             <motion.span
@@ -465,7 +465,7 @@ export default function AllTicketsTable() {
                               onChange={(e) => {
                                 if (e.target.value) handleReassign(ticket.id, e.target.value);
                               }}
-                              className="h-7 w-7 appearance-none flex justify-center items-center outline-none rounded-lg border border-gray-200 bg-white text-xs text-gray-400 hover:border-[#1BA2C3]/40 cursor-pointer px-1"
+                              className="h-7 w-7 appearance-none flex justify-center items-center outline-none rounded-lg border border-gray-200 bg-white text-xs text-gray-400 hover:border-[#01728e]/40 cursor-pointer px-1"
                               title={t("reassign") ?? ""}
                             >
                               <option value="" disabled>
@@ -491,7 +491,7 @@ export default function AllTicketsTable() {
                           whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.95 }}
                           aria-label={t("view_ticket")}
-                          className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-gray-400 hover:bg-[#1BA2C3]/10 hover:text-[#1BA2C3] transition-colors"
+                          className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-gray-400 hover:bg-[#01728e]/10 hover:text-[#01728e] transition-colors"
                         >
                           <FiEye size={16} />
                         </motion.button>
@@ -519,7 +519,7 @@ export default function AllTicketsTable() {
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.25, delay: index * 0.04 }}
-                  className={`p-5 space-y-3 ${isSelected ? "bg-[#1BA2C3]/5" : ""}`}
+                  className={`p-5 space-y-3 ${isSelected ? "bg-[#01728e]/5" : ""}`}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-start gap-3">
@@ -528,7 +528,7 @@ export default function AllTicketsTable() {
                           type="checkbox"
                           checked={isSelected}
                           onChange={() => toggleSelect(ticket.id)}
-                          className="h-4 w-4 rounded border-gray-300 text-[#1BA2C3] focus:ring-[#1BA2C3] cursor-pointer"
+                          className="h-4 w-4 rounded border-gray-300 text-[#01728e] focus:ring-[#01728e] cursor-pointer"
                         />
                       </label>
                       <div>
@@ -541,7 +541,7 @@ export default function AllTicketsTable() {
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.95 }}
                       aria-label={t("view_ticket")}
-                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-gray-400 hover:bg-[#1BA2C3]/10 hover:text-[#1BA2C3] transition-colors"
+                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-gray-400 hover:bg-[#01728e]/10 hover:text-[#01728e] transition-colors"
                     >
                       <FiEye size={16} />
                     </motion.button>
@@ -594,7 +594,7 @@ export default function AllTicketsTable() {
                 disabled={page === 1}
                 onClick={() => setPage((prev) => Math.max(1, prev - 1))}
                 aria-label={t("previous_page")}
-                className="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 text-gray-500 disabled:opacity-40 disabled:cursor-not-allowed hover:border-[#1BA2C3]/40 hover:text-[#1BA2C3] transition-colors"
+                className="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 text-gray-500 disabled:opacity-40 disabled:cursor-not-allowed hover:border-[#01728e]/40 hover:text-[#01728e] transition-colors"
               >
                 <FiChevronLeft size={16} />
               </motion.button>
@@ -607,7 +607,7 @@ export default function AllTicketsTable() {
                 disabled={page === totalPages}
                 onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
                 aria-label={t("next_page")}
-                className="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 text-gray-500 disabled:opacity-40 disabled:cursor-not-allowed hover:border-[#1BA2C3]/40 hover:text-[#1BA2C3] transition-colors"
+                className="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 text-gray-500 disabled:opacity-40 disabled:cursor-not-allowed hover:border-[#01728e]/40 hover:text-[#01728e] transition-colors"
               >
                 <FiChevronRight size={16} />
               </motion.button>

@@ -243,7 +243,7 @@ const SubscriptionViewComponent = ({
       {/* ── Hero banner ───────────────────────────────────────────── */}
       <div className="relative bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl overflow-hidden shadow-sm">
         <div
-          className="h-24 relative bg-gradient-to-r from-[#16c2cf] to-[#0fb8a5] "
+          className="h-24 relative bg-gradient-to-r from-[#01728e] to-[#015d73] "
           // 
         >
           <div
@@ -260,7 +260,7 @@ const SubscriptionViewComponent = ({
 
         <div className="px-6 pb-5 relative">
           <div className="flex items-end justify-between -mt-7 mb-4 flex-wrap gap-3">
-            <div className="w-14 h-14 rounded-2xl border-4 border-white dark:border-gray-800 bg-gradient-to-r from-[#16c2cf] to-[#0fb8a5] flex items-center justify-center shadow-xl">
+            <div className="w-14 h-14 rounded-2xl border-4 border-white dark:border-gray-800 bg-gradient-to-r from-[#01728e] to-[#015d73] flex items-center justify-center shadow-xl">
               <LuCrown className="w-7 h-7 text-white" />
             </div>
             <div className={`mb-1 flex items-center gap-2 px-3 py-1.5 rounded-full ring-1 text-xs font-bold ${status.bg} ${status.text} ${status.ring}`}>

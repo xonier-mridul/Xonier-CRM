@@ -396,7 +396,7 @@ const handleSubmit = async (e: React.FormEvent) => {
   }
 
   return (
-    <div className="px-4 py-6 mx-auto mt-10 max-w-7xl">
+    <div className="w-full space-y-6">
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
           <div className="p-2 bg-cyan-100 dark:bg-cyan-900/30 rounded-lg">

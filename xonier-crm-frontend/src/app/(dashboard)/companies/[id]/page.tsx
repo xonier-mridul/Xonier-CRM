@@ -286,7 +286,7 @@ export default function CompanyDetailPage() {
   const isDeleted = company?.status === COMPANY_STATUS.DELETED;
 
   return (
-    <div className=" min-h-screen p-6 bg-slate-50 dark:bg-gray-900/50 rounded-2xl">
+    <div className="min-h-screen">
       <div className="min-w-4xl mx-auto flex flex-col gap-6">
 
         {/* Breadcrumb + Back */}
@@ -679,7 +679,7 @@ export default function CompanyDetailPage() {
               ) : admin ? (
                 <div className="py-4 flex flex-col gap-4">
                   <div className="flex items-center gap-3">
-                    <div className="h-12 w-12 rounded-xl bg-gradient-to-r from-[#16c2cf] to-[#0fb8a5] flex items-center justify-center flex-shrink-0 shadow-md">
+                    <div className="h-12 w-12 rounded-xl bg-gradient-to-r from-[#01728e] to-[#015d73] flex items-center justify-center flex-shrink-0 shadow-md">
                       <span className="text-lg font-bold text-white">
                         {admin.firstName?.charAt(0).toUpperCase()}
                       </span>

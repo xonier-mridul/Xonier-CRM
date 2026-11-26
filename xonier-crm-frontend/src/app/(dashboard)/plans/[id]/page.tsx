@@ -122,7 +122,7 @@ const PlanViewPage = (): JSX.Element => {
   };
 
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="flex flex-col gap-6">
       <PlanViewComponent planData={planData} isLoading={loading} handleEdit={handleEdit} handleDelete={handleDelete} />
       <PlanFormModal
         isOpen={isEditModalOpen}

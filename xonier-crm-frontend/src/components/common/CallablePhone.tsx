@@ -47,7 +47,7 @@ export default function CallablePhone({
         >
           {displayValue}
         </button>
-        <span className="pointer-events-none absolute left-full top-1/2 z-30 ml-2 -translate-y-1/2 whitespace-nowrap rounded-full bg-[#0092B8] px-2.5 py-1 text-[11px] font-medium text-white opacity-0 shadow-lg transition-opacity duration-150 group-hover:opacity-100">
+        <span className="pointer-events-none absolute left-full top-1/2 z-30 ml-2 -translate-y-1/2 whitespace-nowrap rounded-full bg-[#01728e] px-2.5 py-1 text-[11px] font-medium text-white opacity-0 shadow-lg transition-opacity duration-150 group-hover:opacity-100">
           <FiPhoneCall className="mr-1 inline -mt-0.5" size={11} />
           Make call
         </span>

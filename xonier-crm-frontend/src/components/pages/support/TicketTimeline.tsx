@@ -41,7 +41,7 @@ export default function TicketTimeline({ ticket }: TicketTimelineProps) {
       className="rounded-3xl border border-gray-100 bg-white p-6 md:p-8 shadow-sm"
     >
       <div className="flex items-center gap-2 mb-10">
-        <FiClock className="text-[#1BA2C3]" size={20} />
+        <FiClock className="text-[#01728e]" size={20} />
         <h3 className="text-lg font-semibold text-gray-900">{t("status_timeline")}</h3>
       </div>
 
@@ -52,7 +52,7 @@ export default function TicketTimeline({ ticket }: TicketTimelineProps) {
           initial={{ width: 0 }}
           animate={{ width: `${progress}%` }}
           transition={{ duration: 0.8, ease: "easeInOut" }}
-          className="absolute top-6 left-10 h-1 bg-gradient-to-r from-[#1BA2C3] to-[#33BF8B] rounded-full"
+          className="absolute top-6 left-10 h-1 bg-gradient-to-r from-[#01728e] to-[#33BF8B] rounded-full"
           style={{ maxWidth: "calc(100% - 5rem)" }}
         />
         <div className="relative flex justify-between">
@@ -96,9 +96,9 @@ export default function TicketTimeline({ ticket }: TicketTimelineProps) {
       </div>
 
       {/* Current status panel */}
-      <div className="mt-10 flex flex-col md:flex-row md:items-center gap-6 rounded-2xl border border-[#1BA2C3]/20 bg-gradient-to-br from-[#1BA2C3]/5 to-[#33BF8B]/5 p-6">
+      <div className="mt-10 flex flex-col md:flex-row md:items-center gap-6 rounded-2xl border border-[#01728e]/20 bg-gradient-to-br from-[#01728e]/5 to-[#33BF8B]/5 p-6">
         <div className="flex flex-1 items-start gap-3">
-          <FiInfo className="mt-0.5 shrink-0 text-[#1BA2C3]" size={20} />
+          <FiInfo className="mt-0.5 shrink-0 text-[#01728e]" size={20} />
           <div>
             <h4 className="font-semibold text-gray-900">{t("current_status")}</h4>
             <p className="text-sm text-gray-600 mt-1">

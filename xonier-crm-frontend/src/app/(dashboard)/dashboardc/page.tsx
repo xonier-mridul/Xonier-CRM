@@ -88,8 +88,8 @@ const ACTION_BADGE: Record<string, string> = {
     deleted: "bg-red-50 text-red-600 dark:bg-red-950 dark:text-red-400",
     assigned: "bg-cyan-50 text-cyan-600 dark:bg-cyan-950 dark:text-cyan-400",
 };
-const CATEGORY_COLORS = ["#6366f1", "#8b5cf6", "#ec4899", "#f97316", "#22c55e", "#06b6d4", "#eab308", "#a855f7"];
-const ENTITY_COLORS = ["#6366f1", "#22c55e", "#f97316", "#ec4899", "#06b6d4", "#eab308"];
+const CATEGORY_COLORS = ["#6366f1", "#8b5cf6", "#ec4899", "#f97316", "#22c55e", "#01728e", "#eab308", "#a855f7"];
+const ENTITY_COLORS = ["#6366f1", "#22c55e", "#f97316", "#ec4899", "#01728e", "#eab308"];
 const RECUR_COLORS: Record<string, string> = {
     daily: "#6366f1", weekly: "#8b5cf6", monthly: "#ec4899", yearly: "#f97316",
 };
@@ -171,7 +171,7 @@ function RingChart({ pct, color }: { pct: number; color: string }) {
 function UnauthorizedView() {
   const { t } = useTranslation();
     return (
-        <div className="mt-10 min-h-screen">
+        <div className="min-h-screen">
             <div className="bg-white mb-10 dark:bg-gray-700 p-6 rounded-xl border border-slate-900/10 w-full">
                 <div className="p-10 flex flex-col items-center text-center">
                     <div className="relative mb-8">
@@ -635,7 +635,7 @@ export default function TaskDashboardPage() {
 
     if (loading) {
         return (
-            <div className="mt-10 flex flex-col gap-6 p-6 bg-gray-50 dark:bg-gray-700 min-h-screen">
+            <div className="flex flex-col gap-6 min-h-screen">
                 <div className="grid grid-cols-3 gap-4">
                     {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-32" />)}
                 </div>
@@ -655,7 +655,7 @@ export default function TaskDashboardPage() {
     if (errorStatus === 403) return <UnauthorizedView />;
 
     if (error) return (
-        <div className="mt-10 flex items-center justify-center h-96">
+        <div className="flex items-center justify-center h-96">
             <div className="flex flex-col items-center gap-3 text-center">
                 <AlertCircle className="w-10 h-10 text-red-400" />
                 <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{error}</p>
@@ -684,12 +684,12 @@ export default function TaskDashboardPage() {
         { label: "Overdue", value: fmt(summary.overdue), sub: `${summary.overdueRate}% overdue rate · ${summary.dueSoon} due soon`, barPct: summary.overdueRate, color: "#ef4444", iconBg: "bg-red-500", icon: <AlertTriangle className="w-4 h-4" /> },
         { label: "Due today", value: fmt(summary.dueToday), sub: `${summary.dueSoon} due this week`, barPct: Math.min((summary.dueToday / totalTasks) * 100, 100), color: "#f97316", iconBg: "bg-orange-500", icon: <Clock className="w-4 h-4" /> },
         { label: "Recurring", value: fmt(summary.recurring), sub: breakdowns.byRecurrenceType.map((r) => capitalize(r.recurrenceType)).join(" · ") || "No recurrences", barPct: Math.min((summary.recurring / totalTasks) * 100, 100), color: "#8b5cf6", iconBg: "bg-violet-500", icon: <Repeat2 className="w-4 h-4" /> },
-        { label: "With tags", value: fmt(summary.withTags), sub: `${summary.withAttachments} with attachments · ${summary.subTasks} subtasks`, barPct: Math.min((summary.withTags / totalTasks) * 100, 100), color: "#06b6d4", iconBg: "bg-cyan-500", icon: <Tag className="w-4 h-4" /> },
+        { label: "With tags", value: fmt(summary.withTags), sub: `${summary.withAttachments} with attachments · ${summary.subTasks} subtasks`, barPct: Math.min((summary.withTags / totalTasks) * 100, 100), color: "#01728e", iconBg: "bg-cyan-500", icon: <Tag className="w-4 h-4" /> },
     ];
 
     return (
-        <div className="mt-10">
-            <div className="bg-white mb-10 dark:bg-gray-700 dark:backdrop-blur-sm p-6 rounded-xl border border-slate-900/10 w-full flex flex-col gap-5">
+        <div>
+            <div className="w-full flex flex-col gap-5">
 
                 {/* Header */}
                 <div className="flex items-center justify-between">

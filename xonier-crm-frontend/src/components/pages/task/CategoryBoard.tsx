@@ -254,7 +254,7 @@ function CategoryBoard({
                 className="w-8.5 h-8.5 rounded-xl flex items-center justify-center text-sm shadow-2xs shrink-0"
                 style={{
                   backgroundColor: categoryColor ? `${categoryColor}15` : "rgba(100, 116, 139, 0.1)",
-                  color: categoryColor || "#0891b2",
+                  color: categoryColor || "#01728e",
                   border: `1px solid ${categoryColor ? `${categoryColor}30` : "rgba(100, 116, 139, 0.2)"}`,
                 }}
               >
@@ -275,7 +275,7 @@ function CategoryBoard({
           <div className="flex items-center gap-1.5 flex-wrap justify-end col-span-6 max-h-12 overflow-scroll">
             {statuses.map((s) => {
               const count = tasks.filter((t) => t?.status?.id === s.id).length;
-              const dotColor = s.color && s.color.toLowerCase() !== "#ffffff" ? s.color : "#0891b2";
+              const dotColor = s.color && s.color.toLowerCase() !== "#ffffff" ? s.color : "#01728e";
               return (
                 <span
                   key={s.id}
@@ -313,7 +313,7 @@ function CategoryBoard({
               const dotColor =
                 status.color && status.color.toLowerCase() !== "#ffffff"
                   ? status.color
-                  : "#0891b2";
+                  : "#01728e";
 
               return (
                 <div

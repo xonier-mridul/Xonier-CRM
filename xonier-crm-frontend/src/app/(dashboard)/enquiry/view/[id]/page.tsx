@@ -194,7 +194,7 @@ const EnquiryViewPage = (): JSX.Element => {
   }
 
   return (
-    <div className="p-6 min-h-screen">
+    <div className="min-h-screen">
       <style>{`
         @media print {
           .print-col-stack { display: block !important; }

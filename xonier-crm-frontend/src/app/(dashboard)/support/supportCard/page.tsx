@@ -37,14 +37,14 @@ export default function TicketSupportCard() {
             className="group flex w-full items-center justify-between rounded-xl p-3 hover:bg-gray-50 transition-colors"
           >
             <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#1BA2C3]/10 text-[#1BA2C3]">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#01728e]/10 text-[#01728e]">
                 <item.icon size={15} />
               </div>
               <span className="text-sm font-medium text-gray-700">{t(item.labelKey)}</span>
             </div>
             <FiArrowRight
               size={14}
-              className="text-gray-300 group-hover:text-[#1BA2C3] transition-colors"
+              className="text-gray-300 group-hover:text-[#01728e] transition-colors"
             />
           </motion.button>
         ))}

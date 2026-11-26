@@ -335,14 +335,14 @@ const CHART_COLORS = [
   "#10b981",
   "#f59e0b",
   "#8b5cf6",
-  "#06b6d4",
+  "#01728e",
   "#f97316",
   "#ec4899",
 ];
 const PIPELINE_COLORS: Record<string, string> = {
   qualification: "#6366f1",
   requirement_analysis: "#8b5cf6",
-  proposal: "#06b6d4",
+  proposal: "#01728e",
   negotiation: "#f59e0b",
   won: "#10b981",
   lost: "#ef4444",
@@ -351,7 +351,7 @@ const ACTION_COLORS: Record<string, string> = {
   login: "#10b981",
   logout: "#6366f1",
   create: "#f59e0b",
-  update: "#06b6d4",
+  update: "#01728e",
   delete: "#ef4444",
   view: "#8b5cf6",
 };
@@ -3511,7 +3511,7 @@ export default function UnifiedDashboardPage() {
 
   if (loading) {
     return (
-      <div className="mt-10 min-h-screen dark:bg-slate-900 p-6">
+      <div className="min-h-screen">
         <div className="flex items-center gap-3 mb-6">
           <Sk className="h-10 w-10" />
           <Sk className="h-8 w-48" />
@@ -3543,7 +3543,7 @@ export default function UnifiedDashboardPage() {
 
   if (error) {
     return (
-      <div className="mt-10 min-h-screen dark:bg-slate-900 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div className="w-16 h-16 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center">
             <AlertCircle className="w-8 h-8 text-red-400" />

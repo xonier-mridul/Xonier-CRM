@@ -257,11 +257,11 @@ const isSuperAdmin = auth.user?.userRole?.some(
                 href="/dashboard"
                 onClick={handleNavClick("/dashboard")}
                 className={`${isActive("/dashboard")
-                  ? " dark:text-cyan-300 text-cyan-700   border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                  ? " dark:text-[#5aa8ba] text-[#01728e]   border-l-2 bg-[#01728e]/10 dark:bg-[#01728e]/20 border-[#01728e] dark:border-[#5aa8ba]"
                   : "border-l-2 border-transparent"
                   } flex items-center gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-cyan-600/10 transition-all`}
               >
-              <span  className={`${isActive("/dashboard")?'bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400  w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
+              <span  className={`${isActive("/dashboard")?'bg-[#01728e]/10 dark:bg-[#01728e]/20 text-[#01728e] dark:text-[#5aa8ba] w-8 border border-[#01728e] dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
                 <BiHome className="text-lg" />
 
               </span>
@@ -275,11 +275,11 @@ const isSuperAdmin = auth.user?.userRole?.some(
                   href="/sales-dashboard"
                   onClick={handleNavClick("/sales-dashboard")}
                   className={`${isActive("/sales-dashboard")
-                    ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                    ? "dark:text-[#5aa8ba] text-[#01728e] dark:text-[#5aa8ba]  border-l-2 bg-[#01728e]/10 dark:bg-[#01728e]/20 border-[#01728e] dark:border-[#5aa8ba]"
                     : "border-l-2 border-transparent"
                     } flex items-center gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-cyan-600/10 transition-all`}
                 >
-                  <span  className={`${isActive("/sales-dashboard")?'bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400  w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
+                  <span  className={`${isActive("/sales-dashboard")?'bg-[#01728e]/10 dark:bg-[#01728e]/20 text-[#01728e] dark:text-[#5aa8ba] w-8 border border-[#01728e] dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
                   <MdOutlineLeaderboard className="text-lg" />
 
                   </span>
@@ -295,11 +295,11 @@ const isSuperAdmin = auth.user?.userRole?.some(
                 href="/calender"
                 onClick={handleNavClick("/calender")}
                 className={`${isActive("/calender")
-                  ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                  ? "dark:text-[#5aa8ba] text-[#01728e] dark:text-[#5aa8ba]  border-l-2 bg-[#01728e]/10 dark:bg-[#01728e]/20 border-[#01728e] dark:border-[#5aa8ba]"
                   : "border-l-2 border-transparent"
                   } flex items-center gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-cyan-600/10 transition-all`}
               >
-              <span  className={`${isActive("/calender")?'bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400  w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
+              <span  className={`${isActive("/calender")?'bg-[#01728e]/10 dark:bg-[#01728e]/20 text-[#01728e] dark:text-[#5aa8ba] w-8 border border-[#01728e] dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
                 
                 <SlCalender className="text-lg" />
                 </span>
@@ -314,13 +314,13 @@ const isSuperAdmin = auth.user?.userRole?.some(
               <button
                 onClick={() => toggleMenu("prospects")}
                 className={`${isMenuActive("prospects")
-                  ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                  ? "dark:text-[#5aa8ba] text-[#01728e] dark:text-[#5aa8ba]  border-l-2 bg-[#01728e]/10 dark:bg-[#01728e]/20 border-[#01728e] dark:border-[#5aa8ba]"
                   : "border-l-2 border-transparent"
                   }
                flex w-full items-center justify-between px-4 py-2.5 rounded-md text-sm hover:bg-cyan-600/10 transition-all`}
               >
                 <span className="flex items-center gap-3">
-                   <span  className={`${isMenuActive("prospects")?'bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400  w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
+                   <span  className={`${isMenuActive("prospects")?'bg-[#01728e]/10 dark:bg-[#01728e]/20 text-[#01728e] dark:text-[#5aa8ba] w-8 border border-[#01728e] dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
                 
 
                   <HiOutlineAdjustments className="text-lg" /></span>
@@ -348,7 +348,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                         href="/prospects/people"
                         onClick={handleNavClick("/prospects/people")}
                         className={`${isActive("/prospects/people")
-                          ? "dark:text-cyan-300 text-cyan-700   border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                          ? "dark:text-[#5aa8ba] text-[#01728e]   border-l-2 bg-[#01728e]/10 dark:bg-[#01728e]/20 border-[#01728e] dark:border-[#5aa8ba]"
                           : "border-l-2 border-transparent"
                           } flex items-center gap-2.5 px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
@@ -365,7 +365,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                           href="/prospects/company"
                           onClick={handleNavClick("/prospects/company")}
                           className={`${isActive("/prospects/company")
-                            ? "dark:text-cyan-300 text-cyan-700  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                            ? "dark:text-[#5aa8ba] text-[#01728e]  border-l-2 bg-[#01728e]/10 dark:bg-[#01728e]/20 border-[#01728e] dark:border-[#5aa8ba]"
                             : "border-l-2 border-transparent"
                             } flex items-center gap-2.5 px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                         >
@@ -386,11 +386,11 @@ const isSuperAdmin = auth.user?.userRole?.some(
                 href="/notes"
                 onClick={handleNavClick("/notes")}
                 className={`${isActive("/notes")
-                  ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                  ? "dark:text-[#5aa8ba] text-[#01728e] dark:text-[#5aa8ba]  border-l-2 bg-[#01728e]/10 dark:bg-[#01728e]/20 border-[#01728e] dark:border-[#5aa8ba]"
                   : "border-l-2 border-transparent"
                   } flex items-center gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-cyan-600/10 transition-all`}
               >
-                       <span  className={`${isActive("/notes")?'bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400  w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
+                       <span  className={`${isActive("/notes")?'bg-[#01728e]/10 dark:bg-[#01728e]/20 text-[#01728e] dark:text-[#5aa8ba] w-8 border border-[#01728e] dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
                 <TbNotes className="text-lg" />
                 </span>
                 {t("notes")}
@@ -402,11 +402,11 @@ const isSuperAdmin = auth.user?.userRole?.some(
                 href="/notifications"
                 onClick={handleNavClick("/notifications")}
                 className={`${isActive("/notifications")
-                  ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                  ? "dark:text-[#5aa8ba] text-[#01728e] dark:text-[#5aa8ba]  border-l-2 bg-[#01728e]/10 dark:bg-[#01728e]/20 border-[#01728e] dark:border-[#5aa8ba]"
                   : "border-l-2 border-transparent"
                   } flex items-center gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-cyan-600/10 transition-all`}
               >
-              <span  className={`${isActive("/notifications")?'bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400  w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
+              <span  className={`${isActive("/notifications")?'bg-[#01728e]/10 dark:bg-[#01728e]/20 text-[#01728e] dark:text-[#5aa8ba] w-8 border border-[#01728e] dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
                 
                 <MdOutlineNotificationsActive className="text-lg" />
                 </span>
@@ -421,12 +421,12 @@ const isSuperAdmin = auth.user?.userRole?.some(
               <button
                 onClick={() => toggleMenu("plans")}
                 className={`${isMenuActive("plans")
-                  ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200  dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                  ? "dark:text-[#5aa8ba] text-[#01728e] dark:text-[#5aa8ba]  border-l-2 bg-[#01728e]/10 dark:bg-[#01728e]/20 border-[#01728e] dark:border-[#5aa8ba]"
                   : "border-l-2 border-transparent"
                   } flex w-full items-center justify-between px-2 py-2.5 rounded-md text-sm hover:bg-cyan-600/10 transition-all`}
               >
                 <span className="flex items-center gap-2 whitespace-nowrap">
-                  <span  className={`${isMenuActive("plans")?'bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400  w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
+                  <span  className={`${isMenuActive("plans")?'bg-[#01728e]/10 dark:bg-[#01728e]/20 text-[#01728e] dark:text-[#5aa8ba] w-8 border border-[#01728e] dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
                   
                   <FiUser className="text-lg" />
                   </span>
@@ -454,7 +454,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                         href="/plans"
                         onClick={handleNavClick("/plans")}
                         className={`${isActive("/plans")
-                          ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                          ? "dark:text-[#5aa8ba] text-[#01728e] dark:text-[#5aa8ba]  border-l-2 bg-[#01728e]/10 dark:bg-[#01728e]/20 border-[#01728e] dark:border-[#5aa8ba]"
                           : "border-l-2 border-transparent"
                           } flex items-center gap-2.5 px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
@@ -467,7 +467,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                           href="/subscriptions"
                           onClick={handleNavClick("/subscriptions")}
                           className={`${isActive("/subscriptions")
-                            ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                            ? "dark:text-[#5aa8ba] text-[#01728e] dark:text-[#5aa8ba]  border-l-2 bg-[#01728e]/10 dark:bg-[#01728e]/20 border-[#01728e] dark:border-[#5aa8ba]"
                             : "border-l-2 border-transparent"
                             } flex items-center gap-2.5 px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                         >
@@ -485,12 +485,12 @@ const isSuperAdmin = auth.user?.userRole?.some(
               <button
                 onClick={() => toggleMenu("company")}
                 className={`${isMenuActive("company")
-                  ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                  ? "dark:text-[#5aa8ba] text-[#01728e] dark:text-[#5aa8ba]  border-l-2 bg-[#01728e]/10 dark:bg-[#01728e]/20 border-[#01728e] dark:border-[#5aa8ba]"
                   : "border-l-2 border-transparent"
                   } flex w-full items-center justify-between px-2 py-2.5 whitespace-nowrap rounded-md text-sm hover:bg-cyan-600/10 transition-all`}
               >
                 <span className="flex items-center gap-2">
-                  <span  className={`${isMenuActive("company")?'bg-cyan-100  dark:bg-cyan-200 dark:text-cyan-400  w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
+                  <span  className={`${isMenuActive("company")?'bg-[#01728e]/10 dark:bg-[#01728e]/20 text-[#01728e] dark:text-[#5aa8ba] w-8 border border-[#01728e] dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
 
 
                   <BsBuildingGear className="text-lg " /></span>
@@ -518,7 +518,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                         href="/companies"
                         onClick={handleNavClick("/companies")}
                         className={`${pathname === "/companies"
-                          ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 px-3 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                          ? "dark:text-[#5aa8ba] text-[#01728e] dark:text-[#5aa8ba]  border-l-2 bg-[#01728e]/10 dark:bg-[#01728e]/20 px-3 border-[#01728e] dark:border-[#5aa8ba]"
                           : "border-l-2 border-transparent px-4"
                           } flex items-center gap-2.5  py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
@@ -531,7 +531,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                         href="/companies/create"
                         onClick={handleNavClick("/companies/create")}
                         className={`${isActive("/companies/create")
-                          ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                          ? "dark:text-[#5aa8ba] text-[#01728e] dark:text-[#5aa8ba]  border-l-2 bg-[#01728e]/10 dark:bg-[#01728e]/20 border-[#01728e] dark:border-[#5aa8ba]"
                           : "border-l-2 border-transparent"
                           } flex items-center gap-2.5 px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
@@ -544,7 +544,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                         href="/companies/deleted-companies"
                         onClick={handleNavClick("/companies/deleted-companies")}
                         className={`${isActive("/companies/deleted-companies")
-                          ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                          ? "dark:text-[#5aa8ba] text-[#01728e] dark:text-[#5aa8ba]  border-l-2 bg-[#01728e]/10 dark:bg-[#01728e]/20 border-[#01728e] dark:border-[#5aa8ba]"
                           : "border-l-2 border-transparent"
                           } flex items-center gap-2.5 px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
@@ -564,12 +564,12 @@ const isSuperAdmin = auth.user?.userRole?.some(
                  <button
                 onClick={() => toggleMenu("task")}
                 className={`${isMenuActive("task")
-                  ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                  ? "dark:text-[#5aa8ba] text-[#01728e] dark:text-[#5aa8ba]  border-l-2 bg-[#01728e]/10 dark:bg-[#01728e]/20 border-[#01728e] dark:border-[#5aa8ba]"
                   : "border-l-2 border-transparent"
                   } flex w-full items-center justify-between px-4 py-2.5 rounded-md text-sm hover:bg-cyan-600/10 transition-all`}
               >
                 <span className="flex items-center gap-3">
-                  <span  className={`${isMenuActive("task")?'bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400  w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
+                  <span  className={`${isMenuActive("task")?'bg-[#01728e]/10 dark:bg-[#01728e]/20 text-[#01728e] dark:text-[#5aa8ba] w-8 border border-[#01728e] dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
                     <GoTasklist  className="text-lg"/>
                   </span>
                   {t("task_management")}
@@ -594,7 +594,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                         href="/task"
                         onClick={handleNavClick("/task")}
                         className={`${isActive("/task")
-                          ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                          ? "dark:text-[#5aa8ba] text-[#01728e] dark:text-[#5aa8ba]  border-l-2 bg-[#01728e]/10 dark:bg-[#01728e]/20 border-[#01728e] dark:border-[#5aa8ba]"
                           : "border-l-2 border-transparent"
                           } flex items-center gap-2.5 px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
@@ -608,7 +608,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                         href="/category"
                         onClick={handleNavClick("/category")}
                         className={`${isActive("/category")
-                          ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                          ? "dark:text-[#5aa8ba] text-[#01728e] dark:text-[#5aa8ba]  border-l-2 bg-[#01728e]/10 dark:bg-[#01728e]/20 border-[#01728e] dark:border-[#5aa8ba]"
                           : "border-l-2 border-transparent"
                           } flex items-center gap-2.5 px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
@@ -621,7 +621,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                         href="/status"
                         onClick={handleNavClick("/status")}
                         className={`${isActive("/status")
-                          ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                          ? "dark:text-[#5aa8ba] text-[#01728e] dark:text-[#5aa8ba]  border-l-2 bg-[#01728e]/10 dark:bg-[#01728e]/20 border-[#01728e] dark:border-[#5aa8ba]"
                           : "border-l-2 border-transparent"
                           } flex items-center gap-2.5 px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
@@ -635,7 +635,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                           href="/reports"
                           onClick={handleNavClick("/reports")}
                           className={`${isActive("/reports")
-                            ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                            ? "dark:text-[#5aa8ba] text-[#01728e] dark:text-[#5aa8ba]  border-l-2 bg-[#01728e]/10 dark:bg-[#01728e]/20 border-[#01728e] dark:border-[#5aa8ba]"
                             : "border-l-2 border-transparent"
                             } flex items-center gap-2.5 px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                         >
@@ -650,7 +650,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                           href={`/report/create/${USER_ID||"new"}`}
                           onClick={handleNavClick(`/report/create/${USER_ID||"new"}`)}
                           className={`${isActive(`/report/create/${USER_ID||"new"}`)
-                            ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                            ? "dark:text-[#5aa8ba] text-[#01728e] dark:text-[#5aa8ba]  border-l-2 bg-[#01728e]/10 dark:bg-[#01728e]/20 border-[#01728e] dark:border-[#5aa8ba]"
                             : "border-l-2 border-transparent"
                             } flex items-center gap-2.5 px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                         >
@@ -669,12 +669,12 @@ const isSuperAdmin = auth.user?.userRole?.some(
               <button
                 onClick={() => toggleMenu("user")}
                 className={`${isMenuActive("user")
-                  ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                  ? "dark:text-[#5aa8ba] text-[#01728e] dark:text-[#5aa8ba]  border-l-2 bg-[#01728e]/10 dark:bg-[#01728e]/20 border-[#01728e] dark:border-[#5aa8ba]"
                   : "border-l-2 border-transparent"
                   } flex w-full items-center justify-between px-4 py-2.5 rounded-md text-sm hover:bg-cyan-600/10 transition-all`}
               >
                 <span className="flex items-center gap-3">
-                  <span className={`${isMenuActive("user") ?'bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400  w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`} >
+                  <span className={`${isMenuActive("user") ?'bg-[#01728e]/10 dark:bg-[#01728e]/20 text-[#01728e] dark:text-[#5aa8ba] w-8 border border-[#01728e] dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`} >
                   <FiUser className="text-lg" />
 
                   </span>
@@ -702,7 +702,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                         href="/users"
                         onClick={handleNavClick("/users")}
                         className={`${isActive("/users")
-                          ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                          ? "dark:text-[#5aa8ba] text-[#01728e] dark:text-[#5aa8ba]  border-l-2 bg-[#01728e]/10 dark:bg-[#01728e]/20 border-[#01728e] dark:border-[#5aa8ba]"
                           : "border-l-2 border-transparent"
                           } flex items-center gap-2.5 px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
@@ -715,7 +715,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                         href="/roles"
                         onClick={handleNavClick("/roles")}
                         className={`${isActive("/roles")
-                          ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                          ? "dark:text-[#5aa8ba] text-[#01728e] dark:text-[#5aa8ba]  border-l-2 bg-[#01728e]/10 dark:bg-[#01728e]/20 border-[#01728e] dark:border-[#5aa8ba]"
                           : "border-l-2 border-transparent"
                           } flex items-center gap-2.5 px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
@@ -729,7 +729,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                           href="/deleteduser"
                           onClick={handleNavClick("/deleteduser")}
                           className={`${isActive("/deleteduser")
-                            ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                            ? "dark:text-[#5aa8ba] text-[#01728e] dark:text-[#5aa8ba]  border-l-2 bg-[#01728e]/10 dark:bg-[#01728e]/20 border-[#01728e] dark:border-[#5aa8ba]"
                             : "border-l-2 border-transparent"
                             } flex items-center gap-2.5 px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                         >
@@ -746,12 +746,12 @@ const isSuperAdmin = auth.user?.userRole?.some(
               <button
                 onClick={() => toggleMenu("team")}
                 className={`${isMenuActive("team")
-                  ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                  ? "dark:text-[#5aa8ba] text-[#01728e] dark:text-[#5aa8ba]  border-l-2 bg-[#01728e]/10 dark:bg-[#01728e]/20 border-[#01728e] dark:border-[#5aa8ba]"
                   : "border-l-2 border-transparent"
                   } flex w-full items-center justify-between px-4 py-2.5 rounded-md text-sm hover:bg-cyan-600/10 transition-all`}
               >
                 <span className="flex items-center gap-3">
-                   <span className={`${isMenuActive("team") ?'bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400  w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`} >
+                   <span className={`${isMenuActive("team") ?'bg-[#01728e]/10 dark:bg-[#01728e]/20 text-[#01728e] dark:text-[#5aa8ba] w-8 border border-[#01728e] dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`} >
 
 
                   <AiOutlineTeam className="text-lg" />
@@ -780,7 +780,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                         href="/teams/categories"
                         onClick={handleNavClick("/teams/categories")}
                         className={`${isActive("/teams/categories")
-                          ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                          ? "dark:text-[#5aa8ba] text-[#01728e] dark:text-[#5aa8ba]  border-l-2 bg-[#01728e]/10 dark:bg-[#01728e]/20 border-[#01728e] dark:border-[#5aa8ba]"
                           : "border-l-2 border-transparent"
                           } flex items-center gap-2.5 px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
@@ -793,7 +793,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                         href="/teams"
                         onClick={handleNavClick("/teams")}
                         className={`${(isActive("/teams") && !isActive("/teams/categories"))
-                          ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                          ? "dark:text-[#5aa8ba] text-[#01728e] dark:text-[#5aa8ba]  border-l-2 bg-[#01728e]/10 dark:bg-[#01728e]/20 border-[#01728e] dark:border-[#5aa8ba]"
                           : "border-l-2 border-transparent"
                           } flex items-center gap-2.5 px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
@@ -811,12 +811,12 @@ const isSuperAdmin = auth.user?.userRole?.some(
               <button
                 onClick={() => toggleMenu("sales")}
                 className={`${isMenuActive("sales")
-                  ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300 "
+                  ? "dark:text-[#5aa8ba] text-[#01728e] dark:text-[#5aa8ba]  border-l-2 bg-[#01728e]/10 dark:bg-[#01728e]/20 border-[#01728e] dark:border-[#5aa8ba] "
                   : "border-l-2 border-transparent"
                   } flex w-full items-center justify-between px-4 py-2.5 rounded-md text-sm hover:bg-cyan-600/10 transition-all`}
               >
                 <span className="flex items-center gap-3">
-                   <span className={`${isMenuActive("sales") ?'bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400  w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`} >
+                   <span className={`${isMenuActive("sales") ?'bg-[#01728e]/10 dark:bg-[#01728e]/20 text-[#01728e] dark:text-[#5aa8ba] w-8 border border-[#01728e] dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`} >
                   <BsBarChart className="text-lg" />
                   </span>
                   {t("sales")}
@@ -839,7 +839,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                   >
                     {(hasPermission(PERMISSIONS.readDeal) && hasFeature(FEATURES.CRM)) && <li>
                       <Link href="/pipeline" onClick={handleNavClick("/pipeline")}
-                        className={`${isActive("/pipeline") ? "dark:text-cyan-300 text-cyan-700 border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300" : "border-l-2 border-transparent"} flex items-center gap-2.5 px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}>
+                        className={`${isActive("/pipeline") ? "dark:text-[#5aa8ba] text-[#01728e] border-l-2 bg-[#01728e]/10 dark:bg-[#01728e]/20 border-[#01728e] dark:border-[#5aa8ba]" : "border-l-2 border-transparent"} flex items-center gap-2.5 px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}>
                         <SubDot />
                         {t("pipeline", { defaultValue: "Pipeline" })}
                       </Link>
@@ -849,7 +849,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                         href="/leads"
                         onClick={handleNavClick("/leads")}
                         className={`${isActive("/leads")
-                          ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                          ? "dark:text-[#5aa8ba] text-[#01728e] dark:text-[#5aa8ba]  border-l-2 bg-[#01728e]/10 dark:bg-[#01728e]/20 border-[#01728e] dark:border-[#5aa8ba]"
                           : "border-l-2 border-transparent"
                           } flex items-center gap-2.5 px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
@@ -862,7 +862,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                         href="/deals"
                         onClick={handleNavClick("/deals")}
                         className={`${isActive("/deals")
-                          ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                          ? "dark:text-[#5aa8ba] text-[#01728e] dark:text-[#5aa8ba]  border-l-2 bg-[#01728e]/10 dark:bg-[#01728e]/20 border-[#01728e] dark:border-[#5aa8ba]"
                           : "border-l-2 border-transparent"
                           } flex items-center gap-2.5 px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
@@ -872,7 +872,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                     </li>}
                     {(hasPermission(PERMISSIONS.readDeal) && hasFeature(FEATURES.CRM)) && <li>
                       <Link href="/revenue-forecast" onClick={handleNavClick("/revenue-forecast")}
-                        className={`${isActive("/revenue-forecast") ? "text-cyan-700 dark:text-cyan-300 border-l-2 border-cyan-600 bg-cyan-50 dark:bg-slate-700" : "border-l-2 border-transparent"} flex items-center gap-2.5 rounded-md px-3 py-2 text-sm hover:bg-cyan-600/5`}>
+                        className={`${isActive("/revenue-forecast") ? "text-[#01728e] dark:text-[#5aa8ba] border-l-2 border-[#01728e] bg-[#01728e]/10 dark:bg-[#01728e]/20" : "border-l-2 border-transparent"} flex items-center gap-2.5 rounded-md px-3 py-2 text-sm hover:bg-cyan-600/5`}>
                         <SubDot />
                         Revenue forecast
                       </Link>
@@ -882,7 +882,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                         href="/quotations"
                         onClick={handleNavClick("/quotations")}
                         className={`${isActive("/quotations")
-                          ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                          ? "dark:text-[#5aa8ba] text-[#01728e] dark:text-[#5aa8ba]  border-l-2 bg-[#01728e]/10 dark:bg-[#01728e]/20 border-[#01728e] dark:border-[#5aa8ba]"
                           : "border-l-2 border-transparent"
                           } flex items-center gap-2.5 px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
@@ -895,7 +895,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                         href="/invoice"
                         onClick={handleNavClick("/invoice")}
                         className={`${isActive("/invoice")
-                          ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                          ? "dark:text-[#5aa8ba] text-[#01728e] dark:text-[#5aa8ba]  border-l-2 bg-[#01728e]/10 dark:bg-[#01728e]/20 border-[#01728e] dark:border-[#5aa8ba]"
                           : "border-l-2 border-transparent"
                           } flex items-center gap-2.5 px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
@@ -908,7 +908,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                         href="/campaigns"
                         onClick={handleNavClick("/campaigns")}
                         className={`${isActive("/campaigns")
-                          ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                          ? "dark:text-[#5aa8ba] text-[#01728e] dark:text-[#5aa8ba]  border-l-2 bg-[#01728e]/10 dark:bg-[#01728e]/20 border-[#01728e] dark:border-[#5aa8ba]"
                           : "border-l-2 border-transparent"
                           } flex items-center gap-2.5 px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
@@ -921,7 +921,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                         href="/agents"
                         onClick={handleNavClick("/agents")}
                         className={`${isActive("/agents")
-                          ? "dark:text-cyan-300 text-cyan-700 border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                          ? "dark:text-[#5aa8ba] text-[#01728e] border-l-2 bg-[#01728e]/10 dark:bg-[#01728e]/20 border-[#01728e] dark:border-[#5aa8ba]"
                           : "border-l-2 border-transparent"
                           } flex items-center gap-2.5 px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
@@ -934,7 +934,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                         href="/enquiry"
                         onClick={handleNavClick("/enquiry")}
                         className={`${isActive("/enquiry")
-                          ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                          ? "dark:text-[#5aa8ba] text-[#01728e] dark:text-[#5aa8ba]  border-l-2 bg-[#01728e]/10 dark:bg-[#01728e]/20 border-[#01728e] dark:border-[#5aa8ba]"
                           : "border-l-2 border-transparent"
                           } flex items-center gap-2.5 px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
@@ -951,11 +951,11 @@ const isSuperAdmin = auth.user?.userRole?.some(
                 href="/clients"
                 onClick={handleNavClick("/clients")}
                 className={`${(isActive("/clients") || isActive("/organizations"))
-                  ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                  ? "dark:text-[#5aa8ba] text-[#01728e] dark:text-[#5aa8ba]  border-l-2 bg-[#01728e]/10 dark:bg-[#01728e]/20 border-[#01728e] dark:border-[#5aa8ba]"
                   : "border-l-2 border-transparent"
                   } flex items-center gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-cyan-600/10 transition-all`}
               >
-                       <span  className={`${(isActive("/clients") || isActive("/organizations")) ? 'bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400  w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
+                       <span  className={`${(isActive("/clients") || isActive("/organizations")) ? 'bg-[#01728e]/10 dark:bg-[#01728e]/20 text-[#01728e] dark:text-[#5aa8ba] w-8 border border-[#01728e] dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
                 <FiUserCheck className="text-lg" />
                 </span>
                 {t("clients")}
@@ -990,12 +990,12 @@ const isSuperAdmin = auth.user?.userRole?.some(
               <button
                 onClick={() => toggleMenu("communication")}
                 className={`${isMenuActive("communication")
-                  ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                  ? "dark:text-[#5aa8ba] text-[#01728e] dark:text-[#5aa8ba]  border-l-2 bg-[#01728e]/10 dark:bg-[#01728e]/20 border-[#01728e] dark:border-[#5aa8ba]"
                   : "border-l-2 border-transparent"
                   } flex w-full items-center justify-between px-4 py-2.5 rounded-md text-sm hover:bg-cyan-600/10 transition-all`}
               >
                 <span className="flex items-center gap-3">
-                   <span className={`${isMenuActive("communication") ?'bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400  w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`} >
+                   <span className={`${isMenuActive("communication") ?'bg-[#01728e]/10 dark:bg-[#01728e]/20 text-[#01728e] dark:text-[#5aa8ba] w-8 border border-[#01728e] dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`} >
                   <AiOutlineTeam className="text-lg" />
                   </span>
                   {t("communication444")}
@@ -1020,7 +1020,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                       <Link
                         href="/telephone"
                         className={`${isActive("/telephone")
-                          ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                          ? "dark:text-[#5aa8ba] text-[#01728e] dark:text-[#5aa8ba]  border-l-2 bg-[#01728e]/10 dark:bg-[#01728e]/20 border-[#01728e] dark:border-[#5aa8ba]"
                           : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
@@ -1031,7 +1031,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                       <Link
                         href="/message"
                         className={`${isActive("/message")
-                          ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                          ? "dark:text-[#5aa8ba] text-[#01728e] dark:text-[#5aa8ba]  border-l-2 bg-[#01728e]/10 dark:bg-[#01728e]/20 border-[#01728e] dark:border-[#5aa8ba]"
                           : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
@@ -1048,12 +1048,12 @@ const isSuperAdmin = auth.user?.userRole?.some(
               <button
                 onClick={() => toggleMenu("emailManagement")}
                 className={`${isMenuActive("emailManagement")
-                  ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                  ? "dark:text-[#5aa8ba] text-[#01728e] dark:text-[#5aa8ba]  border-l-2 bg-[#01728e]/10 dark:bg-[#01728e]/20 border-[#01728e] dark:border-[#5aa8ba]"
                   : "border-l-2 border-transparent"
                   } flex w-full items-center justify-between px-4 py-2.5 rounded-md text-sm hover:bg-cyan-600/10 transition-all`}
               >
                 <span className="flex items-center gap-3">
-                   <span className={`${isMenuActive("emailManagement") ?'bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400  w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`} >
+                   <span className={`${isMenuActive("emailManagement") ?'bg-[#01728e]/10 dark:bg-[#01728e]/20 text-[#01728e] dark:text-[#5aa8ba] w-8 border border-[#01728e] dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`} >
                   <IoMailOutline className="text-lg" />
                   </span>
                   {t("emailManagement")}
@@ -1076,14 +1076,14 @@ const isSuperAdmin = auth.user?.userRole?.some(
                   >
                     {hasPermission(PERMISSIONS.emailProspects) && <li>
                       <Link href="/emailManagement/mail" onClick={handleNavClick("/emailManagement/mail")}
-                        className={`${isActive("/emailManagement/mail") ? "bg-cyan-50 text-cyan-700 dark:bg-slate-700 dark:text-cyan-300" : ""} flex items-center gap-2.5 rounded-md px-3 py-2 text-sm hover:bg-cyan-600/10`}><SubDot />My Email</Link>
+                        className={`${isActive("/emailManagement/mail") ? "bg-[#01728e]/10 text-[#01728e] dark:bg-[#01728e]/20 dark:text-[#5aa8ba]" : ""} flex items-center gap-2.5 rounded-md px-3 py-2 text-sm hover:bg-cyan-600/10`}><SubDot />My Email</Link>
                     </li>}
                     {(hasPermission(PERMISSIONS.readTemplate)|| hasPermission(PERMISSIONS.createTemplate)) && <li>
                       <Link
                         href="/emailManagement/templates"
                         onClick={handleNavClick("/emailManagement/templates")}
                         className={`${isActive("/emailManagement/templates")
-                          ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                          ? "dark:text-[#5aa8ba] text-[#01728e] dark:text-[#5aa8ba]  border-l-2 bg-[#01728e]/10 dark:bg-[#01728e]/20 border-[#01728e] dark:border-[#5aa8ba]"
                           : "border-l-2 border-transparent"
                           } flex items-center gap-2.5 px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
@@ -1096,7 +1096,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                         href="/emailManagement/outbox"
                         onClick={handleNavClick("/emailManagement/outbox")}
                         className={`${isActive("/emailManagement/outbox")
-                          ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                          ? "dark:text-[#5aa8ba] text-[#01728e] dark:text-[#5aa8ba]  border-l-2 bg-[#01728e]/10 dark:bg-[#01728e]/20 border-[#01728e] dark:border-[#5aa8ba]"
                           : "border-l-2 border-transparent"
                           } flex items-center gap-2.5 px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
@@ -1113,11 +1113,11 @@ const isSuperAdmin = auth.user?.userRole?.some(
               <Link
                 href="/support"
                 className={`${isActive("/support")
-                  ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                  ? "dark:text-[#5aa8ba] text-[#01728e] dark:text-[#5aa8ba]  border-l-2 bg-[#01728e]/10 dark:bg-[#01728e]/20 border-[#01728e] dark:border-[#5aa8ba]"
                   : "border-l-2 border-transparent"
                   } flex items-center gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-cyan-600/10 transition-all`}
               >
-                       <span  className={`${isActive("/support")?'bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400  w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
+                       <span  className={`${isActive("/support")?'bg-[#01728e]/10 dark:bg-[#01728e]/20 text-[#01728e] dark:text-[#5aa8ba] w-8 border border-[#01728e] dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
                 <BiSupport className="text-lg" />
                 </span>
                 {t("supports")}
@@ -1128,11 +1128,11 @@ const isSuperAdmin = auth.user?.userRole?.some(
                 href="/query"
                 onClick={handleNavClick("/query")}
                 className={`${isActive("/query")
-                  ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                  ? "dark:text-[#5aa8ba] text-[#01728e] dark:text-[#5aa8ba]  border-l-2 bg-[#01728e]/10 dark:bg-[#01728e]/20 border-[#01728e] dark:border-[#5aa8ba]"
                   : "border-l-2 border-transparent"
                   } flex items-center gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-cyan-600/10 transition-all`}
               >
-                       <span  className={`${isActive("/query")?'bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400  w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
+                       <span  className={`${isActive("/query")?'bg-[#01728e]/10 dark:bg-[#01728e]/20 text-[#01728e] dark:text-[#5aa8ba] w-8 border border-[#01728e] dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
                 <TbNotes className="text-lg" />
                 </span>
                 {t("query")}
@@ -1145,13 +1145,13 @@ const isSuperAdmin = auth.user?.userRole?.some(
                 <Link
                   href="/otp"
                   className={`${isActive("/otp")
-                    ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                    ? "dark:text-[#5aa8ba] text-[#01728e] dark:text-[#5aa8ba]  border-l-2 bg-[#01728e]/10 dark:bg-[#01728e]/20 border-[#01728e] dark:border-[#5aa8ba]"
                     : "border-l-2 border-transparent"
                     } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                 >
                   <span className="flex items-center gap-3">
 
-                         <span  className={`${isActive("/otp")?'bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400  w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
+                         <span  className={`${isActive("/otp")?'bg-[#01728e]/10 dark:bg-[#01728e]/20 text-[#01728e] dark:text-[#5aa8ba] w-8 border border-[#01728e] dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
                   <IoKeyOutline className="text-lg" />
 
                     </span>
@@ -1183,14 +1183,14 @@ const isSuperAdmin = auth.user?.userRole?.some(
                   onClick={() => router.push(`/users/${auth?.user?.id}`)}
                   className={`${
                     isActive("/profile")
-                      ? "dark:text-cyan-300 text-cyan-700 border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                      ? "dark:text-[#5aa8ba] text-[#01728e] border-l-2 bg-[#01728e]/10 dark:bg-[#01728e]/20 border-[#01728e] dark:border-[#5aa8ba]"
                       : "border-l-2 border-transparent"
                   } w-full flex items-center cursor-pointer gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-cyan-600/10 transition-all capitalize`}
                 >
                   <span
                     className={`${
                       isActive("/profile")
-                        ? "bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400 w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl"
+                        ? "bg-[#01728e]/10 dark:bg-[#01728e]/20 text-[#01728e] dark:text-[#5aa8ba] w-8 border border-[#01728e] dark:border-none items-center h-8 flex justify-center rounded-xl"
                         : ""
                     }`}
                   >
@@ -1204,11 +1204,11 @@ const isSuperAdmin = auth.user?.userRole?.some(
               <Link
                 href={"/reset-password"}
                 className={`${isActive("/reset-password")
-                  ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                  ? "dark:text-[#5aa8ba] text-[#01728e] dark:text-[#5aa8ba]  border-l-2 bg-[#01728e]/10 dark:bg-[#01728e]/20 border-[#01728e] dark:border-[#5aa8ba]"
                   : "border-l-2 border-transparent"
                   } w-full flex items-center cursor-pointer gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-cyan-600/10 transition-all capitalize`}
               >
-                       <span  className={`${isActive("/reset-password")?'bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400  w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
+                       <span  className={`${isActive("/reset-password")?'bg-[#01728e]/10 dark:bg-[#01728e]/20 text-[#01728e] dark:text-[#5aa8ba] w-8 border border-[#01728e] dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
                 <RiLockPasswordLine className="text-lg" />
                 </span>
                 {t("reset_password")}

@@ -30,7 +30,7 @@ function InfoItem({
 }) {
   return (
     <div className="flex items-start gap-3">
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#1BA2C3]/10 text-[#1BA2C3]">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#01728e]/10 text-[#01728e]">
         <Icon size={16} />
       </div>
       <div>
@@ -76,7 +76,7 @@ export default function TicketSummary({ ticket }: TicketSummaryProps) {
       <motion.button
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
-        className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#1BA2C3] to-[#33BF8B] px-6 py-3 text-sm font-semibold text-white shadow-sm hover:shadow-md transition-shadow"
+        className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#01728e] to-[#33BF8B] px-6 py-3 text-sm font-semibold text-white shadow-sm hover:shadow-md transition-shadow"
       >
         <FiMessageSquare size={16} />
         {t("view_conversation")}

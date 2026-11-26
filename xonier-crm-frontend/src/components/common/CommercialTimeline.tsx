@@ -7,6 +7,7 @@ import api from "@/src/lib/axios";
 import NoteService from "@/src/services/notes.service";
 import { NotesEntities, NoteVisibility } from "@/src/constants/enum";
 import extractErrorMessages from "@/src/app/utils/error.utils";
+import ContentShimmer from "@/src/components/common/ContentShimmer";
 
 type Item = { id: string; at: string; kind: string; title: string; detail: string; pending: boolean };
 type FilterTab = "all" | "notes" | "tasks" | "comms" | "activity";
@@ -273,7 +274,7 @@ export default function CommercialTimeline({
       )}
 
       {loading ? (
-        <p className="text-sm text-gray-500">Loading timeline…</p>
+        <ContentShimmer rows={3} />
       ) : !filteredItems.length ? (
         <p className="text-sm text-gray-500">No commercial history in this view yet.</p>
       ) : (

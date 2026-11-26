@@ -10,6 +10,7 @@ import { DateFilter } from "@/src/types/components/ui/dateFilter.types";
 import { IoSearchOutline } from "react-icons/io5";
 import { TbRefresh } from "react-icons/tb";
 import { useTranslation } from "react-i18next";
+import PageHeader from "@/src/components/common/PageHeader";
 
 const NotificationList = () => {
   const { t } = useTranslation();
@@ -86,32 +87,21 @@ const NotificationList = () => {
   console.log("page notification data:", notifications);
 
   return (
-    <div className="w-full px-4">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
-            {t("notifications")}
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            {t("stay_updated_with_all_your_alert")}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
+    <div className="w-full">
+      <PageHeader className="mb-6" title={t("notifications")} description={t("stay_updated_with_all_your_alert")} icon={<FiCheckCircle className="h-5 w-5" />} actions={<>
           <button
             onClick={markAllAsRead}
-            className="flex items-center gap-2 px-4 py-2 text-sm bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors"
+            className="crm-button-primary"
           >
             <FiCheckCircle /> {t("mark_all_as_read")}
           </button>
           <button
             onClick={clearAll}
-            className="flex items-center gap-2 px-4 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-rose-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-500"
           >
             <FiTrash2 /> {t("clear_all")}
           </button>
-        </div>
-      </div>
+        </>} />
 
       {/* Filters */}
       <div className="flex items-center gap-4 mb-6 p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 justify-between">

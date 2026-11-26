@@ -12,7 +12,6 @@ import ScrollToTop from "../components/common/ScrollToTop";
 
 import { LoaderProvider } from "../context/LoaderContext";
 import GlobalLoader from "../components/loader/GlobalLoader";
-import RouteLoader from "../components/loader/RouteLoader";
 
 import "react-toastify/dist/ReactToastify.css";
 import "react-loading-skeleton/dist/skeleton.css";
@@ -50,6 +49,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body
+        suppressHydrationWarning
         className={`${poppins.variable} antialiased bg-stone-100 dark:bg-gray-800   min-h-screen custom-scrollbar `}
       >
 
@@ -58,9 +58,6 @@ export default function RootLayout({ children }: RootLayoutProps) {
             <LoaderProvider>
               <I18nProvider>
 
-              <RouteLoader />
-
-             
               <GlobalLoader />
 
              

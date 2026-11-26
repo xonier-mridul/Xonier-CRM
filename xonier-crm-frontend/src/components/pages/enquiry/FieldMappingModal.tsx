@@ -188,7 +188,7 @@ const FieldMappingModal: React.FC<FieldMappingModalProps> = ({
       >
 
         {/* ── Header ── */}
-        <div className="flex items-start justify-between px-6 py-5 border-b border-gray-100 dark:border-gray-800 flex-shrink-0 bg-gradient-to-br from-[#16c2cf] to-[#0fb8a5] dark:to-cyan-700">
+        <div className="flex items-start justify-between px-6 py-5 border-b border-gray-100 dark:border-gray-800 flex-shrink-0 bg-gradient-to-br from-[#01728e] to-[#015d73] dark:to-cyan-700">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
               <MdOutlineSwapHoriz className="text-white text-2xl" />

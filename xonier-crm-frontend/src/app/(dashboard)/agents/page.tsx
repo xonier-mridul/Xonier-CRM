@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import CampaignService from "@/src/services/campaign.service";
+import PageHeader from "@/src/components/common/PageHeader";
 import { usePermissions } from "@/src/hooks/usePermissions";
 import { useFeatures } from "@/src/hooks/useFeatures";
 import { FEATURES, PERMISSIONS } from "@/src/constants/enum";
@@ -64,7 +65,20 @@ export default function AgentsPage() {
   const [page, setPage] = useState(1);
   const load = useCallback(() => {
     return CampaignService.getAgents().then(response => {
-      setAgents(response.data.data.agents);
+      // Keep counters numeric even if an older or partial API response omits
+      // a newly added metric. The breakdown endpoint defines missing counts as 0.
+      const rows: Agent[] = response.data.data.agents.map((agent: Agent) => ({
+        ...agent,
+        campaigns: agent.campaigns ?? 0,
+        totalLeads: agent.totalLeads ?? 0,
+        notReached: agent.notReached ?? 0,
+        connected: agent.connected ?? 0,
+        interested: agent.interested ?? 0,
+        meetings: agent.meetings ?? 0,
+        callBack: agent.callBack ?? 0,
+        notInterested: agent.notInterested ?? 0,
+      }));
+      setAgents(rows);
       setError(false);
     }).catch(() => {
       setError(true);
@@ -85,20 +99,10 @@ export default function AgentsPage() {
   if (!allowed) return <div className="p-6">{label("You do not have access to the agent breakdown.")}</div>;
 
   return (
-    <div className="space-y-6 p-4 sm:p-6 text-gray-900 dark:text-gray-100">
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-cyan-100 bg-linear-to-br from-cyan-50 via-white to-indigo-50/60 p-6 dark:border-gray-700 dark:from-gray-800 dark:via-gray-800 dark:to-cyan-950/30">
-        <div className="flex items-start gap-4">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-cyan-600 text-white shadow-lg shadow-cyan-600/20"><Users size={24} aria-hidden="true" /></div>
-          <div>
-            <p className="mb-1 text-[10px] font-bold uppercase tracking-[0.2em] text-cyan-700 dark:text-cyan-400">{label("Sales workspace")}</p>
-            <h1 className="text-2xl font-bold tracking-tight">{label("Agents")}</h1>
-            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{label("Agent-wise lead assignments and engagement across your company.")}</p>
-          </div>
-        </div>
-        <button onClick={() => { setLoading(true); void load(); }} disabled={loading} className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold shadow-sm transition hover:border-cyan-300 hover:text-cyan-700 focus-visible:outline-2 focus-visible:outline-cyan-500 dark:border-gray-600 dark:bg-gray-800 dark:hover:text-cyan-300 disabled:opacity-50">
+    <div className="space-y-6 text-gray-900 dark:text-gray-100">
+      <PageHeader title={label("Agents")} eyebrow={label("Sales workspace")} description={label("Agent-wise lead assignments and engagement across your company.")} icon={<Users size={20} aria-hidden="true" />} actions={<button onClick={() => { setLoading(true); void load(); }} disabled={loading} className="crm-button-secondary">
           <RefreshCw size={16} className={loading ? "animate-spin" : ""} />{label("Refresh")}
-        </button>
-      </div>
+        </button>} />
       {error ? (
         <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-6 text-red-700 dark:bg-red-950 dark:border-red-800">
           {label("Unable to load agents. Please try refreshing.")}
@@ -109,7 +113,7 @@ export default function AgentsPage() {
             { title: "Total Agents", value: agents.length, icon: Users, color: "bg-cyan-50 text-cyan-600 dark:bg-cyan-900/30 dark:text-cyan-400", detail: "Your sales team at a glance" },
             { title: "Active Agents", value: agents.filter(agent => agent.status === "active").length, icon: UserCheck, color: "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400", detail: "Currently active accounts" },
             { title: "Total Lead Assignments", value: agents.reduce((sum, agent) => sum + agent.totalLeads, 0), icon: ClipboardList, color: "bg-violet-50 text-violet-600 dark:bg-violet-900/30 dark:text-violet-400", detail: "Assigned across your agents" },
-          ].map(({ title, value, icon: Icon, color, detail }) => <div key={title} className="flex items-start justify-between gap-3 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5 shadow-sm">
+          ].map(({ title, value, icon: Icon, color, detail }) => <div key={title} className="flex items-start justify-between gap-3 rounded-xl border border-slate-200/80 bg-white p-4 shadow-2xs dark:border-slate-700 dark:bg-slate-900/50">
             <div>
               <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{label(title)}</p>
               <p className="mt-3 text-3xl font-bold tracking-tight tabular-nums">{loading ? "—" : value.toLocaleString()}</p>

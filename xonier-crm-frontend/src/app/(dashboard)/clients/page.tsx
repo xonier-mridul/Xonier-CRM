@@ -32,6 +32,7 @@ import { useCompanyCurrency } from "@/src/components/providers/CompanyCurrencyPr
 import { formatCurrency } from "@/src/app/utils/currency.utils";
 import { COMPANY_SIZE_OPTIONS } from "@/src/constants/company";
 import { INDUSTRIES } from "@/src/constants/enum";
+import PageHeader from "@/src/components/common/PageHeader";
 
 type ActiveTab = "organizations" | "people";
 
@@ -334,25 +335,13 @@ const ClientsMasterPage = (): JSX.Element => {
   };
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl border border-slate-200 dark:border-gray-700 p-6 flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2.5">
-            <Building2 className="w-6 h-6 text-cyan-600 dark:text-cyan-400" />
-            Companies & Contacts
-          </h1>
-          <p className="text-sm text-slate-500 dark:text-gray-400 mt-1">
-            Master customer accounts (with CNPJ) and contact people linked across Leads and Deals.
-          </p>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-3">
+    <div className="space-y-6">
+      <PageHeader title="Companies & Contacts" description="Master customer accounts (with CNPJ) and contact people linked across Leads and Deals." icon={<Building2 className="h-5 w-5" />} actions={<>
           <button
             type="button"
             onClick={handleSync}
             disabled={syncing}
-            className="inline-flex items-center gap-2 rounded-lg border border-slate-200 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-gray-200 hover:bg-slate-50 dark:hover:bg-gray-600 disabled:opacity-60"
+            className="crm-button-secondary"
           >
             <RefreshCw className={`w-4 h-4 ${syncing ? "animate-spin" : ""}`} />
             {syncing ? "Syncing..." : "Sync from Leads"}
@@ -360,7 +349,7 @@ const ClientsMasterPage = (): JSX.Element => {
           <button
             type="button"
             onClick={openCreatePerson}
-            className="inline-flex items-center gap-2 rounded-lg border border-cyan-600 px-4 py-2 text-sm font-medium text-cyan-700 dark:text-cyan-300 hover:bg-cyan-50 dark:hover:bg-cyan-950/30"
+            className="crm-button-secondary"
           >
             <Plus className="w-4 h-4" />
             New Contact
@@ -368,13 +357,12 @@ const ClientsMasterPage = (): JSX.Element => {
           <button
             type="button"
             onClick={openCreateOrg}
-            className="inline-flex items-center gap-2 rounded-lg bg-cyan-600 hover:bg-cyan-700 px-4 py-2 text-sm font-semibold text-white"
+            className="crm-button-primary"
           >
             <Plus className="w-4 h-4" />
             New Company
           </button>
-        </div>
-      </div>
+        </>} />
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -386,7 +374,7 @@ const ClientsMasterPage = (): JSX.Element => {
         ].map((card) => (
           <div
             key={card.label}
-            className="bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700 p-4"
+            className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-2xs dark:border-slate-700 dark:bg-slate-900/50"
           >
             <p className="text-xs font-medium text-slate-500 dark:text-gray-400 uppercase tracking-wide">
               {card.label}

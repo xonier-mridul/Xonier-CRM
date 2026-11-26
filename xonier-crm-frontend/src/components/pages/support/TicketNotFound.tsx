@@ -31,7 +31,7 @@ export default function TicketNotFound({ ticketId }: TicketNotFoundProps) {
         whileHover={{ scale: 1.03 }}
         whileTap={{ scale: 0.97 }}
         onClick={() => router.push("/supportTicket")}
-        className="mt-2 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#1BA2C3] to-[#33BF8B] px-6 py-3 text-sm font-semibold text-white shadow-sm hover:shadow-md transition-shadow"
+        className="mt-2 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#01728e] to-[#33BF8B] px-6 py-3 text-sm font-semibold text-white shadow-sm hover:shadow-md transition-shadow"
       >
         <FiArrowLeft size={16} />
         {t("back_to_tickets")}

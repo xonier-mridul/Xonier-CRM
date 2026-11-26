@@ -93,7 +93,7 @@ const UserMultiSelect: React.FC<UserMultiSelectProps> = ({
             const u = getUser(id);
             if (!u) return null;
             return (
-              <span key={`chip-${idPrefix}-${id}`} className="inline-flex items-center gap-1.5 rounded-lg border border-[#18A1C4]/20 bg-[#18A1C4]/8 px-2.5 py-1 text-xs font-medium text-[#1389a8] dark:bg-[#18A1C4]/15 dark:text-cyan-300">
+              <span key={`chip-${idPrefix}-${id}`} className="inline-flex items-center gap-1.5 rounded-lg border border-[#01728e]/20 bg-[#01728e]/8 px-2.5 py-1 text-xs font-medium text-[#015d73] dark:bg-[#01728e]/15 dark:text-cyan-300">
                 {u.firstName} {u.lastName}
                 <button type="button" aria-label={`Remove ${u.firstName} ${u.lastName} from ${label}`} onClick={() => removeChip(id)} className="rounded-full p-0.5 transition-colors hover:bg-white/70 hover:text-red-500 dark:hover:bg-gray-700">
                   <X size={12} strokeWidth={2.5} />
@@ -103,7 +103,7 @@ const UserMultiSelect: React.FC<UserMultiSelectProps> = ({
           })}
         </div>
       )}
-      <button type="button" aria-labelledby={`${idPrefix}-label`} aria-expanded={open} onClick={() => setOpen((v) => !v)} className="flex w-full items-center justify-between rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-left text-sm text-slate-700 transition-colors hover:border-[#18A1C4] focus:outline-none focus:ring-2 focus:ring-[#18A1C4]/20 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200">
+      <button type="button" aria-labelledby={`${idPrefix}-label`} aria-expanded={open} onClick={() => setOpen((v) => !v)} className="flex w-full items-center justify-between rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-left text-sm text-slate-700 transition-colors hover:border-[#01728e] focus:outline-none focus:ring-2 focus:ring-[#01728e]/20 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200">
         <span className={selected.length ? "font-medium text-slate-700 dark:text-gray-200" : "text-slate-400"}>
           {selected.length === 0 ? `Select ${label.toLowerCase()}…` : `${selected.length} selected`}
         </span>
@@ -113,7 +113,7 @@ const UserMultiSelect: React.FC<UserMultiSelectProps> = ({
         <div className="relative z-50">
           <div className="absolute top-1 left-0 right-0 bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-700 rounded-xl shadow-xl max-h-60 overflow-hidden flex flex-col">
             <div className="p-3 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
-              <div className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg focus-within:border-[#18A1C4] focus-within:ring-2 focus-within:ring-[#18A1C4]/10 transition-all shadow-sm">
+              <div className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg focus-within:border-[#01728e] focus-within:ring-2 focus-within:ring-[#01728e]/10 transition-all shadow-sm">
                 <Search className="text-gray-400" size={14} />
                 <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search…" className="flex-1 text-xs font-medium bg-transparent outline-none text-gray-700 dark:text-gray-200 placeholder-gray-400" />
               </div>
@@ -126,9 +126,9 @@ const UserMultiSelect: React.FC<UserMultiSelectProps> = ({
                   const uid = u.id || u._id || "";
                   const isSelected = selected.includes(uid);
                   return (
-                    <button key={`${idPrefix}-opt-${uid}`} type="button" onClick={() => toggle(uid)} className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${isSelected ? "bg-[#18A1C4]/10 text-[#18A1C4]" : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"}`}>
+                    <button key={`${idPrefix}-opt-${uid}`} type="button" onClick={() => toggle(uid)} className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${isSelected ? "bg-[#01728e]/10 text-[#01728e]" : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"}`}>
                       <span>{u.firstName} {u.lastName}</span>
-                      {isSelected && <Check size={16} className="text-[#18A1C4]" />}
+                      {isSelected && <Check size={16} className="text-[#01728e]" />}
                     </button>
                   );
                 })
@@ -188,8 +188,8 @@ export const CsvMappingModal: React.FC<CsvMappingProps> = ({ csvHeaders, preview
       <div className="flex max-h-[calc(100dvh-1rem)] w-full max-w-7xl flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-gray-700 dark:bg-gray-900 sm:max-h-[calc(100dvh-2rem)] lg:h-[min(760px,calc(100dvh-2rem))]">
         <div className="flex shrink-0 items-start justify-between gap-4 border-b border-slate-200 bg-white px-4 py-4 dark:border-gray-700 dark:bg-gray-900 sm:px-7 sm:py-5">
           <div className="min-w-0">
-            <div className="mb-2 flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.15em] text-[#1389a8]">
-              <span className="h-2 w-2 rounded-full bg-[#18A1C4]" /> Lead import
+            <div className="mb-2 flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.15em] text-[#015d73]">
+              <span className="h-2 w-2 rounded-full bg-[#01728e]" /> Lead import
             </div>
             <h3 id="csv-mapping-title" className="text-xl font-semibold tracking-tight text-slate-900 dark:text-white sm:text-2xl">Map CSV columns</h3>
             <p className="mt-1 text-xs text-slate-500 dark:text-gray-400 sm:text-sm">Connect your CSV headers to CRM fields, then review the sample data.</p>
@@ -214,7 +214,7 @@ export const CsvMappingModal: React.FC<CsvMappingProps> = ({ csvHeaders, preview
                   <div key={f.key} className="grid gap-2 border-b border-slate-100 px-3 py-3 last:border-b-0 dark:border-gray-800 sm:grid-cols-[minmax(110px,0.8fr)_minmax(0,1.2fr)] sm:items-center sm:gap-4 sm:px-4">
                     <label htmlFor={`csv-map-${f.key}`} className="text-xs font-semibold text-slate-700 dark:text-gray-200 sm:text-sm">{f.label}{f.required && <span className="ml-1 text-rose-500">*</span>}</label>
                     <div className="min-w-0">
-                      <select id={`csv-map-${f.key}`} value={selectedCol} onChange={(e) => setMapping((m) => ({ ...m, [f.key]: e.target.value }))} className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition-colors focus:border-[#18A1C4] focus:ring-2 focus:ring-[#18A1C4]/20 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100">
+                      <select id={`csv-map-${f.key}`} value={selectedCol} onChange={(e) => setMapping((m) => ({ ...m, [f.key]: e.target.value }))} className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition-colors focus:border-[#01728e] focus:ring-2 focus:ring-[#01728e]/20 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100">
                         <option value="">Skip this field</option>
                         {csvHeaders.map((h) => <option key={h} value={h}>{h}</option>)}
                       </select>
@@ -244,7 +244,7 @@ export const CsvMappingModal: React.FC<CsvMappingProps> = ({ csvHeaders, preview
         <div className="flex shrink-0 flex-wrap items-center justify-end gap-3 border-t border-slate-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-900 sm:px-7">
           {!requiredMapped && <p className="mr-auto flex min-w-0 items-center gap-2 text-xs font-medium text-amber-700 dark:text-amber-400"><AlertCircle size={16} className="shrink-0" /> Map Full Name and Email to continue.</p>}
           <button type="button" onClick={onCancel} className="rounded-lg px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-100 dark:text-gray-300 dark:hover:bg-gray-800">Cancel</button>
-          <button type="button" disabled={!requiredMapped || isImporting} onClick={() => onConfirm(mapping)} className="rounded-lg bg-[#18A1C4] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#158ca8] focus:outline-none focus:ring-4 focus:ring-[#18A1C4]/20 disabled:cursor-not-allowed disabled:opacity-50">{isImporting ? "Importing..." : "Import Leads"}</button>
+          <button type="button" disabled={!requiredMapped || isImporting} onClick={() => onConfirm(mapping)} className="rounded-lg bg-[#01728e] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#015d73] focus:outline-none focus:ring-4 focus:ring-[#01728e]/20 disabled:cursor-not-allowed disabled:opacity-50">{isImporting ? "Importing..." : "Import Leads"}</button>
         </div>
       </div>
     </div>,
@@ -442,11 +442,11 @@ const CreateCampaignModal: React.FC<Props> = ({ onClose, onSuccess }) => {
         {/* Header */}
         <div className="flex shrink-0 items-start justify-between gap-4 border-b border-slate-200 bg-white px-5 py-5 dark:border-gray-700 dark:bg-gray-900 sm:px-7 sm:py-6">
           <div className="flex min-w-0 gap-4">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#18A1C4]/20 bg-[#18A1C4]/10 text-[#1389a8] dark:bg-[#18A1C4]/15">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#01728e]/20 bg-[#01728e]/10 text-[#015d73] dark:bg-[#01728e]/15">
               <Megaphone size={21} />
             </div>
             <div>
-              <p className="mb-1 text-[11px] font-bold uppercase tracking-[0.15em] text-[#1389a8]">Sales workspace</p>
+              <p className="mb-1 text-[11px] font-bold uppercase tracking-[0.15em] text-[#015d73]">Sales workspace</p>
               <h3 id="create-campaign-title" className="text-xl font-semibold tracking-tight text-slate-900 dark:text-white sm:text-2xl">Create campaign</h3>
               <p className="mt-1 text-xs text-slate-500 dark:text-gray-400 sm:text-sm">Set up your team, distribution, and lead import.</p>
             </div>
@@ -474,14 +474,14 @@ const CreateCampaignModal: React.FC<Props> = ({ onClose, onSuccess }) => {
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition-colors focus:border-[#18A1C4] focus:ring-2 focus:ring-[#18A1C4]/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+              className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition-colors focus:border-[#01728e] focus:ring-2 focus:ring-[#01728e]/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
               placeholder="e.g. Q4 outreach"
             />
           </section>
 
           <section className="rounded-2xl border border-slate-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900 sm:p-5">
             <div className="mb-4 flex items-center gap-3">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#18A1C4]/10 text-[#1389a8]"><Users size={16} /></span>
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#01728e]/10 text-[#015d73]"><Users size={16} /></span>
               <div><h4 className="text-sm font-semibold text-slate-900 dark:text-white">Campaign team</h4><p className="text-xs text-slate-500 dark:text-gray-400">Choose who manages and works on these leads.</p></div>
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
@@ -513,7 +513,7 @@ const CreateCampaignModal: React.FC<Props> = ({ onClose, onSuccess }) => {
               id="campaign-distribution"
               value={distributionMode}
               onChange={(e) => setDistributionMode(e.target.value as CampaignDistributionMode)}
-              className="w-full appearance-none rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 outline-none transition-colors focus:border-[#18A1C4] focus:ring-2 focus:ring-[#18A1C4]/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+              className="w-full appearance-none rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 outline-none transition-colors focus:border-[#01728e] focus:ring-2 focus:ring-[#01728e]/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
               style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg stroke='currentColor' fill='none' stroke-width='2' viewBox='0 0 24 24' stroke-linecap='round' stroke-linejoin='round' height='1em' width='1em' xmlns='http://www.w3.org/2000/svg'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 1rem center', backgroundSize: '1em' }}
             >
               <option value={CampaignDistributionMode.ON_DEMAND}>On Demand</option>
@@ -532,16 +532,16 @@ const CreateCampaignModal: React.FC<Props> = ({ onClose, onSuccess }) => {
               onClick={() => fileInputRef.current?.click()}
               className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed p-5 text-center transition-colors ${
                 csvFile
-                  ? "border-[#18A1C4]/50 bg-[#18A1C4]/5 dark:bg-[#18A1C4]/10"
-                  : "border-slate-300 bg-slate-50/60 hover:border-[#18A1C4] hover:bg-[#18A1C4]/5 dark:border-gray-700 dark:bg-gray-800/30"
+                  ? "border-[#01728e]/50 bg-[#01728e]/5 dark:bg-[#01728e]/10"
+                  : "border-slate-300 bg-slate-50/60 hover:border-[#01728e] hover:bg-[#01728e]/5 dark:border-gray-700 dark:bg-gray-800/30"
               }`}
             >
-              <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${csvFile ? "bg-[#18A1C4]/15 text-[#18A1C4]" : "bg-white text-slate-500 dark:bg-gray-800"}`}>
+              <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${csvFile ? "bg-[#01728e]/15 text-[#01728e]" : "bg-white text-slate-500 dark:bg-gray-800"}`}>
                 <UploadCloud size={18} />
               </div>
               {csvFile ? (
                 <div className="flex flex-col items-center">
-                  <div className="flex items-center gap-1.5 text-sm font-bold text-[#18A1C4]">
+                  <div className="flex items-center gap-1.5 text-sm font-bold text-[#01728e]">
                     <CheckCircle2 size={16} />
                     <span className="truncate max-w-[250px]">{csvFile.name}</span>
                   </div>
@@ -583,7 +583,7 @@ const CreateCampaignModal: React.FC<Props> = ({ onClose, onSuccess }) => {
             <button type="button" onClick={onClose} className="rounded-lg px-4 py-2.5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 dark:text-gray-300 dark:hover:bg-gray-800">
               Cancel
             </button>
-            <button type="submit" disabled={isSubmitting} className="rounded-lg bg-[#18A1C4] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#158ca8] focus:outline-none focus:ring-4 focus:ring-[#18A1C4]/20 disabled:opacity-50">
+            <button type="submit" disabled={isSubmitting} className="rounded-lg bg-[#01728e] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#015d73] focus:outline-none focus:ring-4 focus:ring-[#01728e]/20 disabled:opacity-50">
               {isSubmitting ? "Creating..." : csvFile ? "Create & Map Columns →" : "Create Campaign"}
             </button>
           </div>

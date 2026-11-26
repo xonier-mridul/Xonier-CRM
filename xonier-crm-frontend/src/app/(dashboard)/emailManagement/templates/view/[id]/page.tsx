@@ -362,7 +362,7 @@ export default function Page() {
         {/* ══ LEFT: Template metadata panel ══════════════════════ */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl border border-slate-200 dark:border-gray-700 shadow-sm overflow-hidden sticky top-6">
           {/* Accent strip */}
-          <div className="h-[3px] w-full" style={{ background: "linear-gradient(90deg,#7C3AED 0%,#06B6D4 100%)" }} />
+          <div className="h-[3px] w-full" style={{ background: "linear-gradient(90deg,#7C3AED 0%,#01728e 100%)" }} />
 
           <div className="p-6 flex flex-col gap-5">
             <p className="text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">

@@ -51,7 +51,7 @@ const SectionHeading = ({ title, icon }: { title: string; icon?: string }) => (
         {title}
       </h3>
     </div>
-    <div className="h-px bg-gradient-to-r  from-[#16c2cf]  via-cyan-100 to-transparent dark:from-cyan-700 dark:via-cyan-900 dark:to-transparent" />
+    <div className="h-px bg-gradient-to-r  from-[#01728e]  via-cyan-100 to-transparent dark:from-cyan-700 dark:via-cyan-900 dark:to-transparent" />
   </div>
 );
 
@@ -562,7 +562,7 @@ const Page = (): JSX.Element => {
         <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-800 overflow-hidden">
 
           {/* ── Card Header ─────────────────────────────────────────── */}
-          <div className="bg-gradient-to-r from-[#16c2cf] to-[#0fb8a5] dark:from-cyan-700 dark:to-teal-700 px-8 py-5">
+          <div className="bg-gradient-to-r from-[#01728e] to-[#015d73] dark:from-cyan-700 dark:to-teal-700 px-8 py-5">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-xl bg-white/50 backdrop-blur-sm flex items-center justify-center text-lg shadow-inner">
                 ✉️
@@ -671,7 +671,7 @@ const Page = (): JSX.Element => {
                     onClick={generateWithAI}
                     // disabled={isGenerating || !form.aiPrompt}
                     disabled={true}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold text-white bg-gradient-to-r from-[#16c2cf] to-[#0fb8a5] dark:from-cyan-500 dark:to-teal-500 hover:shadow-md hover:scale-[1.02] active:scale-100 transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed disabled:scale-100"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold text-white bg-gradient-to-r from-[#01728e] to-[#015d73] dark:from-cyan-500 dark:to-teal-500 hover:shadow-md hover:scale-[1.02] active:scale-100 transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed disabled:scale-100"
                   >
                     {isGenerating ? (
                       <>
@@ -795,7 +795,7 @@ const Page = (): JSX.Element => {
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="inline-flex items-center gap-2 px-6 py-2 rounded-lg text-sm font-bold text-white bg-gradient-to-r from-[#16c2cf] to-[#0fb8a5] dark:from-cyan-500 dark:to-teal-500 hover:shadow-md hover:scale-[1.02] active:scale-100 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100"
+                    className="inline-flex items-center gap-2 px-6 py-2 rounded-lg text-sm font-bold text-white bg-gradient-to-r from-[#01728e] to-[#015d73] dark:from-cyan-500 dark:to-teal-500 hover:shadow-md hover:scale-[1.02] active:scale-100 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100"
                   >
                     {isLoading ? (
                       <>

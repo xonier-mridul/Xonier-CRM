@@ -121,7 +121,7 @@ const CreateDealPage = () => {
   }
 
   return (
-    <main className="mx-auto max-w-5xl p-6">
+    <main className="mx-auto max-w-5xl space-y-6">
       <header className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Create Deal</h1>

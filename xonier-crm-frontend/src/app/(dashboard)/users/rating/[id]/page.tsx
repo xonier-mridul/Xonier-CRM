@@ -392,7 +392,7 @@ export default function UserRatingPage() {
   // ── Error ───────────────────────────────────────────────────────────────────
   if (error || !user) {
     return (
-      <div className="min-h-screen bg-slate-50 dark:bg-gray-900 flex items-center justify-center p-6">
+      <div className="min-h-screen bg-slate-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl p-16 text-center max-w-md w-full">
           <div className="w-16 h-16 bg-red-50 dark:bg-red-900/20 rounded-2xl flex items-center justify-center mx-auto mb-5">
             <IoPersonCircle className="w-9 h-9 text-red-400" />

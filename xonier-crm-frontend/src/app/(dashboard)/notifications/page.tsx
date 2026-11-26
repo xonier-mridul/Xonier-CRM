@@ -8,7 +8,7 @@ export const metadata = {
 
 const NotificationsPage = () => {
   return (
-    <div className=" py-8">
+    <div>
       <NotificationList />
     </div>
   );

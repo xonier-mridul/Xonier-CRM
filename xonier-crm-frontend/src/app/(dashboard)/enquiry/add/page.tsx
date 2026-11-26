@@ -219,11 +219,11 @@ const SectionHeading = ({ title, icon }: { title: string; icon?: string }) => (
   <div className="col-span-1 md:col-span-2 mt-4">
     <div className="flex items-center gap-2 mb-1">
       {icon && <span className="text-base">{icon}</span>}
-      <h3 className="text-xs font-bold bg-linear-to-br bg-clip-text text-transparent from-[#16c2cf] to-[#0fb8a5]    uppercase tracking-widest">
+      <h3 className="text-xs font-bold bg-linear-to-br bg-clip-text text-transparent from-[#01728e] to-[#015d73]    uppercase tracking-widest">
         {title}
       </h3>
     </div>
-    <div className="h-px bg-gradient-to-r from-[#16c2cf] via-[#0fb8a5] to-transparent dark:from-cyan-400 dark:via-teal-900 dark:to-transparent" />
+    <div className="h-px bg-gradient-to-r from-[#01728e] via-[#015d73] to-transparent dark:from-cyan-400 dark:via-teal-900 dark:to-transparent" />
   </div>
 );
 
@@ -673,7 +673,7 @@ const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
       <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-800 overflow-hidden">
 
         {/* ── Card Header ── */}
-        <div className="bg-gradient-to-br from-[#16c2cf] to-[#0fb8a5] dark:to-cyan-700 px-8 py-5">
+        <div className="bg-gradient-to-br from-[#01728e] to-[#015d73] dark:to-cyan-700 px-8 py-5">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-white/50 backdrop-blur-sm flex items-center justify-center text-lg shadow-inner">
               📋

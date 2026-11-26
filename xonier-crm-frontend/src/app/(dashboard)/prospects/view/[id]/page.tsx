@@ -148,7 +148,7 @@ const ProspectViewPage = (): JSX.Element => {
 
     if (isLoading) {
         return (
-            <div className="p-6 flex flex-col gap-6 animate-pulse">
+            <div className="flex flex-col gap-6 animate-pulse">
                 <Skeleton
                     height={120}
                     borderRadius={12}
@@ -260,7 +260,7 @@ const ProspectViewPage = (): JSX.Element => {
 
     return (
         <>
-            <div className="p-6 min-h-screen">
+            <div className="min-h-screen">
                 {/* Header Section */}
                 <div className="mb-6">
                     <div className="bg-white dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-700 p-6">

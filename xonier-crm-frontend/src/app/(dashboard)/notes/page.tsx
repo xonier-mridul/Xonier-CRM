@@ -6,7 +6,6 @@ import { TbNotes } from "react-icons/tb";
 import { FaRegStar, FaStar } from "react-icons/fa";
 import { MdDelete, MdClose, MdSearch, MdKeyboardArrowDown, MdCheck } from "react-icons/md";
 import { BsPinAngle, BsPinAngleFill } from "react-icons/bs";
-import SecondaryButton from "@/src/components/ui/SecondaryButton";
 import { MdOutlineNoteAlt } from "react-icons/md";
 import { Note, NoteCreatePayload } from "@/src/types/note/note.types";
 import extractErrorMessages from "../../utils/error.utils";
@@ -24,6 +23,7 @@ import { RiGitRepositoryPrivateLine, RiGitRepositoryPrivateFill } from "react-ic
 import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
 import { useTranslation } from "react-i18next";
 import { FormatDate } from "@/src/components/common/FormateDate";
+import PageHeader from "@/src/components/common/PageHeader";
 
 enum ACTIVE {
   ALL = "all",
@@ -48,29 +48,31 @@ const NoteCard = ({
   return (
     <div
       onClick={() => onClick(note)}
-      className="relative bg-white dark:bg-gray-900/30 border border-gray-200 dark:border-gray-700 rounded-lg p-5 hover:scale-105 transition-all hover:shadow-[0_0_20px_#00000020] duration-300 cursor-pointer group overflow-hidden"
+      className="flex h-full cursor-pointer flex-col rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900/60 sm:p-5"
     >
-      {note.byAdmin && (
-        <div className="absolute -right-10 top-6 w-40 bg-cyan-600 text-white text-xs font-semibold py-1 text-center transform rotate-45 shadow-md z-10">
-          {t("by_admin")}
-        </div>
-      )}
-
-      {note.isPinned && (
-        <div className="absolute top-3 left-3 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
-          <BsPinAngleFill className="w-3 h-3" />
-          {t("pinned")}
-        </div>
-      )}
-
-      <div className={`${note.isPinned ? "mt-8" : "mt-0"}`}>
+      <div className="flex flex-1 flex-col">
+        {(note.isPinned || note.byAdmin) && (
+          <div className="mb-3 flex flex-wrap items-center gap-2">
+            {note.isPinned && (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                <BsPinAngleFill className="h-3 w-3 text-[#00335F] dark:text-sky-300" />
+                {t("pinned")}
+              </span>
+            )}
+            {note.byAdmin && (
+              <span className="rounded-full bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-500 dark:bg-slate-800/70 dark:text-slate-400">
+                {t("by_admin")}
+              </span>
+            )}
+          </div>
+        )}
         {(note.entityId || (note.entityType && note.entityType !== NotesEntities.GENERAL)) && (
           <div className="mb-2 flex flex-wrap items-center gap-1.5">
             {note.entityId && note.entityType === NotesEntities.LEAD ? (
               <Link
                 href={`/leads/view/${note.entityId}`}
                 onClick={(e) => e.stopPropagation()}
-                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-cyan-50 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300 hover:underline"
+                className="inline-flex max-w-full items-center gap-1 rounded-md bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-200"
               >
                 Lead: {note.entityName || `#${note.entityId.slice(-6)}`}
               </Link>
@@ -78,43 +80,44 @@ const NoteCard = ({
               <Link
                 href={`/deals/view/${note.entityId}`}
                 onClick={(e) => e.stopPropagation()}
-                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 hover:underline"
+                className="inline-flex max-w-full items-center gap-1 rounded-md bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-200"
               >
                 Deal: {note.entityName || `#${note.entityId.slice(-6)}`}
               </Link>
             ) : (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300 capitalize">
+              <span className="inline-flex max-w-full items-center gap-1 rounded-md bg-slate-100 px-2.5 py-1 text-xs font-medium capitalize text-slate-600 dark:bg-slate-800 dark:text-slate-300">
                 {note.entityType}
                 {note.entityName ? `: ${note.entityName}` : ""}
               </span>
             )}
           </div>
         )}
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2 pr-8">
+        <h3 className="mb-2 line-clamp-2 text-base font-semibold leading-6 text-slate-900 dark:text-white">
           {note.title}
         </h3>
-        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-3">
+        <p className="mb-5 line-clamp-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
           {note.content}
         </p>
 
-        <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-700">
+        <div className="mt-auto flex items-center justify-between gap-2 border-t border-slate-100 pt-3 dark:border-slate-800">
           <div className="flex flex-col gap-1">
-            <span className="text-xs text-gray-500 dark:text-gray-400">
-  {FormatDate(note.createdAt)}
-</span>
-            <span className="text-xs text-gray-400 dark:text-gray-500">
+            <span className="text-xs text-slate-500 dark:text-slate-400">
+              {FormatDate(note.createdAt)}
+            </span>
+            <span className="text-xs text-slate-400 dark:text-slate-500">
               {t("by")} {note.createdBy.firstName} {note.createdBy.lastName}
             </span>
           </div>
 
-          <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="flex shrink-0 items-center gap-1">
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 onPin(note.id);
               }}
-              className="p-2 rounded-full hover:bg-amber-100 dark:hover:bg-amber-900/30 text-amber-600 dark:text-amber-400 transition-colors"
+              className="rounded-lg p-2 text-slate-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00335F] dark:text-slate-400"
               title={note.isPinned ? "Unpin note" : "Pin note"}
+              aria-label={note.isPinned ? "Unpin note" : "Pin note"}
             >
               {note.isPinned ? (
                 <BsPinAngleFill className="w-4 h-4" />
@@ -127,8 +130,9 @@ const NoteCard = ({
                 e.stopPropagation();
                 onDelete(note.id);
               }}
-              className="p-2 rounded-full hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 transition-colors"
+              className="rounded-lg p-2 text-slate-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600 dark:text-slate-400"
               title={t("delete_note")}
+              aria-label={t("delete_note")}
             >
               <MdDelete className="w-4 h-4" />
             </button>
@@ -852,25 +856,18 @@ const Page = (): JSX.Element => {
   }, [currentPage, pageLimit, currentPrivatePage, privatePageLimit, active]);
 
   return (
-    <div className={`p-6 min-h-screen`}>
+    <div className="min-h-screen">
       <div className="flex w-full flex-col gap-6">
-        <div>
-          <h2 className="text-slate-900 dark:text-white font-bold text-4xl mb-2">
-            {t("notes")}
-          </h2>
-          <p className="text-gray-600 dark:text-gray-400">
-            {t("manage_and_organize_your_notes")}
-          </p>
-        </div>
+        <PageHeader title={t("notes")} description={t("manage_and_organize_your_notes")} icon={<TbNotes className="h-5 w-5" />} />
 
-        <div className="bg-white dark:bg-gray-900/30 border border-gray-200 dark:border-gray-700 rounded-xl p-5 flex items-center justify-between gap-4 flex-wrap">
-          <ul className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900/60 sm:p-5">
+          <ul className="flex flex-wrap items-center gap-2">
             <li
               className={`${
                 active === ACTIVE.ALL
-                  ? "bg-cyan-600 text-white shadow-lg"
-                  : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
-              } px-5 py-2.5 cursor-pointer flex items-center gap-2 capitalize rounded-lg transition-all duration-200 text-sm font-medium`}
+                  ? "bg-[#01728e] text-white"
+                  : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
+              } flex cursor-pointer items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium capitalize`}
               onClick={() => handleActive(ACTIVE.ALL)}
             >
               <TbNotes className="w-4 h-4" />
@@ -880,15 +877,15 @@ const Page = (): JSX.Element => {
             <li
               className={`${
                 active === ACTIVE.IMPORTANT
-                  ? "bg-amber-600 text-white shadow-lg "
-                  : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
-              } px-5 py-2.5 cursor-pointer flex items-center gap-2 capitalize rounded-lg text-sm transition-all duration-200 font-medium`}
+                  ? "bg-[#01728e] text-white"
+                  : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
+              } flex cursor-pointer items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium capitalize`}
               onClick={() => handleActive(ACTIVE.IMPORTANT)}
             >
               {active === ACTIVE.IMPORTANT ? (
                 <FaStar className="w-4 h-4" />
               ) : (
-                <FaRegStar className="w-4 h-4 text-amber-500" />
+                <FaRegStar className="h-4 w-4 text-slate-500" />
               )}
               {t("pinned_notes")}
               
@@ -896,15 +893,15 @@ const Page = (): JSX.Element => {
             <li
               className={`${
                 active === ACTIVE.PRIVATE
-                  ? "bg-green-600 text-white shadow-lg "
-                  : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
-              } px-5 py-2.5 cursor-pointer flex items-center gap-2 capitalize rounded-lg text-sm transition-all duration-200 font-medium`}
+                  ? "bg-[#01728e] text-white"
+                  : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
+              } flex cursor-pointer items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium capitalize`}
               onClick={() => handleActive(ACTIVE.PRIVATE)}
             >
               {active === ACTIVE.PRIVATE ? (
                 <RiGitRepositoryPrivateFill className="w-4 h-4" />
               ) : (
-                <RiGitRepositoryPrivateLine className="w-4 h-4 text-green-500" />
+                <RiGitRepositoryPrivateLine className="h-4 w-4 text-slate-500" />
               )}
               {t("private_notes")}
              
@@ -912,7 +909,7 @@ const Page = (): JSX.Element => {
           </ul>
           <div className="flex items-center gap-3">
             <select
-              className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 dark:bg-gray-700 dark:text-white text-sm focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none"
+              className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-[#00335F] focus:ring-2 focus:ring-[#00335F]/15 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
               value={displayPageLimit}
               onChange={(e) => {
                 if (active === ACTIVE.PRIVATE) {
@@ -928,20 +925,23 @@ const Page = (): JSX.Element => {
               <option value={12}>{t("12_per_page")}</option>
               <option value={24}>{t("24_per_page")}</option>
             </select>
-            <SecondaryButton
-              text={t("add_notes")}
-              onClickEvt={handlePopup}
-              icon={<MdOutlineNoteAlt />}
-            />
+            <button
+              type="button"
+              onClick={handlePopup}
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#00335F] px-4 py-2.5 text-sm font-semibold text-white shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00335F]"
+            >
+              <MdOutlineNoteAlt className="h-4 w-4" />
+              {t("add_notes")}
+            </button>
           </div>
         </div>
 
         {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
             {Array.from({ length: 6 }).map((_, i) => (
               <div
                 key={i}
-                className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-5"
+                className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900/60 sm:p-5"
               >
                 <Skeleton height={24} className="mb-3" />
                 <Skeleton count={3} className="mb-2" />
@@ -951,7 +951,7 @@ const Page = (): JSX.Element => {
           </div>
         ) : displayNotes.length > 0 ? (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
               {displayNotes.map((note) => (
                 <NoteCard
                   key={note.id}

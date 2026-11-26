@@ -425,7 +425,7 @@ const UpdateTaskPage = (): JSX.Element => {
   // ── Loading skeleton ──────────────────────────────────────────────────────
   if (isFetching) {
     return (
-      <div className="p-6 min-h-screen bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <svg
             className="animate-spin h-10 w-10 text-cyan-500"

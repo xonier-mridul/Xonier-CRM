@@ -25,7 +25,7 @@ const PARTICLES = [
   { angle: -85, distance: 74, size: 6, color: "#10b981", pill: false, delay: 0.05 },
   { angle: -62, distance: 88, size: 5, color: "#6366f1", pill: true, delay: 0.08 },
   { angle: -38, distance: 78, size: 6, color: "#f59e0b", pill: false, delay: 0.04 },
-  { angle: -18, distance: 92, size: 5, color: "#06b6d4", pill: true, delay: 0.1 },
+  { angle: -18, distance: 92, size: 5, color: "#01728e", pill: true, delay: 0.1 },
   { angle: 12, distance: 80, size: 6, color: "#10b981", pill: false, delay: 0.06 },
   { angle: 34, distance: 90, size: 5, color: "#8b5cf6", pill: true, delay: 0.09 },
   { angle: 58, distance: 74, size: 6, color: "#f59e0b", pill: false, delay: 0.05 },
@@ -33,7 +33,7 @@ const PARTICLES = [
   { angle: 112, distance: 76, size: 6, color: "#6366f1", pill: false, delay: 0.06 },
   { angle: 138, distance: 88, size: 5, color: "#10b981", pill: true, delay: 0.1 },
   { angle: 162, distance: 74, size: 6, color: "#f59e0b", pill: false, delay: 0.05 },
-  { angle: -165, distance: 86, size: 5, color: "#06b6d4", pill: true, delay: 0.08 },
+  { angle: -165, distance: 86, size: 5, color: "#01728e", pill: true, delay: 0.08 },
   { angle: -140, distance: 78, size: 6, color: "#10b981", pill: false, delay: 0.04 },
   { angle: -115, distance: 90, size: 5, color: "#8b5cf6", pill: true, delay: 0.09 },
 ];

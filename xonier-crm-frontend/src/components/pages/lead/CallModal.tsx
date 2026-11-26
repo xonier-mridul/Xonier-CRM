@@ -336,7 +336,7 @@ const CallModal = ({ lead: initialLead, onClose, onDisposed, onLeadUnavailable, 
     banner = { text: "Your mobile app did not respond in time. Please retry.", tone: "warn" };
 
   const toneClass = {
-    info: "bg-[#BAF7FE]/30 text-[#0092B8] border-[#BAF7FE] dark:bg-[#0092B8]/20 dark:text-[#BAF7FE] dark:border-[#0092B8]/60",
+    info: "bg-[#BAF7FE]/30 text-[#01728e] border-[#BAF7FE] dark:bg-[#01728e]/20 dark:text-[#BAF7FE] dark:border-[#01728e]/60",
     warn: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-200 dark:border-amber-800",
     ok: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-200 dark:border-emerald-800",
     bad: "bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-200 dark:border-red-800",
@@ -361,12 +361,12 @@ const CallModal = ({ lead: initialLead, onClose, onDisposed, onLeadUnavailable, 
   ];
 
   const pillBtn =
-    "h-8 min-w-[56px] px-3 rounded-full border border-slate-200 dark:border-slate-600 flex items-center justify-center text-[#0092B8] dark:text-[#BAF7FE] hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors";
+    "h-8 min-w-[56px] px-3 rounded-full border border-slate-200 dark:border-slate-600 flex items-center justify-center text-[#01728e] dark:text-[#BAF7FE] hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors";
 
   // ── minimized floating bar ────────────────────────────────────────────────
   if (minimized) {
     return createPortal(
-      <div onClick={(event) => event.stopPropagation()} className="fixed bottom-4 right-4 z-[1000] flex items-center gap-3 rounded-full bg-[#0092B8] text-white shadow-2xl pl-3 pr-2 py-2">
+      <div onClick={(event) => event.stopPropagation()} className="fixed bottom-4 right-4 z-[1000] flex items-center gap-3 rounded-full bg-[#01728e] text-white shadow-2xl pl-3 pr-2 py-2">
         <span className="h-8 w-8 rounded-full bg-white/15 flex items-center justify-center">
           <FiPhone size={15} />
         </span>
@@ -406,7 +406,7 @@ const CallModal = ({ lead: initialLead, onClose, onDisposed, onLeadUnavailable, 
                 onClick={() => setTab(t.key)}
                 className={`py-4 text-[12px] font-medium tracking-wide border-b-2 transition-colors ${
                   tab === t.key
-                    ? "border-[#0092B8] text-[#0092B8] dark:text-[#BAF7FE]"
+                    ? "border-[#01728e] text-[#01728e] dark:text-[#BAF7FE]"
                     : "border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
                 }`}
               >
@@ -477,7 +477,7 @@ const CallModal = ({ lead: initialLead, onClose, onDisposed, onLeadUnavailable, 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                 {/* contact name */}
                 <div className="rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm px-5 py-4 flex flex-col items-center gap-2 bg-white dark:bg-slate-800">
-                  <p className="text-[11px] font-semibold text-[#0092B8] dark:text-[#BAF7FE]">Contact Name:</p>
+                  <p className="text-[11px] font-semibold text-[#01728e] dark:text-[#BAF7FE]">Contact Name:</p>
                   <div className="flex items-center gap-2 text-slate-800 dark:text-slate-100">
                     <FiUser size={16} className="text-slate-400" />
                     <span className="text-[15px] font-semibold capitalize">{lead.fullName || "-"}</span>
@@ -488,7 +488,7 @@ const CallModal = ({ lead: initialLead, onClose, onDisposed, onLeadUnavailable, 
                 </div>
 
                 {/* call card — an explicit click is required before any mobile call request */}
-                <div className="rounded-xl bg-[#0092B8] text-white shadow-md px-5 py-4 flex flex-col items-center gap-2">
+                <div className="rounded-xl bg-[#01728e] text-white shadow-md px-5 py-4 flex flex-col items-center gap-2">
                   <p className="text-[11px] font-medium opacity-90">
                     {callCardLabel}
                   </p>
@@ -518,7 +518,7 @@ const CallModal = ({ lead: initialLead, onClose, onDisposed, onLeadUnavailable, 
                     type="button"
                     onClick={handleRequestCall}
                     disabled={requesting}
-                    className="mt-1 inline-flex items-center gap-2 rounded-full bg-white px-5 py-2 text-[13px] font-semibold text-[#0092B8] shadow-sm transition-colors hover:bg-[#BAF7FE] disabled:cursor-not-allowed disabled:opacity-60"
+                    className="mt-1 inline-flex items-center gap-2 rounded-full bg-white px-5 py-2 text-[13px] font-semibold text-[#01728e] shadow-sm transition-colors hover:bg-[#BAF7FE] disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     <FiPhone size={15} />
                     {requesting ? "Requesting call…" : session ? "Call again" : "Call"}
@@ -527,7 +527,7 @@ const CallModal = ({ lead: initialLead, onClose, onDisposed, onLeadUnavailable, 
 
                 {/* send message */}
                 <div className="rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm px-5 py-4 flex flex-col items-center gap-3 bg-white dark:bg-slate-800">
-                  <p className="text-[11px] font-semibold text-[#0092B8] dark:text-[#BAF7FE]">Send Message:</p>
+                  <p className="text-[11px] font-semibold text-[#01728e] dark:text-[#BAF7FE]">Send Message:</p>
                   <div className="flex items-center gap-3">
                     <a
                       href={`https://wa.me/${lead.phone.replace(/\D/g, "")}`}
@@ -561,7 +561,7 @@ const CallModal = ({ lead: initialLead, onClose, onDisposed, onLeadUnavailable, 
               {/* lead details */}
               <div className="mt-6 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm bg-white dark:bg-slate-800">
                 <div className="px-6 pt-3 border-b border-slate-100 dark:border-slate-700">
-                  <span className="inline-block pb-2.5 text-[13px] font-semibold text-slate-800 dark:text-slate-100 border-b-2 border-[#0092B8]">
+                  <span className="inline-block pb-2.5 text-[13px] font-semibold text-slate-800 dark:text-slate-100 border-b-2 border-[#01728e]">
                     Lead Details
                   </span>
                 </div>
@@ -679,7 +679,7 @@ const CallModal = ({ lead: initialLead, onClose, onDisposed, onLeadUnavailable, 
                   type="button"
                   onClick={handleRetry}
                   disabled={requesting}
-                  className="rounded-full border border-[#0092B8] text-[#0092B8] dark:text-[#BAF7FE] text-[13px] font-medium px-5 py-2 hover:bg-[#BAF7FE]/20 dark:hover:bg-slate-700"
+                  className="rounded-full border border-[#01728e] text-[#01728e] dark:text-[#BAF7FE] text-[13px] font-medium px-5 py-2 hover:bg-[#BAF7FE]/20 dark:hover:bg-slate-700"
                 >
                   Call again
                 </button>

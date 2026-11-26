@@ -528,7 +528,7 @@ const page = (): JSX.Element => {
       <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-800 overflow-hidden">
 
         {/* ── Card Header ── */}
-        <div className="bg-gradient-to-br from-[#16c2cf] to-[#0fb8a5] dark:to-cyan-700   px-8 py-5">
+        <div className="bg-gradient-to-br from-[#01728e] to-[#015d73] dark:to-cyan-700   px-8 py-5">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-lg shadow-inner">
               ✏️

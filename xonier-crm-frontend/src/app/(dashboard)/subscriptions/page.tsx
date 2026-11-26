@@ -69,7 +69,7 @@ const page = () => {
   }, [currentPage, pageLimit]);
 
   return (
-    <div className="p-6 flex flex-col gap-6">
+    <div className="flex flex-col gap-6">
       <SubscriptionTable
         currentPage={currentPage}
         pageLimit={pageLimit}

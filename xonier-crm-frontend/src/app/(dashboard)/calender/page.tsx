@@ -20,18 +20,18 @@ import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
 import { usePermissions } from "@/src/hooks/usePermissions";
 import { PERMISSIONS } from "@/src/constants/enum";
 import UpdateEventModal from "@/src/components/pages/calender/UpdateEventPopup";
-import { motion, AnimatePresence } from "framer-motion";
 import {
   CalendarDays,
+  LoaderCircle,
   Plus,
   ListPlus,
   Grid3X3,
   Clock,
-  Calendar as CalendarIcon,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import PageHeader from "@/src/components/common/PageHeader";
 
 const Page = (): JSX.Element => {
   const { t, i18n } = useTranslation();
@@ -194,9 +194,9 @@ const formatCurrentMonth = useMemo(() => {
       start: event.start,
       end: event.end ?? undefined,
       allDay: event.isAllDay,
-      backgroundColor: event.followUpEntity ? "#0891b2" : getEventColor(event.priority),
-      borderColor: event.followUpEntity ? "#0891b2" : getEventColor(event.priority),
-      textColor: "#ffffff",
+      backgroundColor: event.followUpEntity ? "#cffafe" : getEventColor(event.priority),
+      borderColor: event.followUpEntity ? "#5aa8ba" : getEventBorderColor(event.priority),
+      textColor: event.followUpEntity ? "#015d73" : getEventTextColor(event.priority),
       extendedProps: {
         description: event.description,
         priority: event.priority,
@@ -215,12 +215,26 @@ const formatCurrentMonth = useMemo(() => {
 
   const getEventColor = (priority?: string): string => {
     const colors = {
-      high: "#ef4444", // red
-      medium: "#f59e0b", // amber
-      low: "#10b981", // emerald
-      default: "#6366f1", // cyan
+      high: "#fee2e2",
+      medium: "#fef3c7",
+      low: "#d1fae5",
+      default: "#e0e7ff",
     };
     return colors[priority?.toLowerCase() as keyof typeof colors] || colors.default;
+  };
+
+  const getEventBorderColor = (priority?: string): string => {
+    const colors: Record<string, string> = {
+      high: "#fca5a5", medium: "#fcd34d", low: "#6ee7b7", default: "#a5b4fc",
+    };
+    return colors[priority?.toLowerCase() || "default"] || colors.default;
+  };
+
+  const getEventTextColor = (priority?: string): string => {
+    const colors: Record<string, string> = {
+      high: "#991b1b", medium: "#92400e", low: "#065f46", default: "#3730a3",
+    };
+    return colors[priority?.toLowerCase() || "default"] || colors.default;
   };
 
   const handleEventClick = (info: any) => {
@@ -388,52 +402,20 @@ const handleDatesSet = useCallback((dateInfo: any) => {
         onSuccess={handleUpdateSuccess}
       />
 
-      <div className="p-1 md:p-6 transition-all">
-        <AnimatePresence>
-          {isLoading && (
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="fixed top-4 right-4 z-50 bg-cyan-500 text-white px-6 py-3 rounded-lg shadow-lg"
-            >
-              {t("loading_events")}
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mb-8"
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-slate-900 dark:text-white font-bold text-4xl mb-2">
-                {t("calendar")}
-              </h1>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                {t("manage_meetings_events_and_schedules")}
-              </p>
-            </div>
-
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={handleBulkCreateClick}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold bg-gradient-to-r from-teal-400 via-teal-500 to-cyan-500 text-white transition-all shadow-[10px] hover:shadow-[#16c2cf]"
-            >
-              <ListPlus className="w-4 h-4" />
-              {t("bulk_create_events")}
-            </motion.button>
+      <div>
+        {isLoading && (
+          <div role="status" className="mb-4 inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600 shadow-2xs dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
+            <LoaderCircle className="h-4 w-4 animate-spin text-cyan-700 dark:text-cyan-300" />
+            {t("loading_events")}
           </div>
-        </motion.div>
+        )}
 
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-800">
+        <PageHeader className="mb-6" title={t("calendar")} description={t("manage_meetings_events_and_schedules")} icon={<CalendarDays className="h-5 w-5" />} actions={<button type="button" onClick={handleBulkCreateClick} className="crm-button-primary"><ListPlus className="h-4 w-4" />{t("bulk_create_events")}</button>} />
+
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200/80 bg-white px-4 py-3 shadow-2xs dark:border-slate-700 dark:bg-slate-900/60">
           <div className="text-sm">
             <p className="font-semibold text-slate-800 dark:text-white">Google Calendar</p>
-            <p className="mt-1 text-slate-500 dark:text-gray-400">
+            <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
               {googleCalendar?.connected
                 ? `Connected: ${googleCalendar.accountEmail}`
                 : "Connect your account to sync your follow-ups."}
@@ -446,11 +428,11 @@ const handleDatesSet = useCallback((dateInfo: any) => {
             </p>
           </div>
           {googleCalendar?.connected ? (
-            <button type="button" onClick={handleGoogleCalendarDisconnect} disabled={googleCalendarLoading} className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 disabled:opacity-50 dark:border-gray-600 dark:text-gray-200">
+            <button type="button" onClick={handleGoogleCalendarDisconnect} disabled={googleCalendarLoading} className="crm-button-secondary">
               Disconnect
             </button>
           ) : (
-            <button type="button" onClick={handleGoogleCalendarConnect} disabled={googleCalendarLoading} className="rounded-lg bg-cyan-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">
+            <button type="button" onClick={handleGoogleCalendarConnect} disabled={googleCalendarLoading} className="crm-button-primary">
               {googleCalendarLoading ? "Connecting…" : "Connect Google Calendar"}
             </button>
           )}
@@ -464,28 +446,23 @@ const handleDatesSet = useCallback((dateInfo: any) => {
           onEdit={handleEditClick}
         />
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="bg-white dark:bg-gray-900/30 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-xl p-6"
-        >
+        <section className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-2xs dark:border-slate-700 dark:bg-slate-900/60 sm:p-5">
           {/* Custom Toolbar */}
-          <div className="mb-6 flex flex-wrap items-center justify-between gap-4 ">
-            {/* Month Navigation */}
-            <div className="grid grid-cols-4 md:grid-cols-5 items-center gap-3">
-              <div className='flex col-span-3 md:col-span-4 items-center'>
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4 dark:border-slate-800">
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="flex items-center gap-1">
                 <button
                   onClick={() => {
                     const api = calendarRef.current?.getApi();
                     api?.prev();
                   }}
-                  className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                  className="flex h-9 w-9 items-center justify-center rounded-full text-slate-600 transition-colors hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-cyan-600 dark:text-slate-300 dark:hover:bg-slate-800"
+                  aria-label={t("previous")}
                   title={t("previous")}
                 >
-                  <ChevronLeft className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+                  <ChevronLeft className="h-5 w-5" />
                 </button>
-                <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-200 min-w-[200px] text-center">
+                <h2 className="min-w-[190px] text-center text-xl font-semibold tracking-tight text-slate-900 dark:text-white">
                   {formatCurrentMonth}
                 </h2>
                 <button
@@ -493,10 +470,11 @@ const handleDatesSet = useCallback((dateInfo: any) => {
                     const api = calendarRef.current?.getApi();
                     api?.next();
                   }}
-                  className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                  className="flex h-9 w-9 items-center justify-center rounded-full text-slate-600 transition-colors hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-cyan-600 dark:text-slate-300 dark:hover:bg-slate-800"
+                  aria-label={t("next")}
                   title={t("next")}
                 >
-                  <ChevronRight className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+                  <ChevronRight className="h-5 w-5" />
                 </button>
               </div>
               <button
@@ -504,23 +482,22 @@ const handleDatesSet = useCallback((dateInfo: any) => {
                   const api = calendarRef.current?.getApi();
                   api?.today();
                 }}
-                className="px-4 py-2 text-sm font-medium bg-cyan-50 border border-cyan-300 dark:border-cyan-900 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400 rounded-lg hover:bg-cyan-100 dark:hover:bg-cyan-900/50 transition-colors"
+                className="crm-button-secondary"
               >
                 {t("today")}
               </button>
             </div>
 
-            <div className='grid grid-cols-4 md:grid-cols-3 gap-4 '>
-              {/* View Switcher */}
-              <div className="flex gap-2 col-span-3 md:col-span-2 bg-gray-100 dark:bg-gray-700 p-1 rounded-xl">
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="flex items-center rounded-xl border border-slate-200 bg-slate-50 p-1 dark:border-slate-700 dark:bg-slate-800">
                 {viewButtons.map(({ id, label, icon: Icon }) => (
                   <button
                     key={id}
                     onClick={() => handleViewChange(id)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                    className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                       activeView === id
-                        ? "bg-white dark:bg-gray-600 text-cyan-600 dark:text-cyan-400 shadow-sm"
-                        : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+                        ? "bg-white text-slate-900 shadow-2xs dark:bg-slate-700 dark:text-white"
+                        : "text-slate-600 hover:bg-white/70 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-700/70 dark:hover:text-white"
                     }`}
                   >
                     <Icon className="w-4 h-4" />
@@ -529,9 +506,7 @@ const handleDatesSet = useCallback((dateInfo: any) => {
                 ))}
               </div>
               
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+              <button
                 onClick={() => {
                   if (!hasPermission(PERMISSIONS.createEvent)) {
                     toast.info(t("no_create_event_permission"));
@@ -539,31 +514,31 @@ const handleDatesSet = useCallback((dateInfo: any) => {
                   }
                   openCreateEventModal(new Date().toISOString());
                 }}
-                className="flex items-center gap-2 pr-3 md:px-5 py-2.5 rounded-xl text-sm font-semibold bg-gradient-to-r from-teal-400 via-teal-500 to-cyan-500 hover:from-emerald-400 hover:to-teal-400 text-white transition-all shadow-lg hover:shadow-emerald-500/25 whitespace-nowrap"
+                className="crm-button-primary whitespace-nowrap"
               >
-                <Plus className="w-4 h-4 " />
+                <Plus className="h-4 w-4" />
                 {t("add_event")}
-              </motion.button>
+              </button>
             </div>
           </div>
 
           {/* Calendar */}
-          <div className="fc-custom-theme ">
+          <div className="fc-custom-theme">
            <FullCalendar
               ref={calendarRef}
               plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
               initialView="dayGridMonth"
               locale={calendarLocale}
               events={eventData}
-              height="75vh"
+              height={activeView === "dayGridMonth" ? "auto" : "75vh"}
               selectable
               editable
               nowIndicator
               dateClick={handleDateClick}
               eventClick={handleEventClick}
               dayMaxEvents={3}
-              eventColor="#6366f1"
-              eventTextColor="#ffffff"
+              eventColor="#e0e7ff"
+              eventTextColor="#3730a3"
               datesSet={handleDatesSet}
               headerToolbar={false}
               views={{
@@ -579,7 +554,7 @@ const handleDatesSet = useCallback((dateInfo: any) => {
               }}
             />
           </div>
-        </motion.div>
+        </section>
       </div>
     </>
   );

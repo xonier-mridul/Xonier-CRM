@@ -324,7 +324,7 @@ const QuotationFileUploadModal = ({
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="bg-gradient-to-br from-[#16c2cf] to-[#0fb8a5] dark:to-cyan-700 px-6 py-5 flex items-center justify-between">
+          <div className="bg-gradient-to-br from-[#01728e] to-[#015d73] dark:to-cyan-700 px-6 py-5 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-lg">
                 📎

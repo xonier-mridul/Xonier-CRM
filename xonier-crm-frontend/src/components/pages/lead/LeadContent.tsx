@@ -1450,12 +1450,12 @@ const isIndeterminate =
               {hasPermission(PERMISSIONS.createLead) ? (
                 <Link
                   href="/leads/add"
-                  className="bg-cyan-600 hover:bg-cyan-700 text-white px-5 py-2.5 rounded-lg flex items-center gap-2 text-sm font-medium transition-colors group"
+                  className="bg-[#01728e] hover:bg-[#015d73] text-white px-5 py-2.5 rounded-lg flex items-center gap-2 text-sm font-medium transition-colors group"
                 >
                   <FaPlus className="group-hover:rotate-90 transition-transform duration-300" /> {t("create_lead")}
                 </Link>
               ) : (
-                <span className="bg-cyan-600 text-white px-5 py-2.5 rounded-lg flex items-center gap-2 opacity-70 cursor-not-allowed text-sm">
+                <span className="bg-[#01728e] text-white px-5 py-2.5 rounded-lg flex items-center gap-2 opacity-70 cursor-not-allowed text-sm">
                   <FaPlus /> {t("create_lead")}
                 </span>
               )}
@@ -1485,8 +1485,8 @@ const isIndeterminate =
                   className={`relative flex items-center gap-2 px-4 py-2.5 rounded-t-lg text-sm font-medium transition-all duration-150 border-b-2 -mb-px cursor-pointer
                   ${
                     currentTab === TAB.ASSIGNED
-                      ? "border-amber-500 text-amber-600 dark:text-amber-400 bg-amber-50/50 dark:bg-amber-900/10"
-                      : "border-transparent text-slate-500 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 hover:border-amber-300 "
+                      ? "border-[#01728e] text-[#01728e] dark:text-[#5aa8ba] bg-[#01728e]/5 dark:bg-[#01728e]/15"
+                      : "border-transparent text-slate-500 dark:text-slate-400 hover:text-[#01728e] dark:hover:text-[#5aa8ba] hover:border-[#01728e]/40 "
                   }`}
                 >
                   <TbArrowsExchange
@@ -1498,8 +1498,8 @@ const isIndeterminate =
                       className={`ml-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold
                     ${
                       currentTab === TAB.ASSIGNED
-                        ? "bg-amber-500 text-white"
-                        : "bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400"
+                        ? "bg-[#01728e] text-white"
+                        : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300"
                     }`}
                     >
                       {assignedLeadData.length}
@@ -1516,7 +1516,7 @@ const isIndeterminate =
                   onClick={() => setViewMode("table")}
                   className={`p-1.5 rounded-md transition-all flex items-center justify-center ${
                     viewMode === "table"
-                      ? "bg-white dark:bg-slate-700 text-cyan-600 shadow-sm"
+                      ? "bg-white dark:bg-slate-700 text-[#01728e] shadow-sm"
                       : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
                   }`}
                   title="Table View"
@@ -1527,7 +1527,7 @@ const isIndeterminate =
                   onClick={() => setViewMode("kanban")}
                   className={`p-1.5 rounded-md transition-all flex items-center justify-center ${
                     viewMode === "kanban"
-                      ? "bg-white dark:bg-slate-700 text-cyan-600 shadow-sm"
+                      ? "bg-white dark:bg-slate-700 text-[#01728e] shadow-sm"
                       : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
                   }`}
                   title="Kanban Board View"

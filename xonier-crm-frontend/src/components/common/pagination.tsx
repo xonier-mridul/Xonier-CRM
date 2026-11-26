@@ -64,7 +64,7 @@ const Pagination = ({
             className={`h-9 w-9 rounded-md text-sm  text-slate-500 font-medium cursor-pointer
               ${
                 page === currentPage
-                  ? "bg-cyan-600 text-white "
+                  ? "bg-[#01728e] text-white "
                   : "border border-slate-400 hover:bg-cyan-100 hover:border-cyan-500 hover:text-cyan-600 dark:hover:bg-gray-600"
               }`}
           >

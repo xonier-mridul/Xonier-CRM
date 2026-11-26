@@ -1127,7 +1127,7 @@ export const COLOR_OPTIONS: ColorOption[] = [
   { label: "Emerald", bg: "bg-emerald-100", text: "text-emerald-700", hex: "#10b981" },
   { label: "Amber", bg: "bg-amber-100", text: "text-amber-700", hex: "#f59e0b" },
   { label: "Rose", bg: "bg-rose-100", text: "text-rose-700", hex: "#f43f5e" },
-  { label: "Cyan", bg: "bg-cyan-100", text: "text-cyan-700", hex: "#06b6d4" },
+  { label: "Cyan", bg: "bg-cyan-100", text: "text-cyan-700", hex: "#01728e" },
   { label: "Orange", bg: "bg-orange-100", text: "text-orange-700", hex: "#f97316" },
 ];
 

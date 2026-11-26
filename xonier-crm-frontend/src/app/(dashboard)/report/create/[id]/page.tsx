@@ -598,7 +598,7 @@ const TaskReportCreatePage = (): JSX.Element => {
           {/* Rocket nose cone */}
           <path
             d="M24.8 7.2c-2 .1-4 .8-5.8 1.9l3.9 3.9c1.1-1.8 1.8-3.8 1.9-5.8z"
-            fill="#06B6D4"
+            fill="#01728e"
           />
           {/* Porthole */}
           <circle cx="17.2" cy="14.8" r="2.2" fill="#38BDF8" stroke="#0284C7" strokeWidth="1.1" />

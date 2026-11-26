@@ -109,7 +109,7 @@ const LANGUAGES = [
 ];
 
 const ACCENT_COLORS = [
-  { name: "cyan", hex: "#0891b2" },
+  { name: "cyan", hex: "#01728e" },
   { name: "blue", hex: "#2563eb" },
   { name: "violet", hex: "#7c3aed" },
   { name: "rose", hex: "#e11d48" },
@@ -400,7 +400,7 @@ const page = () => {
   ];
 
   return (
-    <div className="px-4 py-6 mx-auto mt-10 max-w-7xl h-screen pb-32">
+    <div className="w-full min-h-screen space-y-6 pb-8">
       {/* ============ HEADER ============ */}
       <header className="mb-8 flex items-start justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-3">

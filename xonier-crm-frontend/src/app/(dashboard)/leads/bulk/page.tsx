@@ -567,7 +567,7 @@ const BulkLeadUpload = (): JSX.Element => {
   );
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6">
 
       {/* ── Field Mapping Modal (reused generically) ── */}
       <FieldMappingModal
@@ -583,7 +583,7 @@ const BulkLeadUpload = (): JSX.Element => {
 
       {/* ── Header card ── */}
       <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
-        <div className="bg-gradient-to-br from-[#16c2cf] to-[#0fb8a5] dark:to-cyan-700  px-8 py-5">
+        <div className="bg-gradient-to-br from-[#01728e] to-[#015d73] dark:to-cyan-700  px-8 py-5">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-lg">
               🚀
@@ -941,7 +941,7 @@ const BulkLeadUpload = (): JSX.Element => {
                     onClick={() => setCurrentPage(p)}
                     className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors
                       ${currentPage === p
-                        ? "bg-cyan-600 text-white shadow-sm"
+                        ? "bg-[#01728e] text-white shadow-sm"
                         : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"}`}
                   >
                     {p}
@@ -972,7 +972,7 @@ const BulkLeadUpload = (): JSX.Element => {
           <button
             onClick={handleBulkUpload}
             disabled={isUploading || invalidCount > 0}
-            className="flex items-center gap-2 bg-cyan-600 hover:bg-cyan-700 text-white text-sm font-semibold px-6 py-2.5 rounded-lg transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 bg-[#01728e] hover:bg-[#015d73] text-white text-sm font-semibold px-6 py-2.5 rounded-lg transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <FiUpload />
             {isUploading

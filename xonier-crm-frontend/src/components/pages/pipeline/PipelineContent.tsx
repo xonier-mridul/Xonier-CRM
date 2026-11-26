@@ -68,7 +68,7 @@ interface EngagementStatsResponse {
 
 const getCampaignIconAndBg = (index: number) => {
   const styles = [
-    { bg: 'bg-[#18A1C4]', icon: <Mail className="text-white" size={20} /> },
+    { bg: 'bg-[#01728e]', icon: <Mail className="text-white" size={20} /> },
     { bg: 'bg-blue-500', icon: <FileText className="text-white" size={20} /> },
     { bg: 'bg-orange-500', icon: <LayoutTemplate className="text-white" size={20} /> },
     { bg: 'bg-green-500', icon: <Briefcase className="text-white" size={20} /> },
@@ -386,7 +386,7 @@ const PipelineContent = () => {
           {/* Sales Funnel */}
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-700 h-full">
             <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2 mb-5">
-              <Filter size={18} className="text-[#18A1C4]" /> Sales Funnel
+              <Filter size={18} className="text-[#01728e]" /> Sales Funnel
             </h3>
             
             {statsLoading ? (
@@ -408,8 +408,8 @@ const PipelineContent = () => {
                   const wonRaw = engagementStats?.funnel?.closed_won ?? engagementStats?.closedBreakdown.won ?? 0;
 
                   const funnelData = [
-                    { name: 'Total Leads', value: totalLeads, filter: 'all' as PipelineLeadFilter, fill: 'from-[#18A1C4] to-cyan-400' },
-                    { name: 'Contacted', value: contacted, filter: 'contacted' as PipelineLeadFilter, fill: 'from-blue-500 to-[#18A1C4]' },
+                    { name: 'Total Leads', value: totalLeads, filter: 'all' as PipelineLeadFilter, fill: 'from-[#01728e] to-cyan-400' },
+                    { name: 'Contacted', value: contacted, filter: 'contacted' as PipelineLeadFilter, fill: 'from-blue-500 to-[#01728e]' },
                     { name: 'Engaged', value: engagedRaw, filter: 'engaged' as PipelineLeadFilter, fill: 'from-indigo-500 to-blue-500' },
                     { name: 'Meetings', value: meetingsRaw, filter: 'meetings' as PipelineLeadFilter, fill: 'from-purple-500 to-indigo-500' },
                     { name: 'Closed Won', value: wonRaw, filter: 'closed_won' as PipelineLeadFilter, fill: 'from-emerald-500 to-teal-400' }
@@ -479,7 +479,7 @@ const PipelineContent = () => {
                 { title: "IN-PROGRESS", data: engagementStats?.pieBreakdown?.inProgress ?? [] },
                 { title: "LOST", data: engagementStats?.pieBreakdown?.lost ?? [] }
               ].map((chart, idx) => {
-                const CHART_COLORS = ["#ef4444", "#06b6d4", "#fcd34d", "#ca8a04", "#4338ca", "#0f172a", "#10b981", "#8b5cf6", "#ec4899", "#f97316"];
+                const CHART_COLORS = ["#ef4444", "#01728e", "#fcd34d", "#ca8a04", "#4338ca", "#0f172a", "#10b981", "#8b5cf6", "#ec4899", "#f97316"];
                 return (
                   <div key={idx} className="flex flex-col items-center">
                     <div className="h-[130px] w-full max-w-[150px] relative">
@@ -542,7 +542,7 @@ const PipelineContent = () => {
           {/* Header & Toolbar */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[#18A1C4]/10 dark:bg-[#18A1C4]/30 text-[#18A1C4] flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-[#01728e]/10 dark:bg-[#01728e]/30 text-[#01728e] flex items-center justify-center">
                 <Megaphone size={20} />
               </div>
               <div>
@@ -555,7 +555,7 @@ const PipelineContent = () => {
               {canCreateCampaign && <div className="relative group z-20">
                 <button
                   onClick={() => setIsCreateModalOpen(true)}
-                  className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#18A1C4] hover:bg-[#158ca8] text-white flex items-center justify-center shadow-sm shadow-[#18A1C4]/30 transition-all focus:outline-none"
+                  className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#01728e] hover:bg-[#015d73] text-white flex items-center justify-center shadow-sm shadow-[#01728e]/30 transition-all focus:outline-none"
                   aria-label="Create Campaign"
                 >
                   <Plus size={20} />
@@ -567,8 +567,8 @@ const PipelineContent = () => {
               </div>}
 
               {canUpdateCampaign && selectedCampaignIds.length > 0 && (
-                <div className="flex items-center gap-2 pl-3 pr-2 py-1 rounded-xl bg-[#18A1C4]/10 border border-[#18A1C4]/30">
-                  <span className="text-xs font-bold text-[#18A1C4] whitespace-nowrap">
+                <div className="flex items-center gap-2 pl-3 pr-2 py-1 rounded-xl bg-[#01728e]/10 border border-[#01728e]/30">
+                  <span className="text-xs font-bold text-[#01728e] whitespace-nowrap">
                     {selectedCampaignIds.length} selected
                   </span>
                   {selectionMode === 'active' && (
@@ -599,16 +599,16 @@ const PipelineContent = () => {
                   value={searchVal}
                   onChange={(e) => setSearchVal(e.target.value)}
                   placeholder="Search campaigns..." 
-                  className="pl-9 pr-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#18A1C4]/30 w-full md:w-64 transition-shadow text-gray-800 dark:text-gray-200" 
+                  className="pl-9 pr-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#01728e]/30 w-full md:w-64 transition-shadow text-gray-800 dark:text-gray-200"
                 />
               </div>
               
               <div className="relative" ref={filterRef}>
                 <button 
                   onClick={() => setIsFilterOpen(!isFilterOpen)}
-                  className={`flex items-center gap-2 px-4 py-2 border rounded-xl text-sm font-medium transition-colors ${isFilterOpen || statusFilter ? 'border-[#18A1C4] text-[#18A1C4] bg-[#18A1C4]/5 dark:bg-[#18A1C4]/10' : 'border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+                  className={`flex items-center gap-2 px-4 py-2 border rounded-xl text-sm font-medium transition-colors ${isFilterOpen || statusFilter ? 'border-[#01728e] text-[#01728e] bg-[#01728e]/5 dark:bg-[#01728e]/10' : 'border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
                 >
-                  <Filter size={16} /> <span className="hidden sm:inline">Filter {statusFilter && <span className="ml-1 px-1.5 py-0.5 bg-[#18A1C4] text-white rounded-md text-[10px]">1</span>}</span>
+                  <Filter size={16} /> <span className="hidden sm:inline">Filter {statusFilter && <span className="ml-1 px-1.5 py-0.5 bg-[#01728e] text-white rounded-md text-[10px]">1</span>}</span>
                 </button>
                 
                 {isFilterOpen && (
@@ -622,7 +622,7 @@ const PipelineContent = () => {
                           setCurrentPage(1);
                           setIsFilterOpen(false);
                         }}
-                        className={`w-full text-left px-3 py-2 rounded-lg text-sm flex items-center justify-between ${statusFilter === status ? 'bg-[#18A1C4]/10 text-[#18A1C4] font-medium' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+                        className={`w-full text-left px-3 py-2 rounded-lg text-sm flex items-center justify-between ${statusFilter === status ? 'bg-[#01728e]/10 text-[#01728e] font-medium' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
                       >
                         <span className="capitalize">{status || "All"}</span>
                         {statusFilter === status && <Check size={14} />}
@@ -635,7 +635,7 @@ const PipelineContent = () => {
               <div className="relative" ref={sortRef}>
                 <button 
                   onClick={() => setIsSortOpen(!isSortOpen)}
-                  className={`flex items-center gap-2 px-4 py-2 border rounded-xl text-sm font-medium transition-colors ${isSortOpen ? 'border-[#18A1C4] text-[#18A1C4] bg-[#18A1C4]/5 dark:bg-[#18A1C4]/10' : 'border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+                  className={`flex items-center gap-2 px-4 py-2 border rounded-xl text-sm font-medium transition-colors ${isSortOpen ? 'border-[#01728e] text-[#01728e] bg-[#01728e]/5 dark:bg-[#01728e]/10' : 'border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
                 >
                   <ArrowDownUp size={16} /> <span className="hidden sm:inline">Sort</span>
                 </button>
@@ -659,11 +659,11 @@ const PipelineContent = () => {
                           setCurrentPage(1);
                           setIsSortOpen(false);
                         }}
-                        className={`w-full text-left px-3 py-2 rounded-lg text-sm flex items-center justify-between ${sortField === opt.field ? 'bg-[#18A1C4]/10 text-[#18A1C4] font-medium' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+                        className={`w-full text-left px-3 py-2 rounded-lg text-sm flex items-center justify-between ${sortField === opt.field ? 'bg-[#01728e]/10 text-[#01728e] font-medium' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
                       >
                         <span>{opt.label}</span>
                         {sortField === opt.field && (
-                          <span className="text-[10px] bg-white dark:bg-gray-900 px-1.5 py-0.5 rounded border border-[#18A1C4]/20 uppercase">
+                          <span className="text-[10px] bg-white dark:bg-gray-900 px-1.5 py-0.5 rounded border border-[#01728e]/20 uppercase">
                             {sortOrder}
                           </span>
                         )}
@@ -676,13 +676,13 @@ const PipelineContent = () => {
               <div className="flex bg-gray-50 dark:bg-gray-900 p-1 rounded-xl border border-gray-200 dark:border-gray-700 shrink-0">
                 <button 
                   onClick={() => setViewMode('table')}
-                  className={`p-1.5 rounded-lg shadow-sm transition-colors ${viewMode === 'table' ? 'bg-white dark:bg-gray-700 text-[#18A1C4] dark:text-[#18A1C4]' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
+                  className={`p-1.5 rounded-lg shadow-sm transition-colors ${viewMode === 'table' ? 'bg-white dark:bg-gray-700 text-[#01728e] dark:text-[#01728e]' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
                 >
                   <List size={16}/>
                 </button>
                 <button 
                   onClick={() => setViewMode('grid')}
-                  className={`p-1.5 rounded-lg transition-colors ${viewMode === 'grid' ? 'bg-white dark:bg-gray-700 text-[#18A1C4] dark:text-[#18A1C4] shadow-sm' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
+                  className={`p-1.5 rounded-lg transition-colors ${viewMode === 'grid' ? 'bg-white dark:bg-gray-700 text-[#01728e] dark:text-[#01728e] shadow-sm' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
                 >
                   <Grid size={16}/>
                 </button>
@@ -715,7 +715,7 @@ const PipelineContent = () => {
                 </p>
                 {canCreateCampaign && <button 
                   onClick={() => setIsCreateModalOpen(true)}
-                  className="px-5 py-2.5 bg-[#18A1C4] hover:bg-[#158ca8] text-white rounded-xl text-sm font-medium transition-colors shadow-sm shadow-[#18A1C4]/30 flex items-center gap-2"
+                  className="px-5 py-2.5 bg-[#01728e] hover:bg-[#015d73] text-white rounded-xl text-sm font-medium transition-colors shadow-sm shadow-[#01728e]/30 flex items-center gap-2"
                 >
                   <Plus size={16} /> Create Campaign
                 </button>}
@@ -728,7 +728,7 @@ const PipelineContent = () => {
                     <div
                       key={camp.id || camp._id}
                       onClick={() => setSelectedCampaign(camp)}
-                      className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200/80 dark:border-gray-700 hover:border-[#18A1C4] dark:hover:border-[#18A1C4] transition-colors duration-200 cursor-pointer group flex flex-col"
+                      className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200/80 dark:border-gray-700 hover:border-[#01728e] dark:hover:border-[#01728e] transition-colors duration-200 cursor-pointer group flex flex-col"
                     >
                       <div className="flex justify-between items-start mb-4">
                         <div className="flex gap-3 items-center pr-2">
@@ -736,7 +736,7 @@ const PipelineContent = () => {
                               {style.icon}
                            </div>
                            <div>
-                              <h3 className="text-lg font-bold text-gray-800 dark:text-white group-hover:text-[#18A1C4] dark:group-hover:text-[#18A1C4] transition-colors line-clamp-1" title={camp.name}>
+                              <h3 className="text-lg font-bold text-gray-800 dark:text-white group-hover:text-[#01728e] dark:group-hover:text-[#01728e] transition-colors line-clamp-1" title={camp.name}>
                                 {camp.name}
                               </h3>
                               <div className="text-[11px] text-gray-500 dark:text-gray-400 flex items-center gap-1.5 mt-0.5 font-medium uppercase tracking-wider">
@@ -775,7 +775,7 @@ const PipelineContent = () => {
                       
                       <div className="mt-4 flex items-center justify-between text-xs text-gray-400 dark:text-gray-500">
                         <span><CreatedAt timestamp={camp.createdAt} /></span>
-                        <span className="text-gray-300 dark:text-gray-600 group-hover:text-[#18A1C4] dark:group-hover:text-[#18A1C4] transition-colors font-medium flex items-center gap-1">
+                        <span className="text-gray-300 dark:text-gray-600 group-hover:text-[#01728e] dark:group-hover:text-[#01728e] transition-colors font-medium flex items-center gap-1">
                           View <span className="text-lg leading-none">&rarr;</span>
                         </span>
                       </div>
@@ -790,7 +790,7 @@ const PipelineContent = () => {
                     <th className="py-3 px-4 w-12 border-b border-gray-100 dark:border-gray-700">
                       <input 
                         type="checkbox" 
-                        className="rounded border-gray-300 text-[#18A1C4] focus:ring-[#18A1C4] cursor-pointer w-4 h-4"
+                        className="rounded border-gray-300 text-[#01728e] focus:ring-[#01728e] cursor-pointer w-4 h-4"
                         checked={campaigns.length > 0 && selectedCampaignIds.length === campaigns.length}
                         onChange={(e) => {
                           if (e.target.checked) setSelectedCampaignIds(campaigns.map(c => c.id || c._id!));
@@ -816,7 +816,7 @@ const PipelineContent = () => {
                     return (
                       <tr 
                         key={camp.id || camp._id} 
-                        className={`hover:bg-gray-50/80 dark:hover:bg-gray-700/30 transition-colors group ${isSelected ? 'bg-[#18A1C4]/10 dark:bg-[#18A1C4]/20' : ''}`}
+                        className={`hover:bg-gray-50/80 dark:hover:bg-gray-700/30 transition-colors group ${isSelected ? 'bg-[#01728e]/10 dark:bg-[#01728e]/20' : ''}`}
                       >
                         <td className="py-4 px-4 w-12">
                           {(() => {
@@ -825,7 +825,7 @@ const PipelineContent = () => {
                             return (
                               <input 
                                 type="checkbox" 
-                                className={`rounded border-gray-300 text-[#18A1C4] focus:ring-[#18A1C4] w-4 h-4 ${isDisabled ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'}`}
+                                className={`rounded border-gray-300 text-[#01728e] focus:ring-[#01728e] w-4 h-4 ${isDisabled ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'}`}
                                 checked={isSelected}
                                 disabled={isDisabled}
                                 title={isDisabled ? (selectionMode === 'active' ? 'Deselect active campaigns first to select paused ones' : 'Deselect paused campaigns first to select active ones') : undefined}
@@ -844,7 +844,7 @@ const PipelineContent = () => {
                               {style.icon}
                             </div>
                             <div>
-                              <div className="font-bold text-sm text-gray-900 dark:text-white cursor-pointer group-hover:text-[#18A1C4] transition-colors" onClick={() => setSelectedCampaign(camp)}>
+                              <div className="font-bold text-sm text-gray-900 dark:text-white cursor-pointer group-hover:text-[#01728e] transition-colors" onClick={() => setSelectedCampaign(camp)}>
                                 {camp.name}
                               </div>
                               <div className="text-xs text-gray-500 mt-0.5 max-w-[150px] truncate">

@@ -29,7 +29,7 @@ export default function TimelineStep({
   const circleClasses = completed
     ? "bg-[#33BF8B] text-white"
     : active
-    ? "bg-gradient-to-br from-[#1BA2C3] to-[#33BF8B] text-white shadow-lg shadow-[#1BA2C3]/30"
+    ? "bg-gradient-to-br from-[#01728e] to-[#33BF8B] text-white shadow-lg shadow-[#01728e]/30"
     : "bg-gray-100 text-gray-400";
 
   if (orientation === "vertical") {

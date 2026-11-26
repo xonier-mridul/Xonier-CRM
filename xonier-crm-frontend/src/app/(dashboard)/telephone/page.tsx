@@ -887,7 +887,7 @@ const Page = () => {
       {showCreateModal && (
         <div className="fixed inset-0 z-150 flex items-center justify-center bg-black/20 backdrop-blur-sm p-4">
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-lg w-full">
-            <div className="bg-linear-to-r from-[#16c2cf] to-[#0fb8a5] px-6 py-5 rounded-t-2xl flex items-center justify-between">
+            <div className="bg-linear-to-r from-[#01728e] to-[#015d73] px-6 py-5 rounded-t-2xl flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
                   <FaPlus className="w-6 h-6 text-white" />

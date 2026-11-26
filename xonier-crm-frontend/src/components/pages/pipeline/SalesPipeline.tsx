@@ -578,7 +578,7 @@ export default function SalesPipeline() {
     const pct = (part: number, total: number) => (total > 0 ? `${Math.round((part / total) * 100)}%` : "0%");
 
     const leadFunnelColors = [
-      { color: "#06B6D4", dotClass: "bg-cyan-500" },
+      { color: "#01728e", dotClass: "bg-cyan-500" },
       { color: "#0EA5E9", dotClass: "bg-sky-500" },
       { color: "#3B82F6", dotClass: "bg-blue-500" },
       { color: "#6366F1", dotClass: "bg-indigo-500" },
