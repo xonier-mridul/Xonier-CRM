@@ -31,7 +31,7 @@ class Dependencies:
             return
         await self.permissions(["user:read"])(request)
 
-    def permissions(self, permissions: List[str]):
+    def permissions(self, permissions: List[str], *, active_only: bool = False):
         async def checking(request: Request):
             
             user = request.state.user
@@ -57,8 +57,9 @@ class Dependencies:
                  if perm_id and PydanticObjectId.is_valid(str(perm_id)):
                    user_permissions_ids.append(PydanticObjectId(str(perm_id)))
 
+            permission_options = {"active_only": True} if active_only else {}
             user_permissions = await self.permissionRepo.get_permissions_code(
-                ids=user_permissions_ids
+                ids=user_permissions_ids, **permission_options
             )
 
             user_permissions = set(user_permissions)

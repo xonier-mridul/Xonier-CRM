@@ -1,3 +1,4 @@
+from pymongo import IndexModel
 from motor.motor_asyncio import AsyncIOMotorClient
 from app.core.config import get_setting
 from beanie import init_beanie
@@ -80,6 +81,13 @@ async def connect_db():
             database=db,
             document_models=[UserModel, PermissionModel, UserRoleModel, OtpModel, EnquiryModel, TeamModel, TeamCategoryModel, LeadsModel, OrganizationModel, PersonModel, CustomFieldModel, UserFormModel, DealModel, CalenderEventModel, QuotationModel, QuotationHistoryModel, NoteModel, UserCustomFieldModel, ActivityModel, TelephoneNumbersModel, SMSHistory, EmailTemplateModel, EmailHistoryModel, TaskCategoryModel, TaskActivityModel, TaskStatusModel, TaskModel, NextActionModel, TaskRemarkModel, TaskReportModel, SubTaskModel, InvoiceModel, TaskTimeLogModel, FeatureModel, PlanModel, CompanyModel, SubscriptionModel, QueryModel, NotificationModel, PaymentModel, CampaignModel, CampaignLeadModel, CallSessionModel, GoogleCalendarConnectionModel]
         )
+        await db["sales_lead_tasks"].create_indexes([
+            IndexModel([("companyId", 1), ("assigneeId", 1), ("status", 1), ("dueDate", 1)]),
+            IndexModel([("companyId", 1), ("assigneeId", 1), ("status", 1), ("assignedAt", 1)]),
+            IndexModel([("companyId", 1), ("leadId", 1), ("status", 1)]),
+        ])
+        # Create the receipt collection before it is used inside transactions.
+        await db["sales_lead_task_requests"].create_index("createdAt")
         await db["deals"].create_index([("companyId", 1), ("dealStage", 1)], name="company_deal_stage")
         await db["deals"].create_index(
             [("companyId", 1), ("status", 1), ("closeDate", 1)], name="company_forecast_close_date"

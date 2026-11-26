@@ -10,11 +10,14 @@ import { FaRegEye } from "react-icons/fa";
 import { FaPlus, FaXmark, FaCheck } from "react-icons/fa6";
 import { FiFilter, FiActivity, FiUser, FiCalendar, FiUserPlus, FiX, FiTag, FiPhone, FiTarget, FiHash, FiMessageCircle, FiSettings, FiUserCheck } from "react-icons/fi";
 import { usePermissions } from "@/src/hooks/usePermissions";
-import { LEAD_SOURCE_TYPE, PERMISSIONS, SALES_STATUS, PROJECT_TYPES } from "@/src/constants/enum";
+import { useFeatures } from "@/src/hooks/useFeatures";
+import { FEATURES, LEAD_SOURCE_TYPE, PERMISSIONS, SALES_STATUS, PROJECT_TYPES } from "@/src/constants/enum";
 import axios from "axios";
 import extractErrorMessages from "@/src/app/utils/error.utils";
+import { subscribeToLeadEngagementUpdates } from "@/src/app/utils/leadEngagementUpdates";
 import { toast } from "react-toastify";
 import LeadService from "@/src/services/lead.service";
+import { SALES_TASK_BATCH_LIMIT, SALES_TASK_DRAFT_KEY, type SalesTaskMode } from "@/src/services/sales-task.service";
 import { TeamService } from "@/src/services/team.service";
 // import { DesignationService } from "@/src/services/designation.service"; // ✅ uncommented
 import { useAdvancedFilters } from "@/src/hooks/useAdvanceFilter";
@@ -58,12 +61,14 @@ import CallablePhone from "../../common/CallablePhone";
 import { useSelector } from "react-redux";
 import { RootState } from "@/src/store";
 
-type AssignmentRole = { code?: string; power?: number; canManageBelow?: boolean };
+type AssignmentRole = { code?: string; power?: number; canManageBelow?: boolean; status?: boolean | string; deletedAt?: string | null };
 const assignmentRank = (roles: AssignmentRole[]) => Math.max(0, ...roles.map(r =>
   ({ SUPER_ADMIN: 100, COMPANY_ADMIN: 90, ADMIN: 80, MANAGER: 50, USER: 10 } as Record<string, number>)[r.code || ""] ?? r.power ?? 10));
-const canManageAssignments = (roles: AssignmentRole[]) => roles.some(r =>
-  ["SUPER_ADMIN", "COMPANY_ADMIN", "ADMIN", "MANAGER"].includes(r.code || "") ||
-  (r.code !== "USER" && r.canManageBelow === true));
+const canManageAssignments = (roles: AssignmentRole[]) => roles.some(role =>
+  role.code && role.status !== false && !role.deletedAt && (
+    ["SUPER_ADMIN", "COMPANY_ADMIN", "ADMIN", "MANAGER"].includes(role.code) ||
+    (role.code !== "USER" && role.canManageBelow === true)
+  ));
 
 const TAB = { ALL: 1, WON: 2, LOST: 3, ASSIGNED: 4 } as const;
 
@@ -136,6 +141,12 @@ const LeadContent = (): JSX.Element => {
 
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [engagementRefresh, setEngagementRefresh] = useState(0);
+
+  useEffect(() => subscribeToLeadEngagementUpdates(() => {
+    setEngagementRefresh(value => value + 1);
+    window.dispatchEvent(new Event("follow-up-updated"));
+  }), []);
   const leadFetchSequence = useRef({ all: 0, won: 0, lost: 0, assigned: 0 });
   const activeLeadLoadingSequence = useRef(0);
   const [leadData, setLeadData] = useState<Lead[]>([]);
@@ -220,6 +231,24 @@ const LeadContent = (): JSX.Element => {
   const reassignDropdownRef = useRef<HTMLDivElement>(null);
 
   const { hasPermission } = usePermissions();
+  const { hasFeature } = useFeatures();
+  const salesTasksEnabled = hasFeature(FEATURES.SALES) && hasFeature(FEATURES.CRM);
+  const startSalesTask = (mode: SalesTaskMode) => {
+    const userId = mode === "assign" ? selectedUserId : selectedReassignUserId;
+    const leadIds = Array.from(mode === "assign" ? selectedLeadIds : selectedReassignIds);
+    if (!userId || !leadIds.length || leadIds.length > SALES_TASK_BATCH_LIMIT) return;
+    try {
+      sessionStorage.setItem(SALES_TASK_DRAFT_KEY, JSON.stringify({
+        requestId: crypto.randomUUID(), mode, userId, leadIds,
+      }));
+      router.push("/sales/tasks/create");
+    } catch {
+      toast.error("Could not open the Sales task form. Please try again.");
+    }
+  };
+
+  const selectedAssignee = userData.find(user => (user.id || user._id) === selectedUserId);
+  const selectedReassignee = userData.find(user => (user.id || user._id) === selectedReassignUserId);
   const userid = searchParams.get("userid");
   const query = userid ? { userid } : {};
 
@@ -446,6 +475,7 @@ const LeadContent = (): JSX.Element => {
     assignFilter,
     activeFinalStageKey,
     viewMode,
+    engagementRefresh,
   ]);
   useEffect(() => {
     getUserData();
@@ -534,7 +564,7 @@ const isIndeterminate =
   };
 
   const handleAssignLeads = async (): Promise<void> => {
-    if (!canAssignLeads) return;
+    if (!canAssignLeads || !hasPermission(PERMISSIONS.assignLead)) return;
     if (!selectedUserId) {
       toast.warning("Please select a user to assign leads to");
       return;
@@ -592,7 +622,7 @@ const isIndeterminate =
   };
 
   const handleReassignLeads = async (): Promise<void> => {
-    if (!canAssignLeads) return;
+    if (!canAssignLeads || !hasPermission(PERMISSIONS.reassignLead)) return;
     if (!selectedReassignUserId) {
       toast.warning("Please select a user to reassign leads to");
       return;
@@ -630,7 +660,7 @@ const isIndeterminate =
   };
 
   const handleRevokeLeads = async (): Promise<void> => {
-    if (!canAssignLeads) return;
+    if (!canAssignLeads || !hasPermission(PERMISSIONS.assignLead)) return;
     if (selectedReassignIds.size === 0) {
       toast.warning("Please select a lead to reassign");
       return;
@@ -709,7 +739,6 @@ const isIndeterminate =
       if (result.status === 200 && result.data?.success !== false) {
         const label = STATUS_CONFIG[newStatus]?.label ?? newStatus;
         toast.success(result.data?.message || `Lead status updated to "${label}" successfully`);
-        window.dispatchEvent(new Event("follow-up-updated"));
 
         setLeadData((prevData) =>
           prevData.map((lead) =>
@@ -1645,8 +1674,8 @@ const isIndeterminate =
             )}
 
             {/* ── Assign Toolbar (All Leads tab) ── */}
-            {canAssignLeads && selectedLeadIds.size > 0 && currentTab === TAB.ALL && (
-              <div className="flex items-center gap-3 px-4 py-2 bg-cyan-50/50 dark:bg-cyan-900/20 rounded-xl border border-cyan-200 dark:border-cyan-800 self-end ml-auto">
+            {canAssignLeads && hasPermission(PERMISSIONS.assignLead) && selectedLeadIds.size > 0 && currentTab === TAB.ALL && (
+              <div className="flex flex-wrap items-center gap-3 px-4 py-2 bg-cyan-50/50 dark:bg-cyan-900/20 rounded-xl border border-cyan-200 dark:border-cyan-800 self-end ml-auto">
                 <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-cyan-700 dark:text-cyan-300">
                   <span className="w-5 h-5 rounded-full bg-cyan-500 text-white text-[10px] flex items-center justify-center font-bold">
                     {selectedLeadIds.size}
@@ -1686,25 +1715,9 @@ const isIndeterminate =
                           userData.filter(u => u.userRole?.length && assignmentRank(assignmentRoles) > assignmentRank(u.userRole)).filter(u => `${u.firstName || ''} ${u.lastName || ''}`.toLowerCase().includes(assignSearchVal.toLowerCase())).map((u: any) => (
                             <li key={u.id || u._id}>
                               <button
-                                onClick={async () => {
+                                onClick={() => {
                                   setSelectedUserId(u.id || u._id);
                                   setAssignDropdownOpen(false);
-                                  setIsAssigning(true);
-                                  try {
-                                    const result = await LeadService.assignBulkLead(u.id || u._id, Array.from(selectedLeadIds));
-                                    if (result.status === 200) {
-                                      const { assigned, skipped } = result.data.data;
-                                      toast.success(`${assigned} lead(s) assigned successfully`);
-                                      if (skipped > 0) toast.info(`${skipped} lead(s) were skipped`);
-                                      clearAssignSelection();
-                                      await Promise.all([getLeadData(true), getAssignedLeadData(false)]);
-                                    }
-                                  } catch (error) {
-                                    const m = extractErrorMessages(error);
-                                    toast.error(Array.isArray(m) ? m[0] : m || "Failed to assign leads");
-                                  } finally {
-                                    setIsAssigning(false);
-                                  }
                                 }}
                                 className="w-full text-left px-4 py-2.5 text-[13px] text-slate-700 dark:text-slate-200 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 hover:text-cyan-700 transition-colors flex items-center gap-2"
                               >
@@ -1720,6 +1733,23 @@ const isIndeterminate =
                     </div>
                   )}
                 </div>
+                {selectedUserId && <>
+                  <span className="text-xs font-medium text-slate-700 dark:text-slate-200">
+                    {selectedAssignee?.firstName}
+                    {" "}
+                    {selectedAssignee?.lastName}
+                  </span>
+                  <button type="button" onClick={handleAssignLeads} disabled={isAssigning}
+                    className="rounded-lg bg-slate-800 px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-60">
+                    Assign Lead
+                  </button>
+                  {salesTasksEnabled && <button type="button" onClick={() => startSalesTask("assign")}
+                    disabled={isAssigning || selectedLeadIds.size > SALES_TASK_BATCH_LIMIT}
+                    title={selectedLeadIds.size > SALES_TASK_BATCH_LIMIT ? `Select up to ${SALES_TASK_BATCH_LIMIT} leads to create tasks` : undefined}
+                    className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-800 disabled:opacity-60 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100">
+                    Create Task
+                  </button>}
+                </>}
                 <button
                   onClick={clearAssignSelection}
                   className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-[12px] font-medium text-cyan-700 dark:text-cyan-400 hover:bg-cyan-100 dark:hover:bg-cyan-900/40 transition-colors"
@@ -1731,8 +1761,8 @@ const isIndeterminate =
             )}
 
             {/* ── Reassign Toolbar (Assigned Leads tab) ── */}
-            {canAssignLeads && selectedReassignIds.size > 0 && currentTab === TAB.ASSIGNED && (
-              <div className="flex items-center gap-3 px-4 py-2 bg-amber-50/60 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800 self-end ml-auto">
+            {canAssignLeads && hasPermission(PERMISSIONS.reassignLead) && selectedReassignIds.size > 0 && currentTab === TAB.ASSIGNED && (
+              <div className="flex flex-wrap items-center gap-3 px-4 py-2 bg-amber-50/60 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800 self-end ml-auto">
                 <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-amber-700 dark:text-amber-300">
                   <span className="w-5 h-5 rounded-full bg-amber-500 text-white text-[10px] flex items-center justify-center font-bold">
                     {selectedReassignIds.size}
@@ -1772,28 +1802,9 @@ const isIndeterminate =
                           userData.filter(u => u.userRole?.length && assignmentRank(assignmentRoles) > assignmentRank(u.userRole)).filter(u => `${u.firstName || ''} ${u.lastName || ''}`.toLowerCase().includes(reassignSearchVal.toLowerCase())).map((u: any) => (
                             <li key={u.id || u._id}>
                               <button
-                                onClick={async () => {
+                                onClick={() => {
                                   setSelectedReassignUserId(u.id || u._id);
                                   setReassignDropdownOpen(false);
-                                  setIsReassigning(true);
-                                  try {
-                                    const result = await LeadService.reassignBulkLead({
-                                      userId: u.id || u._id,
-                                      leadsId: Array.from(selectedReassignIds),
-                                    });
-                                    if (result.status === 200) {
-                                      const { reassigned, skipped } = result.data.data;
-                                      toast.success(`${reassigned} lead(s) reassigned successfully`);
-                                      if (skipped > 0) toast.info(`${skipped} lead(s) skipped`);
-                                      clearReassignSelection();
-                                      await getAssignedLeadData();
-                                    }
-                                  } catch (error) {
-                                    const m = extractErrorMessages(error);
-                                    toast.error(Array.isArray(m) ? m[0] : m || "Failed to reassign leads");
-                                  } finally {
-                                    setIsReassigning(false);
-                                  }
                                 }}
                                 className="w-full text-left px-4 py-2.5 text-[13px] text-slate-700 dark:text-slate-200 hover:bg-amber-50 dark:hover:bg-amber-900/20 hover:text-amber-700 transition-colors flex items-center gap-2"
                               >
@@ -1809,13 +1820,30 @@ const isIndeterminate =
                     </div>
                   )}
                 </div>
-                <button
+                {selectedReassignUserId && <>
+                  <span className="text-xs font-medium text-slate-700 dark:text-slate-200">
+                    {selectedReassignee?.firstName}
+                    {" "}
+                    {selectedReassignee?.lastName}
+                  </span>
+                  <button type="button" onClick={handleReassignLeads} disabled={isReassigning}
+                    className="rounded-lg bg-slate-800 px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-60">
+                    Reassign Lead
+                  </button>
+                  {salesTasksEnabled && <button type="button" onClick={() => startSalesTask("reassign")}
+                    disabled={isReassigning || selectedReassignIds.size > SALES_TASK_BATCH_LIMIT}
+                    title={selectedReassignIds.size > SALES_TASK_BATCH_LIMIT ? `Select up to ${SALES_TASK_BATCH_LIMIT} leads to create tasks` : undefined}
+                    className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-800 disabled:opacity-60 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100">
+                    Create Task
+                  </button>}
+                </>}
+                {hasPermission(PERMISSIONS.assignLead) && <button
                   onClick={handleRevokeLeads}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-red-200 dark:border-red-800 text-red-500 dark:text-red-400 text-[12px] font-semibold hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                   title="Revoke leads"
                 >
                   {t("revoke")}
-                </button>
+                </button>}
                 <button
                   onClick={clearReassignSelection}
                   className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-[12px] font-medium text-amber-700 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-colors"

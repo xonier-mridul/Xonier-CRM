@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { FaChevronDown } from "react-icons/fa";
 import { FiClock } from "react-icons/fi";
 import { createPortal } from "react-dom";
@@ -74,6 +74,11 @@ export const STATUS_CONFIG: Record<
     color: "bg-fuchsia-50 dark:bg-fuchsia-900/20 border border-fuchsia-200 dark:border-fuchsia-700/40",
     textColor: "text-fuchsia-600 dark:text-fuchsia-400",
   },
+  [LeadEngagementStatus.CALL_BACK]: {
+    label: "Call Back",
+    color: "bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-200 dark:border-cyan-700/40",
+    textColor: "text-cyan-600 dark:text-cyan-400",
+  },
   [LeadEngagementStatus.FOLLOW_UP]: {
     label: "Follow Up",
     color: "bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-200 dark:border-cyan-700/40",
@@ -85,6 +90,7 @@ type Props = {
   currentStatus: LeadEngagementStatus;
   Id: string;
   followUpAt?: string | null;
+  readOnly?: boolean;
   onStatusUpdate: (
     id: string,
     newStatus: LeadEngagementStatus,
@@ -96,6 +102,7 @@ export default function StatusDropdown({
   currentStatus,
   Id,
   followUpAt,
+  readOnly = false,
   onStatusUpdate,
 }: Props) {
   const [isOpen, setIsOpen] = useState(false);
@@ -105,10 +112,13 @@ export default function StatusDropdown({
   const [position, setPosition] = useState({ top: 0, left: 0 });
   const [openUpward, setOpenUpward] = useState(false);
 
+  const followUpInputId = useId();
   const buttonRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (!isOpen) return;
+
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Node;
 
@@ -122,18 +132,29 @@ export default function StatusDropdown({
       }
     };
 
-    if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
+    const handleScroll = (event: Event) => {
+      // The menu is portaled to the viewport, so background scrolling moves
+      // its trigger independently. Scrolling the menu itself is safe.
+      if (event.target instanceof Node && menuRef.current?.contains(event.target)) return;
+      setIsOpen(false);
+    };
+    const handleResize = () => setIsOpen(false);
+
+    document.addEventListener("mousedown", handleClickOutside);
+    window.addEventListener("scroll", handleScroll, { capture: true, passive: true });
+    window.addEventListener("resize", handleResize);
 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
+      window.removeEventListener("scroll", handleScroll, true);
+      window.removeEventListener("resize", handleResize);
     };
   }, [isOpen]);
 
   // ✅ toggle with auto direction
   const handleToggle = () => {
     if (!isOpen && buttonRef.current) {
+      setSelectingFollowUp(false);
       const rect = buttonRef.current.getBoundingClientRect();
       const dropdownHeight = 390; // allow room for the follow-up scheduling choices
       const spaceBelow = window.innerHeight - rect.bottom;
@@ -145,7 +166,7 @@ export default function StatusDropdown({
         top: shouldOpenUp
           ? rect.top - 10 // above button
           : rect.bottom + 10, // below button
-        left: rect.left + rect.width / 2,
+        left: Math.max(Math.min(138, window.innerWidth / 2), Math.min(rect.left + rect.width / 2, window.innerWidth - 138)),
       });
     }
 
@@ -199,8 +220,10 @@ export default function StatusDropdown({
       {/* Button */}
       <div className="inline-block" ref={buttonRef}>
         <button
+          type="button"
           onClick={handleToggle}
-          disabled={isUpdating}
+          disabled={isUpdating || readOnly}
+          aria-expanded={!readOnly ? isOpen : undefined}
           className={`${
             (STATUS_CONFIG[currentStatus] || STATUS_CONFIG[LeadEngagementStatus.NOT_REACHED]).color
           } ${(STATUS_CONFIG[currentStatus] || STATUS_CONFIG[LeadEngagementStatus.NOT_REACHED]).textColor} px-3 py-1.5 text-[13px] font-semibold rounded-md flex items-center gap-2 justify-between min-w-[130px] transition-all`}
@@ -208,13 +231,13 @@ export default function StatusDropdown({
           <span>{(STATUS_CONFIG[currentStatus] || STATUS_CONFIG[LeadEngagementStatus.NOT_REACHED]).label}</span>
           {isUpdating ? (
             <div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
-          ) : (
+          ) : !readOnly ? (
             <FaChevronDown
               className={`text-[10px] opacity-60 transition-transform ${
                 isOpen ? "rotate-180" : ""
               }`}
             />
-          )}
+          ) : null}
         </button>
         {isFollowUp && (
           <span
@@ -247,7 +270,7 @@ export default function StatusDropdown({
             <div
               ref={menuRef}
               onMouseDown={(e) => e.stopPropagation()}
-              className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 w-[260px] p-4 flex flex-col gap-3 animate-[fadeIn_0.2s_ease]"
+              className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 w-[260px] max-w-[calc(100vw-1rem)] max-h-[60dvh] overflow-y-auto overscroll-contain p-4 flex flex-col gap-3 animate-[fadeIn_0.2s_ease]"
             >
               {selectingFollowUp ? (
                 <div className="flex flex-col gap-2">
@@ -258,9 +281,9 @@ export default function StatusDropdown({
                   <button type="button" onClick={() => void saveFollowUp("1h")} className="rounded-lg px-3 py-2 text-left text-[13px] text-gray-800 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">In 1 hour</button>
                   <button type="button" onClick={() => void saveFollowUp("6h")} className="rounded-lg px-3 py-2 text-left text-[13px] text-gray-800 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">In 6 hours</button>
                   <button type="button" onClick={() => void saveFollowUp("1d")} className="rounded-lg px-3 py-2 text-left text-[13px] text-gray-800 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">In 1 day</button>
-                  <label className="mt-1 text-xs font-medium text-gray-600 dark:text-gray-300" htmlFor={`follow-up-${Id}`}>Custom date &amp; time</label>
+                  <label className="mt-1 text-xs font-medium text-gray-600 dark:text-gray-300" htmlFor={followUpInputId}>Custom date &amp; time</label>
                   <input
-                    id={`follow-up-${Id}`}
+                    id={followUpInputId}
                     type="datetime-local"
                     value={customFollowUpAt}
                     min={new Date().toISOString().slice(0, 16)}

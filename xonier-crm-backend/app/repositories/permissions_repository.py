@@ -10,7 +10,20 @@ class PermissionRepository(BaseRepository):
     def __init__(self):
         super().__init__(PermissionModel)
 
-    async def get_permissions_code(self, ids: List[PydanticObjectId], projections: Dict[str, int] = None, session: AsyncIOMotorClientSession = None):
+    async def get_permissions_code(
+        self, ids: List[PydanticObjectId], projections: Dict[str, int] = None,
+        session: AsyncIOMotorClientSession = None, *, active_only: bool = False,
+    ):
+        if active_only:
+            if not ids:
+                return set()
+            documents = await self.model.get_pymongo_collection().find(
+                {"_id": {"$in": ids}, "is_active": {"$ne": False}, "deleted_at": None},
+                {"code": 1},
+                session=session,
+            ).to_list(length=len(ids))
+            return {document["code"] for document in documents}
+
         data = await self.get_all_without_pagination({"_id": {"$in":ids}}, None, projections, session)
        
         permissions = set()

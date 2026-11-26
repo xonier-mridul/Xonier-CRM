@@ -18,7 +18,6 @@ from app.utils.company_code import (
     is_company_code_collision,
 )
 
-
 async def migrate_company_codes(collection, *, apply=False, company_id=None):
     if apply:
         # Index creation is deliberately excluded from dry runs. Current codes
@@ -45,8 +44,6 @@ async def migrate_company_codes(collection, *, apply=False, company_id=None):
                          "$addToSet": {"loginCodes": {"$each": [normalize_company_code(old_code), code]}}},
                     )
                     if not result.matched_count:
-                        # An admin edited this record since the cursor read it.
-                        # Never overwrite that change; a later run can revisit it.
                         break
                 except DuplicateKeyError as error:
                     if is_company_code_collision(error):

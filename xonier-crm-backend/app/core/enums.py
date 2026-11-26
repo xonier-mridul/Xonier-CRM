@@ -1080,6 +1080,7 @@ class BILLING_CYCLE(str, Enum):
 
 
 class FEATURE(str, Enum):
+    SALES = "sales:feature"
     TASK = "task:feature",
     CRM = "crm:feature",
     TELECOM = "telecom:feature",

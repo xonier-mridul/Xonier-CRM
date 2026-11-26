@@ -38,3 +38,9 @@ class LeadAssignmentAccessTests(unittest.TestCase):
             require_lead_assigner({'userRole': []})
         with self.assertRaises(AppException):
             require_lower_assignee(account('MANAGER'), {'_id': 'target', 'userRole': []})
+
+    def test_inactive_actor_role_cannot_raise_assignment_rank(self):
+        actor = account("MANAGER")
+        actor["userRole"].append({"code": "SUPER_ADMIN", "status": False})
+        with self.assertRaises(AppException):
+            require_lower_assignee(actor, account("ADMIN", "target"))

@@ -31,6 +31,7 @@ from app.routes.enquiry_route import router as enquiry_route
 from app.routes.team_route import router as team_router
 from app.routes.team_category_route import router as team_category_route
 from app.routes.leads_route import router as lead_route
+from app.routes.sales_task_route import router as sales_task_route
 from app.routes.form_field_route import router as form_field_route
 from app.routes.user_form_route import router as user_form_route
 from app.routes.deal_route import router as deal_router
@@ -173,6 +174,7 @@ app.include_router(enquiry_route, prefix="/api/enquiry")
 app.include_router(team_router, prefix="/api/team")
 app.include_router(team_category_route, prefix="/api/team-category")
 app.include_router(lead_route, prefix="/api/lead")
+app.include_router(sales_task_route, prefix="/api/sales-tasks")
 app.include_router(form_field_route, prefix="/api/form")
 app.include_router(user_form_route, prefix="/api/user-form")
 app.include_router(deal_router, prefix="/api/deal")

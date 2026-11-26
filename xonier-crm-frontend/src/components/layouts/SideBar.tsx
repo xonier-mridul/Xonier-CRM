@@ -107,7 +107,7 @@ const SideBar = () => {
     if (pathname.startsWith("/enquiry")) {
       setOpenMenu("sales")
     }
-    if (pathname.startsWith("/leads")) {
+    if (pathname.startsWith("/leads") || pathname.startsWith("/sales/tasks")) {
       setOpenMenu("sales")
     }
     if (pathname.startsWith("/pipeline") || pathname.startsWith("/campaigns") || pathname.startsWith("/agents")) {
@@ -176,6 +176,7 @@ const SideBar = () => {
       case "sales":
         return pathname.startsWith("/enquiry") ||
           pathname.startsWith("/leads") ||
+          pathname.startsWith("/sales/tasks") ||
           pathname.startsWith("/pipeline") ||
           pathname.startsWith("/campaigns") ||
           pathname.startsWith("/agents") ||
@@ -855,6 +856,13 @@ const isSuperAdmin = auth.user?.userRole?.some(
                       >
                         <SubDot />
                         {t("leads")}
+                      </Link>
+                    </li>}
+                    {(hasPermission(PERMISSIONS.readLead) && hasFeature(FEATURES.CRM)) && <li>
+                      <Link href="/sales/tasks" onClick={handleNavClick("/sales/tasks")}
+                        className={`${isActive("/sales/tasks") ? "text-[#01728e] dark:text-[#5aa8ba] border-[#01728e] bg-[#01728e]/10 dark:bg-[#01728e]/20" : "border-transparent"} flex items-center gap-2.5 rounded-md border-l-2 px-3 py-2 text-sm hover:bg-cyan-600/5`}>
+                        <SubDot />
+                        {t("sales_tasks_nav", { defaultValue: "Tasks" })}
                       </Link>
                     </li>}
                     {(hasPermission(PERMISSIONS.readDeal) &&  (hasFeature(FEATURES.CRM))) && <li>

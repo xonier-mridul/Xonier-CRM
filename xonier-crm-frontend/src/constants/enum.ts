@@ -1146,6 +1146,7 @@ export enum LeadEngagementStatus {
   MEETING_SCHEDULED = "meeting_scheduled",
   MEETING_COMPLETED = "meeting_completed",
   FOLLOW_UP = "follow_up",
+  CALL_BACK = "call_back",
 }
 
 export enum TASK_ACTIVITY_ACTION {

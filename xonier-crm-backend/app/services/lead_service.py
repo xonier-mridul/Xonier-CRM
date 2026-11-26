@@ -1,3 +1,4 @@
+import hashlib
 import logging
 from app.utils.record_visibility import DELETED_STATUSES, live_lead_filter
 from app.utils.transaction_retry import retry_transaction
@@ -10,7 +11,8 @@ from app.utils.enquiry_id_generator import generate_enquiry_id, generate_lead_id
 from app.utils.custom_exception import AppException
 from app.repositories.lead_repository import LeadRepository
 from fastapi.encoders import jsonable_encoder
-from bson import ObjectId
+from bson import DBRef, ObjectId
+from bson.errors import InvalidId
 from pydantic import ValidationError
 from datetime import datetime, timezone, timedelta
 from app.core.crypto import encryptor
@@ -21,7 +23,8 @@ from app.core.constants import (
     USER_LEAD_CACHE_NAMESPACE,
     
 )
-from app.db.models.lead_model import LeadsModel 
+from app.db.models.lead_model import LeadsModel
+from app.db.models.user_roles_model import UserRoleModel
 from app.db.models.campaign_lead_model import CampaignLeadModel
 from app.db.models.campaign_model import CampaignModel
 from app.core.enums import SALES_STATUS, ACTIVITY_ENTITY_TYPE, ACTIVITY_ACTION, LEAD_SOURCE_TYPE, MEETING_SCHEDULED, USER_STATUS
@@ -40,6 +43,7 @@ from app.db.db import Client
 from app.utils.activity_payload import activity_payload
 from app.utils.validate_admin import validate_admin, validate_admin_company_admin
 from app.repositories.user_repository import UserRepository
+from app.repositories.permissions_repository import PermissionRepository
 from app.repositories.event_repository import EventRepository
 from app.utils.event_payload_generator import EventPayloadGenerator
 
@@ -54,7 +58,12 @@ from app.services.commercial_relationship_service import (
 )
 from app.db.models.organization_model import OrganizationModel
 from app.db.models.person_model import PersonModel
-from app.utils.lead_assignment_access import can_assign_leads, require_lead_assigner, require_lower_assignee
+from app.utils.lead_assignment_access import (
+    can_assign_leads, is_active_role, require_lead_assigner, require_lower_assignee,
+)
+from app.services.sales_task_service import (
+    cancel_pending_tasks, sales_company_id, task_requests_collection, tasks_collection,
+)
 
 
 _POPULATED_USER_FIELDS = {"createdBy", "updatedBy", "assignedTo", "deletedBy", "disqualifiedBy"}
@@ -468,141 +477,195 @@ class LeadService:
                     raise AppException(500, f"Internal server error: {str(e)}")
 
     async def bulk_lead_assign(self, payload: Dict[str, Any], user: Dict[str, Any]):
+        return await self._assign_leads(payload, user, reassign=False)
+
+    async def bulk_lead_reassign(self, payload: Dict[str, Any], user: Dict[str, Any]):
+        return await self._assign_leads(payload, user, reassign=True)
+
+    async def preview_sales_task(self, payload, user):
         require_lead_assigner(user)
+        company_id = sales_company_id(user)
+        assignee_id = ObjectId(payload.userId)
+        assignee = await self._assignment_target(user, company_id, assignee_id, active_only=True)
+        leads = await self._assignment_candidates(
+            company_id, list(map(ObjectId, payload.leadIds))
+        )
+        return {
+            "assigneeName": " ".join(filter(None, [assignee.firstName, assignee.lastName])),
+            "leads": [
+                {"id": str(lead["_id"]), "code": lead.get("lead_id"), "name": lead.get("fullName")}
+                for lead in leads
+            ],
+        }
+
+    async def assign_with_sales_tasks(self, task, user):
+        payload = {"userId": task.userId, "leadsId": task.leadIds}
+        try:
+            return await self._assign_leads(payload, user, reassign=task.mode == "reassign", task=task)
+        except DuplicateKeyError:
+            # A concurrent request with this key may have committed its receipt first.
+            return await self._assign_leads(payload, user, reassign=task.mode == "reassign", task=task)
+
+    async def _assignment_target(self, user, company_id, assignee_id, *, active_only=False, session=None):
+        query = {"_id": assignee_id, "deletedAt": None, "companyId": company_id}
+        if active_only:
+            query["status"] = USER_STATUS.ACTIVE.value
+        target = await self.userRepo.find_one(query, session=session)
+        if not target:
+            raise AppException(404, "User not found or inactive")
+        role_ids = {role.id if isinstance(role, UserRoleModel) else role.ref.id for role in target.userRole}
+        roles = await UserRoleModel.get_pymongo_collection().find(
+            {"_id": {"$in": list(role_ids)}, "companyId": {"$in": [company_id, None]}},
+            {"code": 1, "power": 1, "status": 1, "deletedAt": 1, "permissions": 1},
+            session=session,
+        ).to_list(length=len(role_ids)) if role_ids else []
+        if len(roles) != len(role_ids):
+            raise AppException(403, "Assignee role could not be verified")
+        require_lower_assignee(user, {"_id": target.id, "userRole": roles})
+        if active_only:
+            permission_ids = []
+            for role in roles:
+                if not is_active_role(role):
+                    continue
+                for ref in role.get("permissions") or []:
+                    ref_id = str(ref.id if isinstance(ref, DBRef) else ref)
+                    if ObjectId.is_valid(ref_id):
+                        permission_ids.append(ObjectId(ref_id))
+            permission_codes = await PermissionRepository().get_permissions_code(
+                permission_ids, session=session, active_only=True
+            )
+            if "lead:read" not in permission_codes:
+                raise AppException(403, "The selected user needs permission to view leads before they can receive Sales tasks")
+        return target
+
+    async def _assignment_candidates(self, company_id, ids, session=None):
+        return await LeadsModel.get_pymongo_collection().find(
+            live_lead_filter({"_id": {"$in": ids}, "companyId": company_id}),
+            {"lead_id": 1, "fullName": 1, "assignedTo": 1, "isAssigned": 1},
+            session=session,
+        ).to_list(length=len(ids))
+
+    @retry_transaction
+    async def _assign_leads(self, payload, user, *, reassign, task=None):
+        require_lead_assigner(user)
+        if not payload.get("userId") or not payload.get("leadsId"):
+            raise AppException(400, "An assignee and at least one lead are required")
+
+        try:
+            assignee_id = ObjectId(payload["userId"])
+            lead_ids = list(dict.fromkeys(ObjectId(value) for value in payload["leadsId"]))
+        except (InvalidId, TypeError):
+            raise AppException(400, "Invalid assignee or lead ID")
+
+        company_id = sales_company_id(user) if task else ObjectId(user["companyId"])
+        actor_id = ObjectId(user["_id"])
+        operation = "reassigned" if reassign else "assigned"
+        receipt_id = None
+        fingerprint = None
+        if task:
+            receipt_id = f"{company_id}:{actor_id}:{task.requestId}"
+            selection = task.model_dump(mode="json", exclude={"requestId"})
+            selection["leadIds"] = sorted(map(str, lead_ids))
+            fingerprint = hashlib.sha256(json.dumps(selection, sort_keys=True).encode()).hexdigest()
+
         async with await self.client.start_session() as session:
             async with session.start_transaction():
-                try:
+                if receipt_id:
+                    receipt = await task_requests_collection().find_one({"_id": receipt_id}, session=session)
+                    if receipt:
+                        if receipt["selection"] != fingerprint:
+                            raise AppException(409, "This task request was already submitted with different details")
+                        return receipt["result"]
 
-                    user_id_str = payload.get("userId")
-                    lead_ids_str = payload.get("leadsId", [])
-
-                    if not user_id_str:
-                        raise AppException(400, "userId is required")
-                    if not lead_ids_str:
-                        raise AppException(400, "leadsId cannot be empty")
-
-                    assign_to_user = await self.userRepo.find_one({
-                        "_id": PydanticObjectId(user_id_str),
-                        "deletedAt": None,
-                        "companyId": PydanticObjectId(user["companyId"]),
-                    }, populate=["userRole"])
-                    if not assign_to_user:
-                        raise AppException(404, "User not found or inactive")
-                    require_lower_assignee(user, jsonable_encoder(assign_to_user))
-
-                    try:
-                        lead_object_ids = [PydanticObjectId(lid) for lid in lead_ids_str]
-                    except Exception:
-                        raise AppException(400, "One or more leadIds are invalid")
-
-                    assign_user_object_id = PydanticObjectId(user_id_str)
-                    admin_object_id = PydanticObjectId(user["_id"])
-
-                    
-                    collection = LeadsModel.get_pymongo_collection()
-
-                    existing_leads = await collection.find(
-                        {
-                            "_id": {"$in": lead_object_ids},
-                            "companyId": PydanticObjectId(user["companyId"]),
-                            **live_lead_filter(),
-                        },
-                        {"_id": 1, "lead_id": 1, "assignedTo": 1}
-                    ).to_list(length=None)
-
-                    found_ids = {doc["_id"] for doc in existing_leads}
-                    not_found_ids = [
-                        str(lid) for lid in lead_object_ids if lid not in found_ids
-                    ]
-
-                    skipped: List[Dict[str, Any]] = []
-                    valid_lead_ids: List[PydanticObjectId] = []
-
-                    for lead in existing_leads:
-                        assigned_to_list = lead.get("assignedTo") or []
-                        already_assigned = any(
-                            str(ref.id) == user_id_str
-                            if hasattr(ref, "id")
-                            else str(ref) == user_id_str
-                            for ref in assigned_to_list
-                        )
-                        if already_assigned:
-                            skipped.append({
-                                "leadId": str(lead["_id"]),
-                                "lead_id": lead.get("lead_id", "N/A"),
-                                "reason": "User already assigned to this lead"
-                            })
-                        else:
-                            valid_lead_ids.append(lead["_id"])
-
-                    for lid in not_found_ids:
+                await self._assignment_target(
+                    user, company_id, assignee_id, active_only=task is not None, session=session
+                )
+                leads = {
+                    lead["_id"]: lead for lead in await self._assignment_candidates(company_id, lead_ids, session)
+                }
+                valid_ids, skipped = [], []
+                for lead_id in lead_ids:
+                    lead = leads.get(lead_id)
+                    reason = self._assignment_skip_reason(lead, assignee_id, reassign)
+                    if reason:
                         skipped.append({
-                            "leadId": lid,
-                            "lead_id": "N/A",
-                            "reason": "Lead not found or deleted"
+                            "leadId": str(lead_id), "lead_id": lead.get("lead_id", "N/A") if lead else "N/A",
+                            "reason": reason,
                         })
+                    else:
+                        valid_ids.append(lead_id)
 
-                    if not valid_lead_ids:
-                        return {
-                            "assigned": 0,
-                            "skipped": len(skipped),
-                            "skippedRecords": skipped
-                        }
-
-                    await collection.update_many(
-                        {"_id": {"$in": valid_lead_ids}},
-                        {
-                            "$addToSet": {"assignedTo": {
-                                "$ref": "users",
-                                "$id": assign_user_object_id
-                            }},
-                            "$set": {
-                                "assignedBy": {
-                                    "$ref": "users",
-                                    "$id": admin_object_id
-                                },
-                                "assignedAt": datetime.now(timezone.utc),
-                                "isAssigned": True,
-                                "updatedAt": datetime.now(timezone.utc),
+                result = {operation: len(valid_ids), "skipped": len(skipped), "skippedRecords": skipped}
+                now = datetime.now(timezone.utc)
+                if valid_ids:
+                    await self._write_assignment(
+                        company_id, actor_id, assignee_id, valid_ids, now, reassign, session
+                    )
+                    if task:
+                        await tasks_collection().insert_many([
+                            {
+                                "companyId": company_id, "leadId": lead_id, "assigneeId": assignee_id,
+                                "createdBy": actor_id, "title": task.title, "instructions": task.instructions,
+                                "dueDate": task.dueDate.isoformat(), "assignedAt": now, "updatedAt": now,
+                                "status": "pending",
                             }
-                        },
-                        session=session
-                    )
+                            for lead_id in valid_ids
+                        ], session=session)
+                if task:
+                    result["tasksCreated"] = len(valid_ids)
+                    await task_requests_collection().insert_one({
+                        "_id": receipt_id, "selection": fingerprint, "result": result, "createdAt": now,
+                    }, session=session)
 
-                    assigned_count = len(valid_lead_ids)
+        if valid_ids:
+            try:
+                backend = FastAPICache.get_backend()
+                await backend.clear(namespace=LEAD_CACHE_NAMESPACE)
+                await backend.clear(namespace=USER_LEAD_CACHE_NAMESPACE)
+            except Exception:
+                logging.getLogger(__name__).warning("Could not invalidate lead assignment caches", exc_info=True)
+        return result
 
-                    activity = activity_payload(
-                        userId=admin_object_id,
-                        entityType=ACTIVITY_ENTITY_TYPE.LEAD,
-                        action=ACTIVITY_ACTION.UPDATED,
-                        title="bulk assign leads",
-                        perform=assigned_count,
-                        metadata={
-                            "assignedTo": user_id_str,
-                            "assignedLeads": [str(lid) for lid in valid_lead_ids]
-                        }
-                    )
-                    is_activity = await self.activityRepo.create(data=activity, session=session)
-                    if not is_activity:
-                        raise AppException(400, "Activity creation failed")
+    @staticmethod
+    def _assignment_skip_reason(lead, assignee_id, reassign):
+        if not lead:
+            return "Lead not found or deleted"
+        assigned = lead.get("assignedTo") or []
+        if reassign and (not lead.get("isAssigned") or not assigned):
+            return "Lead is not assigned yet — use bulk assign instead"
+        for ref in assigned:
+            ref_id = ref.get("$id") if isinstance(ref, dict) else getattr(ref, "id", ref)
+            if str(ref_id) == str(assignee_id):
+                return "Lead is already assigned to this user" if reassign else "User already assigned to this lead"
+        return None
 
-                    backend = FastAPICache.get_backend()
-                    await backend.clear(namespace=LEAD_CACHE_NAMESPACE)
-                    await backend.clear(namespace=USER_LEAD_CACHE_NAMESPACE)
+    async def _write_assignment(self, company_id, actor_id, assignee_id, ids, now, reassign, session):
+        assignee = DBRef("users", assignee_id)
+        fields = {
+            "assignedBy": DBRef("users", actor_id), "assignedAt": now, "isAssigned": True, "updatedAt": now,
+        }
+        update = {"$set": fields}
+        if reassign:
+            fields["assignedTo"] = [assignee]
+        else:
+            update["$addToSet"] = {"assignedTo": assignee}
 
-                    return {
-                        "assigned": assigned_count,
-                        "skipped": len(skipped),
-                        "skippedRecords": skipped
-                    }
+        updated = await LeadsModel.get_pymongo_collection().update_many(
+            live_lead_filter({"_id": {"$in": ids}, "companyId": company_id}), update, session=session
+        )
+        if updated.matched_count != len(ids):
+            raise AppException(409, "Lead assignments changed. Refresh and try again.")
+        if reassign:
+            await cancel_pending_tasks(company_id, ids, now, session, keep_assignee=assignee_id)
 
-                except AppException:
-                    raise
-
-                except Exception as e:
-                    import traceback
-                    traceback.print_exc()
-                    raise AppException(status_code=500, message=f"Internal server error: {e}")
+        operation = "reassign" if reassign else "assign"
+        activity = activity_payload(
+            userId=actor_id, entityType=ACTIVITY_ENTITY_TYPE.LEAD, action=ACTIVITY_ACTION.UPDATED,
+            title=f"bulk {operation} leads", perform=len(ids),
+            metadata={f"{operation}edTo": str(assignee_id), f"{operation}edLeads": list(map(str, ids))},
+        )
+        if not await self.activityRepo.create(data=activity, session=session):
+            raise AppException(400, "Activity creation failed")
 
     async def bulk_clear_assign(self, payload: Dict[str, Any], user: Dict[str, Any]):
         require_lead_assigner(user)
@@ -630,7 +693,8 @@ class LeadService:
                             "companyId": PydanticObjectId(user["companyId"]),
                             **live_lead_filter(),
                         },
-                        {"_id": 1, "lead_id": 1, "isAssigned": 1, "assignedTo": 1}
+                        {"_id": 1, "lead_id": 1, "isAssigned": 1, "assignedTo": 1},
+                        session=session
                     ).to_list(length=None)
 
                     found_ids = {doc["_id"] for doc in existing_leads}
@@ -673,7 +737,7 @@ class LeadService:
                         }
 
                     await collection.update_many(
-                        {"_id": {"$in": valid_lead_ids}},
+                        live_lead_filter({"_id": {"$in": valid_lead_ids}, "companyId": ObjectId(user["companyId"])}),
                         {
                             "$set": {
                                 "assignedTo": [],
@@ -686,6 +750,9 @@ class LeadService:
                         session=session
                     )
 
+                    await cancel_pending_tasks(
+                        ObjectId(user["companyId"]), valid_lead_ids, datetime.now(timezone.utc), session
+                    )
                     cleared_count = len(valid_lead_ids)
 
                     activity = activity_payload(
@@ -719,168 +786,6 @@ class LeadService:
                     import traceback
                     traceback.print_exc()
                     raise AppException(status_code=500, message=f"Internal server error: {e}")           
-
-    async def bulk_lead_reassign(self, payload: Dict[str, Any], user: Dict[str, Any]):
-        require_lead_assigner(user)
-        
-        async with await self.client.start_session() as session:
-            async with session.start_transaction():
-                try:
-
-
-                    user_id_str = payload.get("userId")
-                    lead_ids_str = payload.get("leadsId", [])
-
-                    if not user_id_str:
-                        raise AppException(400, "userId is required")
-                    if not lead_ids_str:
-                        raise AppException(400, "leadsId cannot be empty")
-
-                    
-                    assign_to_user = await self.userRepo.find_one({
-                        "_id": PydanticObjectId(user_id_str),
-                        "deletedAt": None,
-                        "companyId": PydanticObjectId(user["companyId"]),
-                    }, populate=["userRole"])
-                    if not assign_to_user:
-                        raise AppException(404, "User not found or inactive")
-                    require_lower_assignee(user, jsonable_encoder(assign_to_user))
-
-                    
-                    try:
-                        lead_object_ids = [PydanticObjectId(lid) for lid in lead_ids_str]
-                    except Exception:
-                        raise AppException(400, "One or more leadIds are invalid")
-
-                    assign_user_object_id = PydanticObjectId(user_id_str)
-                    admin_object_id = PydanticObjectId(user["_id"])
-
-                   
-                    collection = LeadsModel.get_pymongo_collection()
-
-                    existing_leads = await collection.find(
-                        {
-                            "_id": {"$in": lead_object_ids},
-                            "companyId": PydanticObjectId(user["companyId"]),
-                            **live_lead_filter(),
-                        },
-                        {"_id": 1, "lead_id": 1, "assignedTo": 1, "isAssigned": 1}
-                    ).to_list(length=None)
-
-                    found_ids = {doc["_id"] for doc in existing_leads}
-                    not_found_ids = [
-                        str(lid) for lid in lead_object_ids if lid not in found_ids
-                    ]
-
-                    skipped: List[Dict[str, Any]] = []
-                    valid_lead_ids: List[PydanticObjectId] = []
-
-                    for lead in existing_leads:
-                        lead_str_id = str(lead["_id"])
-                        lead_display_id = lead.get("lead_id", "N/A")
-
-                       
-                        is_assigned = lead.get("isAssigned", False)
-                        assigned_to_list = lead.get("assignedTo") or []
-
-                        if not is_assigned or not assigned_to_list:
-                            skipped.append({
-                                "leadId": lead_str_id,
-                                "lead_id": lead_display_id,
-                                "reason": "Lead is not assigned yet — use bulk assign instead"
-                            })
-                            continue
-
-                       
-                        already_assigned_to_same = any(
-                            (str(ref.id) == user_id_str if hasattr(ref, "id") else str(ref) == user_id_str)
-                            for ref in assigned_to_list
-                        )
-                        if already_assigned_to_same:
-                            skipped.append({
-                                "leadId": lead_str_id,
-                                "lead_id": lead_display_id,
-                                "reason": "Lead is already assigned to this user"
-                            })
-                            continue
-
-                        valid_lead_ids.append(lead["_id"])
-
-                    
-                    for lid in not_found_ids:
-                        skipped.append({
-                            "leadId": lid,
-                            "lead_id": "N/A",
-                            "reason": "Lead not found or deleted"
-                        })
-
-                    if not valid_lead_ids:
-                        return {
-                            "reassigned": 0,
-                            "skipped": len(skipped),
-                            "skippedRecords": skipped
-                        }
-
-                    
-                    await collection.update_many(
-                        {"_id": {"$in": valid_lead_ids}},
-                        {
-                            "$set": {
-                                
-                                "assignedTo": [{
-                                    "$ref": "users",
-                                    "$id": assign_user_object_id
-                                }],
-                                "assignedBy": {
-                                    "$ref": "users",
-                                    "$id": admin_object_id
-                                },
-                                "assignedAt": datetime.now(timezone.utc),
-                                "isAssigned": True,
-                                "updatedAt": datetime.now(timezone.utc),
-                            }
-                        },
-                        session=session
-                    )
-
-                    reassigned_count = len(valid_lead_ids)
-
-                   
-                    activity = activity_payload(
-                        userId=admin_object_id,
-                        entityType=ACTIVITY_ENTITY_TYPE.LEAD,
-                        action=ACTIVITY_ACTION.UPDATED,
-                        title="bulk reassign leads",
-                        perform=reassigned_count,
-                        metadata={
-                            "reassignedTo": user_id_str,
-                            "reassignedLeads": [str(lid) for lid in valid_lead_ids]
-                        }
-                    )
-                    is_activity = await self.activityRepo.create(data=activity, session=session)
-                    if not is_activity:
-                        raise AppException(400, "Activity creation failed")
-
-                    
-                    backend = FastAPICache.get_backend()
-                    await backend.clear(namespace=LEAD_CACHE_NAMESPACE)
-                    await backend.clear(namespace=USER_LEAD_CACHE_NAMESPACE)
-
-                    
-                    return {
-                        "reassigned": reassigned_count,
-                        "skipped": len(skipped),
-                        "skippedRecords": skipped
-                    }
-
-                except AppException:
-                    raise
-
-                except Exception as e:
-                    import traceback
-                    traceback.print_exc()
-                    raise AppException(status_code=500, message=f"Internal server error: {e}")
-
 
     async def get_all(self, filters: Dict[str, Any], user: Dict[str, Any]):
         try:
@@ -1397,7 +1302,7 @@ class LeadService:
                         raise AppException(400, "Updated data not found")
 
                     lead = await self.repo.find_by_id(
-                        PydanticObjectId(leadId), populate=["createdBy", "assignedTo"]
+                        PydanticObjectId(leadId), populate=["createdBy", "assignedTo"], session=session
                     )
 
                     if not lead:
@@ -1620,7 +1525,7 @@ class LeadService:
                     is_assigner = False
 
                     lead = await self.repo.find_by_id(
-                        PydanticObjectId(leadId), populate=["createdBy", "assignedTo"]
+                        PydanticObjectId(leadId), populate=["createdBy", "assignedTo"], session=session
                     )
 
                     if not lead:
@@ -1634,7 +1539,8 @@ class LeadService:
                         raise AppException(400, "Action denied, Lead is deleted")
 
                     for item in lead.assignedTo or []:
-                        if str(item.id) == str(user["_id"]):
+                        assigned_id = getattr(getattr(item, "ref", None), "id", None) or getattr(item, "id", None)
+                        if str(assigned_id) == str(user["_id"]):
                             is_assigner = True
 
                     if not is_admin_or_manager and not (lead.isAssigned and is_assigner):
@@ -1677,7 +1583,18 @@ class LeadService:
                         lead.followUpOwnerId = None
                     lead.updatedAt = datetime.now(timezone.utc)
 
-                    await lead.save(session=session)
+                    updated = await self.repo.update(
+                        id=lead.id,
+                        data={
+                            "connectStatus": lead.connectStatus,
+                            "followUpAt": lead.followUpAt,
+                            "followUpOwnerId": lead.followUpOwnerId,
+                            "updatedAt": lead.updatedAt,
+                        },
+                        session=session,
+                    )
+                    if not updated:
+                        raise AppException(409, "The lead changed. Refresh and try again.")
                     if follow_up_at is not None or (connect_status != "follow_up" and previous_follow_up_owner_id):
                         from app.services.follow_up_push_service import FollowUpPushService
 
@@ -1710,10 +1627,7 @@ class LeadService:
                             owner_name=" ".join(filter(None, [user.get("firstName"), user.get("lastName")])),
                         )
 
-                    await FastAPICache.get_backend().clear(namespace=LEAD_CACHE_NAMESPACE)
-                    await FastAPICache.get_backend().clear(namespace=USER_LEAD_CACHE_NAMESPACE) 
-
-                    return _sanitize_lead_response(lead.model_dump(mode="json"))
+                    result = _sanitize_lead_response(lead.model_dump(mode="json"))
 
 
                 except AppException as e:
@@ -1721,6 +1635,14 @@ class LeadService:
 
                 except Exception as e:
                     raise AppException(status_code=500, message=f"Internal server error: {e}")
+
+        # Invalidate only once the updated engagement is visible to Leads reads.
+        for namespace in (LEAD_CACHE_NAMESPACE, USER_LEAD_CACHE_NAMESPACE):
+            try:
+                await FastAPICache.get_backend().clear(namespace=namespace)
+            except Exception:
+                logging.getLogger(__name__).warning("Could not invalidate lead cache: %s", namespace)
+        return result
 
 
     def _is_only_admin(self, user: Dict[str, Any]) -> bool:
@@ -1768,6 +1690,10 @@ class LeadService:
                     if not deleted:
                         raise AppException(404, "Lead not found for this Id")
                     
+                    if result.get("companyId"):
+                        await cancel_pending_tasks(
+                            ObjectId(result["companyId"]), [ObjectId(leadId)], payload["deletedAt"], session
+                        )
                     activity = activity_payload(userId=PydanticObjectId(user["_id"]), entityType=ACTIVITY_ENTITY_TYPE.LEAD, entityId=PydanticObjectId(result["id"]), action=ACTIVITY_ACTION.DELETE, title="delete lead", metadata={"leadId": result["lead_id"], "leadName": result["fullName"]})
 
                     is_activity = await self.activityRepo.create(data=activity, session=session)
@@ -1864,6 +1790,13 @@ class LeadService:
                         if not deleted:
                             raise AppException(400, "Bulk delete operation failed")
  
+                        for company_id in {lead.companyId for lead in eligible_leads if lead.companyId}:
+                            await cancel_pending_tasks(
+                                ObjectId(company_id),
+                                [ObjectId(lead.id) for lead in eligible_leads if lead.companyId == company_id],
+                                delete_payload["deletedAt"], session,
+                            )
+
                         activities = [
                             activity_payload(
                                 userId=user_object_id,

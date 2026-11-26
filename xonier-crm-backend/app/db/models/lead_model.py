@@ -1,4 +1,4 @@
-from beanie import Document, Link, before_event, Save, Insert, Replace, Indexed, PydanticObjectId
+from beanie import Document, Link, before_event, Save, Insert, Replace, PydanticObjectId
 from typing import Annotated, Optional, List
 from pydantic import StringConstraints, Field, field_validator, model_validator
 from app.db.models.user_model import UserModel
@@ -28,7 +28,7 @@ class LeadsModel(BaseDocument):
     fullName: Optional[str] = Field(None, max_length=49)
 
     email: Optional[str] = None
-    hashedEmail: Optional[str] = Indexed(default=None)
+    hashedEmail: Optional[str] = None
     phone: Optional[str] = None
     hashedPhone: Optional[str] = None
     linkedin: Optional[str] = None
