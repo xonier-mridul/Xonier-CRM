@@ -343,8 +343,11 @@ class TaskService:
                 pass  # super admin sees everything
             elif is_c_admin:
                 # Company admin should only see tasks belonging to their own company
-                if user.get("company"):
-                    query["company.$id"] = ObjectId(user["company"])
+                from app.core.tenant import current_company
+                company_id = current_company.get()
+                if not company_id or not ObjectId.is_valid(company_id):
+                    raise AppException(403, "Company context missing")
+                query["companyId"] = ObjectId(company_id)
             else:
                 members = await self.getTeamMembers.get_team_members(user["_id"])
                 user_object_id = PydanticObjectId(user["_id"])
@@ -457,13 +460,10 @@ class TaskService:
                     return {nk: serialize_for_cache(nv) for nk, nv in v.items()}
                 return v
 
-            cache_query = {k: serialize_for_cache(v) for k, v in query.items()}
-            cache_key = cache_key_generator(prefix=TASK_CACHE_NAMESPACE, filters=cache_query, page=page, limit=limit)
-
-            cache = await FastAPICache.get_backend().get(cache_key)
-
-            if cache:
-                return json.loads(cache)
+            # Build database scope before reading data. Task boards are read fresh:
+            # visibility can change through team membership and role changes as
+            # well as task/category/status mutations, so response caching is unsafe.
+            query = self.repo.model._inject_scope(query)
 
             result = await self.repo.get_all_with_lookup(
                 page=page,
@@ -508,7 +508,6 @@ class TaskService:
                 except Exception:
                     task["isOverdue"] = False
 
-            await FastAPICache.get_backend().set(key=cache_key, value=json.dumps(result), expire=900)
 
             return result
 

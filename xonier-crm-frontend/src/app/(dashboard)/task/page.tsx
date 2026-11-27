@@ -426,21 +426,29 @@ const fetchTaskAll = useCallback(async (silent = false) => {
     [fetchTaskAll],
   );
 
+  const [statusLoadError, setStatusLoadError] = useState(false);
+  const [categoryLoadError, setCategoryLoadError] = useState(false);
   const fetchStatuses = async () => {
+    setStatusLoadError(false);
     try {
       const res = await StatusService.getAll({ currentPage: 1, pageLimit: 100, search: "" });
       if (res.status === 200) setStatusOptions(res.data.data.data ?? []);
+      else setStatusLoadError(true);
     } catch (e) {
+      setStatusLoadError(true);
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(e);
     }
   };
 
   const fetchCategories = async () => {
+    setCategoryLoadError(false);
     setIsCatLoading(true)
     try {
       const res = await CategoryService.getAll({ currentPage: 1, pageLimit: 100, search: "" });
       if (res.status === 200) setCategories(res.data.data.data ?? []);
+      else setCategoryLoadError(true);
     } catch (e) {
+      setCategoryLoadError(true);
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(e);
     } finally {
       setIsCatLoading(false)
@@ -668,7 +676,7 @@ const fetchTaskAll = useCallback(async (silent = false) => {
           </div>
 
           {viewMode === "board" && (
-            <BoardView
+            <>{(statusLoadError || categoryLoadError) ? <div role="alert" className="rounded-xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-900">Task categories or statuses could not be loaded. <button type="button" className="ml-2 font-semibold underline" onClick={() => { void fetchStatuses(); void fetchCategories(); }}>Retry</button></div> : <BoardView
               tasks={taskData}
               statusOptions={statusOptions}
               canEdit={canEdit}
@@ -693,7 +701,7 @@ const fetchTaskAll = useCallback(async (silent = false) => {
               onRemark={handleOpenRemark}
               onTimer={handleTimer}
               onStop={handleStop}
-            />
+            />}</>
           )}
 
           {viewMode === "list" && (
