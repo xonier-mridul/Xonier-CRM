@@ -10,6 +10,8 @@ import { FiMail, FiCheck, FiX, FiShield, FiAlertTriangle } from "react-icons/fi"
 import { BsBuildings } from "react-icons/bs";
 import { AnimatePresence, motion } from "framer-motion";
 import { sizeOptions } from "@/src/constants/constants";
+import { TIMEZONE_OPTIONS } from "@/src/constants/company";
+import SearchableSelect from "@/src/components/common/SearchableSelect";
 import { useTranslation } from "react-i18next";
 
 
@@ -327,11 +329,12 @@ const CompanyUpdateForm: React.FC<CompanyUpdateFormProps> = ({
               placeholder={t("test_xoniertech")}
               onChange={(e) => set("subDomain", (e.target as HTMLInputElement).value)}
             />
-            <Input
+            <SearchableSelect
               label={t("timezone")}
-              placeholder="Asia/Kolkata"
+              options={TIMEZONE_OPTIONS}
               value={form.timezone ?? ""}
-              onChange={(e) => set("timezone", (e.target as HTMLInputElement).value)}
+              onChange={(value) => set("timezone", value || "")}
+              placeholder={t("select_timezone")}
             />
             <Input
               label={t("user_limit")}

@@ -29,6 +29,15 @@ function apiErrorMessage(error: unknown, fallback: string): string {
   return fallback;
 }
 
+function formatDueDate(iso: string, tz: string): string {
+  const date = new Date(iso);
+  try {
+    return date.toLocaleString(undefined, { timeZone: tz });
+  } catch {
+    return date.toLocaleString();
+  }
+}
+
 export default function NextActions({ entityType, entityId, canEdit, defaultOwnerId, promptOnOpen, onActionCreated }: {
   entityType: EntityType;
   entityId: string;
@@ -153,7 +162,7 @@ export default function NextActions({ entityType, entityId, canEdit, defaultOwne
         {pending.map((action) => {
           const overdue = new Date(action.dueAt).getTime() < Date.now();
           return <div key={action.id} className="flex flex-wrap items-center justify-between gap-2 rounded border border-gray-200 p-3 dark:border-gray-700">
-            <div><p className="font-medium">{action.title}</p><p className="text-sm text-gray-500">{action.kind} · {action.ownerName} · {timezone ? new Date(action.dueAt).toLocaleString(undefined, { timeZone: timezone }) : "Loading…"}</p></div>
+            <div><p className="font-medium">{action.title}</p><p className="text-sm text-gray-500">{action.kind} · {action.ownerName} · {timezone ? formatDueDate(action.dueAt, timezone) : "Loading…"}</p></div>
             <div className="flex items-center gap-2">{overdue && <span className="text-sm font-semibold text-red-600">Overdue</span>}{canEdit && <button type="button" disabled={busy} onClick={() => void complete(action.id)} className="rounded border px-3 py-1 text-sm">Complete</button>}</div>
           </div>;
         })}

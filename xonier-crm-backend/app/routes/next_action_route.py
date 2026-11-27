@@ -1,5 +1,4 @@
 from datetime import datetime, timezone
-from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from typing import Literal
 
 from beanie import PydanticObjectId
@@ -7,6 +6,7 @@ from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel, Field, field_validator
 
 from app.utils.record_visibility import live_deal_filter, live_lead_filter
+from app.utils.timezone_utils import resolve_timezone
 from app.core.dependencies import Dependencies
 from app.core.enums import FEATURE, NOTE_STATUS, NOTE_VISIBILITY, ACTIVITY_ACTION, ACTIVITY_ENTITY_TYPE
 from app.db.models.deal_model import DealModel
@@ -399,10 +399,7 @@ async def create_action(request: Request, entity_type: str, entity_id: str, payl
         if payload.localDueAt.tzinfo is not None:
             raise AppException(422, "Local due date must not include a timezone")
         company = await CompanyModel.get_pymongo_collection().find_one({"_id": PydanticObjectId(request.state.user["companyId"])}, {"timezone": 1})
-        try:
-            zone = ZoneInfo((company or {}).get("timezone") or "UTC")
-        except ZoneInfoNotFoundError:
-            raise AppException(422, "Company timezone is invalid")
+        zone = resolve_timezone((company or {}).get("timezone"))
         local = payload.localDueAt.replace(tzinfo=zone)
         due_at = local.astimezone(timezone.utc)
         if due_at.astimezone(zone).replace(tzinfo=None) != payload.localDueAt:

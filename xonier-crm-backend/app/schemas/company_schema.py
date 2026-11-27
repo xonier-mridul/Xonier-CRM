@@ -2,6 +2,7 @@ from pydantic import BaseModel, EmailStr, field_validator, model_validator
 from typing import Optional, List
 from app.core.enums import NUMBER_OF_EMPLOYEES, COUNTRY_CODE, COMPANY_STATUS, BILLING_CYCLE
 from app.utils.company_code import validate_company_code
+from app.utils.timezone_utils import validate_timezone
 
 
 
@@ -12,6 +13,12 @@ class CompanyCreateSchema(BaseModel):
     companySize: Optional[NUMBER_OF_EMPLOYEES] = None
     website: Optional[str] = None
     timezone: Optional[str] = None
+
+    @field_validator("timezone", mode="before")
+    @classmethod
+    def _validate_timezone(cls, value):
+        return validate_timezone(value)
+
     registrationNumber: Optional[str] = None
     tradeNumber: Optional[str] = None
     adminFirstName: str
@@ -85,6 +92,12 @@ class CompanyUpdateSchema(BaseModel):
     website: Optional[str] = None
     address: Optional[str] = None
     timezone: Optional[str] = None
+
+    @field_validator("timezone", mode="before")
+    @classmethod
+    def _validate_timezone(cls, value):
+        return validate_timezone(value)
+
     registrationNumber: Optional[str] = None
     tradeNumber: Optional[str] = None
     userLimit: Optional[int] = None
@@ -131,6 +144,12 @@ class CompanySettingsUpdateSchema(BaseModel):
     companySize: Optional[NUMBER_OF_EMPLOYEES] = None
     country: Optional[COUNTRY_CODE] = None
     timezone: Optional[str] = None
+
+    @field_validator("timezone", mode="before")
+    @classmethod
+    def _validate_timezone(cls, value):
+        return validate_timezone(value)
+
     website: Optional[str] = None
     address: Optional[str] = None
     registrationNumber: Optional[str] = None
@@ -217,6 +236,12 @@ class CompanySelfRegisterSchema(BaseModel):
     companySize: Optional[NUMBER_OF_EMPLOYEES] = None
     website: Optional[str] = None
     timezone: Optional[str] = None
+
+    @field_validator("timezone", mode="before")
+    @classmethod
+    def _validate_timezone(cls, value):
+        return validate_timezone(value)
+
     registrationNumber: Optional[str] = None
     tradeNumber: Optional[str] = None
     adminFirstName: str

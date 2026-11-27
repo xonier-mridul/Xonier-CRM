@@ -26,6 +26,8 @@ import {
 } from "react-icons/fi";
 import { BsBuildings } from "react-icons/bs";
 import { sizeOptions } from "@/src/constants/constants";
+import { TIMEZONE_OPTIONS } from "@/src/constants/company";
+import SearchableSelect from "@/src/components/common/SearchableSelect";
 import { useTranslation } from "react-i18next";
 
 interface CreateCompanyFormProps {
@@ -314,7 +316,13 @@ const CreateCompanyForm: React.FC<CreateCompanyFormProps> = ({
                   {countryOptions.map((o) => (<option key={o.value} value={o.value}>{o.label}</option>))}
                 </select>
               </div>
-              <Input label={t("timezone")} placeholder="Asia/Kolkata" value={form.timezone ?? ""} onChange={(e) => set("timezone", (e.target as HTMLInputElement).value)} />
+              <SearchableSelect
+                label={t("timezone")}
+                options={TIMEZONE_OPTIONS}
+                value={form.timezone ?? ""}
+                onChange={(value) => set("timezone", value || "")}
+                placeholder={t("select_timezone")}
+              />
               <Input label={t("user_limit")} type="number" placeholder="50" value={form.userLimit ?? ""} onChange={(e) => set("userLimit", (e.target as HTMLInputElement).value ? Number((e.target as HTMLInputElement).value) : undefined)} />
             </div>
           </section>
