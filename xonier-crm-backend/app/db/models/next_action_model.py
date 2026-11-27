@@ -17,6 +17,7 @@ class NextActionModel(BaseDocument):
     ownerId: PydanticObjectId
     createdById: PydanticObjectId
     completedAt: Optional[datetime] = None
+    upcomingRemindedAt: Optional[datetime] = None
     remindedAt: Optional[datetime] = None
     createdAt: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updatedAt: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

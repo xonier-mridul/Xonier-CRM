@@ -6,6 +6,7 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/src/store";
 import { DashboardService } from "@/src/services/dashboard.service";
+import CompanyService from "@/src/services/company.service";
 import {
   AreaChart,
   Area,
@@ -50,10 +51,15 @@ import {
   FileText,
   Phone,
   ChevronRight,
+  Sun,
+  Sunrise,
+  Sunset,
+  Moon,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useRouter } from "next/navigation";
 import { formatDate } from "@/src/lib/formatDate";
+import NextActionsCard from "@/src/components/pages/dashboard/NextActionsCard";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -580,6 +586,14 @@ function MetricRow({
   );
 }
 
+function StatStrip({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+      {children}
+    </div>
+  );
+}
+
 function StatCard({
   label,
   value,
@@ -599,59 +613,64 @@ function StatCard({
   prefix?: string;
   suffix?: string;
 }) {
-  const { t } = useTranslation();
   const v = useCountUp(value);
+  const subParts = sub
+    ? sub
+        .split("·")
+        .map((part) => part.trim())
+        .filter(Boolean)
+    : [];
+  const deltaPart = !trend ? subParts.find((p) => p.startsWith("+")) : undefined;
+  const captionParts = deltaPart
+    ? subParts.filter((p) => p !== deltaPart)
+    : subParts;
 
   return (
-    <div
-      className="
-        relative overflow-hidden
-        rounded-2xl
-        border border-slate-200/80 dark:border-slate-800
-        bg-white dark:bg-slate-900/90
-        p-5
-        shadow-xs hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700
-        transition-all duration-200
-        group cursor-default
-        flex flex-col justify-between
-      "
-    >
-      <div className="flex items-start justify-between gap-3 mb-3">
-        <div className="flex-1 min-w-0">
-          <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">
+    <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900/95 px-5 py-4.5 shadow-[0_1px_2px_rgba(15,23,42,0.03)] hover:border-slate-300/90 dark:hover:border-slate-700 transition-colors duration-150 flex flex-col justify-between gap-2.5 min-w-0">
+      {/* Top Row: Indicator Dot + Label + Subtle Icon */}
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <span
+            className="h-2 w-2 rounded-full flex-shrink-0"
+            style={{ backgroundColor: color }}
+            aria-hidden="true"
+          />
+          <p className="text-xs font-medium text-slate-500 dark:text-slate-400 truncate">
             {label}
           </p>
-          <p className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900 dark:text-white mt-1 tabular-nums">
-            {prefix}
-            {v.toLocaleString(getCompanyCurrency() === "BRL" && prefix ? "pt-BR" : undefined)}
-            {suffix}
-          </p>
         </div>
-        <div
-          className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform duration-200 group-hover:scale-105"
-          style={{
-            backgroundColor: `${color}14`,
-            color: color,
-          }}
-        >
-          <Icon className="w-5 h-5" />
-        </div>
+        <Icon
+          className="w-4 h-4 text-slate-400 dark:text-slate-500 flex-shrink-0"
+          strokeWidth={1.75}
+        />
       </div>
 
-      <div className="flex items-center justify-between gap-2 pt-2.5 border-t border-slate-100 dark:border-slate-800/80 text-xs">
-        {sub ? (
-          <span className="text-slate-500 dark:text-slate-400 truncate text-[11px]">
-            {sub}
-          </span>
-        ) : (
-          <span />
-        )}
-        {trend && (
+      {/* Middle Row: Hero Value + Inline Delta / Trend */}
+      <div className="flex items-baseline justify-between gap-2 pt-0.5">
+        <div className="flex items-baseline min-w-0">
+          {prefix && (
+            <span className="text-[17px] font-semibold text-slate-400 dark:text-slate-500 mr-1 tracking-tight">
+              {prefix}
+            </span>
+          )}
+          <p className="text-[26px] sm:text-[28px] leading-none font-bold tracking-[-0.03em] text-slate-950 dark:text-white tabular-nums truncate">
+            {v.toLocaleString(
+              getCompanyCurrency() === "BRL" && prefix ? "pt-BR" : undefined,
+            )}
+          </p>
+          {suffix && (
+            <span className="text-[17px] font-semibold text-slate-400 dark:text-slate-500 ml-0.5">
+              {suffix}
+            </span>
+          )}
+        </div>
+
+        {trend ? (
           <span
-            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium flex-shrink-0 ${
+            className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[11px] font-semibold flex-shrink-0 tabular-nums ${
               trend.up
-                ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800/60"
-                : "bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-400 border border-rose-200/60 dark:border-rose-800/60"
+                ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400"
+                : "bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-400"
             }`}
           >
             {trend.up ? (
@@ -661,8 +680,42 @@ function StatCard({
             )}
             {trend.val}%
           </span>
-        )}
+        ) : deltaPart ? (
+          <span className="inline-flex items-center rounded-md bg-teal-50/90 dark:bg-teal-950/50 border border-teal-200/60 dark:border-teal-800/50 px-1.5 py-0.5 text-[11px] font-semibold text-[#01728e] dark:text-cyan-300 tabular-nums flex-shrink-0">
+            {deltaPart}
+          </span>
+        ) : null}
       </div>
+
+      {/* Bottom Row: Clean Caption */}
+      {captionParts.length > 0 && (
+        <p
+          title={sub}
+          className="text-[11.5px] text-slate-500 dark:text-slate-400 truncate"
+        >
+          {captionParts.map((part, idx) => (
+            <React.Fragment key={idx}>
+              {idx > 0 && (
+                <span
+                  aria-hidden="true"
+                  className="mx-1.5 text-slate-300 dark:text-slate-600"
+                >
+                  ·
+                </span>
+              )}
+              <span
+                className={
+                  idx === 0
+                    ? "font-medium text-slate-600 dark:text-slate-300"
+                    : ""
+                }
+              >
+                {part}
+              </span>
+            </React.Fragment>
+          ))}
+        </p>
+      )}
     </div>
   );
 }
@@ -2883,7 +2936,7 @@ function SuperAdminLayout({ d }: { d: DashboardData }) {
   const { t } = useTranslation();
   return (
     <>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <StatStrip>
         <StatCard
           label={t("companies")}
           value={d.companies!.total}
@@ -2913,7 +2966,7 @@ function SuperAdminLayout({ d }: { d: DashboardData }) {
           icon={Star}
           color="#8b5cf6"
         />
-      </div>
+      </StatStrip>
       <div className="grid md:grid-cols-5 gap-4">
         <SACompaniesCard companies={d.companies!} />
         <SARevenueCard subs={d.subscriptions!} revenue={d.revenue!} />
@@ -2944,10 +2997,9 @@ function SuperAdminLayout({ d }: { d: DashboardData }) {
 
 function CompanyAdminLayout({ d }: { d: DashboardData }) {
   const { t } = useTranslation();
-  console.log("d.leads:", d);
   return (
     <>
-      <div className="grid grid-cols-4 gap-4">
+      <StatStrip>
         <StatCard
           label={t("total_users")}
           value={d.users!.total}
@@ -2959,7 +3011,7 @@ function CompanyAdminLayout({ d }: { d: DashboardData }) {
           <StatCard
             label="CRM Leads"
             value={d.leads.total}
-            sub={`All non-deleted CRM leads · ${d.leads.won} ${t("won")} · ${d.leads.thisMonth} ${t("this_period")}`}
+            sub={`${d.leads.won} ${t("won")} · ${d.leads.thisMonth} ${t("this_period")}`}
             icon={Target}
             color="#10b981"
           />
@@ -2984,23 +3036,22 @@ function CompanyAdminLayout({ d }: { d: DashboardData }) {
             color="#8b5cf6"
           />
         )}
-      </div>
-      <div className="grid grid-cols-3 gap-4">
+      </StatStrip>
+      <div className={`grid grid-cols-1 md:grid-cols-2 ${d.conversionRate ? "lg:grid-cols-4" : "lg:grid-cols-3"} gap-4`}>
         <UsersCard users={d.users!} />
         {d.leads && <LeadsCard leads={d.leads} />}
         {d.deals && <DealsCard deals={d.deals} />}
+        {d.conversionRate && <ConversionCard conv={d.conversionRate} />}
       </div>
-      {d.monthlyLeadTrend && d.monthlyDealTrend && (
-        <div className="grid grid-cols-3 gap-4">
-          <div className="col-span-2">
-            <MonthlyTrendChart
-              leads={d.monthlyLeadTrend}
-              deals={d.monthlyDealTrend}
-            />
-          </div>
-          {d.conversionRate && <ConversionCard conv={d.conversionRate} />}
-        </div>
-      )}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <NextActionsCard />
+        {d.monthlyLeadTrend && d.monthlyDealTrend && (
+          <MonthlyTrendChart
+            leads={d.monthlyLeadTrend}
+            deals={d.monthlyDealTrend}
+          />
+        )}
+      </div>
       {d.dealPipelineBreakdown && (
         <div className="grid grid-cols-3 gap-4">
           <PipelineChart pipeline={d.dealPipelineBreakdown} />
@@ -3188,10 +3239,9 @@ function CompanyAdminLayout({ d }: { d: DashboardData }) {
 function ManagerLayout({ d }: { d: DashboardData }) {
   const { label: leadStatusLabel } = useLeadStatuses();
   const { t } = useTranslation();
-  console.log("{d.leadSourceBreakdown:", d.leadSourceBreakdown);
   return (
     <>
-      <div className="grid grid-cols-4 gap-4">
+      <StatStrip>
         {d.teams && (
           <StatCard
             label={t("team_members")}
@@ -3229,7 +3279,7 @@ function ManagerLayout({ d }: { d: DashboardData }) {
             color="#8b5cf6"
           />
         )}
-      </div>
+      </StatStrip>
 
       <div className="grid grid-cols-3 gap-4">
         {d.teams && <TeamsCard teams={d.teams} />}
@@ -3237,17 +3287,15 @@ function ManagerLayout({ d }: { d: DashboardData }) {
         {d.deals && <DealsCard deals={d.deals} />}
       </div>
 
-      {(d.monthlyLeadTrend || d.monthlyDealTrend) && (
-        <div className="grid grid-cols-3 gap-4">
-          <div className="col-span-2">
-            <MonthlyTrendChart
-              leads={d.monthlyLeadTrend}
-              deals={d.monthlyDealTrend}
-            />
-          </div>
-          {d.enquiries && <EnquiriesCard enquiries={d.enquiries} />}
-        </div>
-      )}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <NextActionsCard />
+        {(d.monthlyLeadTrend || d.monthlyDealTrend) && (
+          <MonthlyTrendChart
+            leads={d.monthlyLeadTrend}
+            deals={d.monthlyDealTrend}
+          />
+        )}
+      </div>
 
       <div className="grid grid-cols-3 gap-4">
         {d.dealPipelineBreakdown && (
@@ -3256,6 +3304,7 @@ function ManagerLayout({ d }: { d: DashboardData }) {
         {d.memberPerformance && d.memberPerformance.length > 0 && (
           <MemberPerformanceCard members={d.memberPerformance} />
         )}
+        {d.enquiries && <EnquiriesCard enquiries={d.enquiries} />}
       </div>
 
       <div className="grid grid-cols-3 gap-4">
@@ -3377,7 +3426,7 @@ function UserLayout({ d }: { d: DashboardData }) {
   const { t } = useTranslation();
   return (
     <>
-      <div className="grid grid-cols-4 gap-4">
+      <StatStrip>
         {d.leads && (
           <StatCard
             label={t("my_leads")}
@@ -3414,7 +3463,7 @@ function UserLayout({ d }: { d: DashboardData }) {
             color="#8b5cf6"
           />
         )}
-      </div>
+      </StatStrip>
 
       <div className="grid grid-cols-3 gap-4">
         {d.leads && <LeadsCard leads={d.leads} />}
@@ -3426,22 +3475,21 @@ function UserLayout({ d }: { d: DashboardData }) {
         )}
       </div>
 
-      {(d.monthlyLeadTrend || d.monthlyDealTrend) && (
-        <div className="grid grid-cols-3 gap-4">
-          <div className="col-span-2">
-            <MonthlyTrendChart
-              leads={d.monthlyLeadTrend}
-              deals={d.monthlyDealTrend}
-            />
-          </div>
-          {d.enquiries && <EnquiriesCard enquiries={d.enquiries} />}
-        </div>
-      )}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <NextActionsCard />
+        {(d.monthlyLeadTrend || d.monthlyDealTrend) && (
+          <MonthlyTrendChart
+            leads={d.monthlyLeadTrend}
+            deals={d.monthlyDealTrend}
+          />
+        )}
+      </div>
 
       <div className="grid grid-cols-3 gap-4">
         {d.dealPipelineBreakdown && (
           <PipelineChart pipeline={d.dealPipelineBreakdown} />
         )}
+        {d.enquiries && <EnquiriesCard enquiries={d.enquiries} />}
         {d.quotations && d.activities && (
           <UserActivitiesCard activities={d.activities} />
         )}
@@ -3468,6 +3516,56 @@ function UserLayout({ d }: { d: DashboardData }) {
   );
 }
 
+function getTimeGreeting(timeZone?: string) {
+  let hour = new Date().getHours();
+  if (timeZone) {
+    try {
+      const parts = new Intl.DateTimeFormat("en-US", {
+        timeZone,
+        hour: "numeric",
+        hour12: false,
+      }).formatToParts(new Date());
+      const hourPart = Number(parts.find((p) => p.type === "hour")?.value);
+      if (!Number.isNaN(hourPart)) {
+        hour = hourPart % 24;
+      }
+    } catch {
+      // Fall back to local browser hour if company timezone is invalid
+    }
+  }
+
+  if (hour >= 5 && hour < 12) {
+    return {
+      text: "Good morning",
+      Icon: Sunrise,
+      badgeClass:
+        "bg-gradient-to-br from-teal-500 to-cyan-600 text-white shadow-xs",
+    };
+  }
+  if (hour >= 12 && hour < 17) {
+    return {
+      text: "Good afternoon",
+      Icon: Sun,
+      badgeClass:
+        "bg-gradient-to-br from-[#01728e] to-teal-600 text-white shadow-xs",
+    };
+  }
+  if (hour >= 17 && hour < 21) {
+    return {
+      text: "Good evening",
+      Icon: Sunset,
+      badgeClass:
+        "bg-gradient-to-br from-[#015f77] to-slate-800 text-cyan-100 shadow-xs",
+    };
+  }
+  return {
+    text: "Good evening",
+    Icon: Moon,
+    badgeClass:
+      "bg-gradient-to-br from-slate-800 to-slate-900 text-cyan-300 shadow-xs",
+  };
+}
+
 // ── Main Dashboard ─────────────────────────────────────────────────────────────
 export default function UnifiedDashboardPage() {
   const { t } = useTranslation();
@@ -3478,6 +3576,30 @@ export default function UnifiedDashboardPage() {
   const [refreshing, setRefreshing] = useState(false);
   const [filter, setFilter] = useState<DashboardFilter>("this_month");
   const auth = useSelector((state: RootState) => state.auth);
+  const authCompanyTz =
+    typeof auth.user?.companyId === "object"
+      ? (auth.user.companyId as { timezone?: string } | null)?.timezone
+      : undefined;
+  const [companyTimezone, setCompanyTimezone] = useState<string | undefined>(authCompanyTz);
+
+  useEffect(() => {
+    if (authCompanyTz) {
+      setCompanyTimezone(authCompanyTz);
+      return;
+    }
+    if (!auth.isAuthenticated) return;
+    let cancelled = false;
+    CompanyService.getCompanyDetails()
+      .then((company) => {
+        if (!cancelled && company?.timezone) {
+          setCompanyTimezone(company.timezone);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [authCompanyTz, auth.isAuthenticated]);
 
   const load = useCallback(
     async (showRefresh = false) => {
@@ -3565,21 +3687,34 @@ export default function UnifiedDashboardPage() {
   const role = data.role as keyof typeof ROLE_CONFIG;
   const rc = ROLE_CONFIG[role] ?? ROLE_CONFIG.user;
   const RoleIcon = rc.icon;
+  const greeting = getTimeGreeting(companyTimezone);
+  const GreetingIcon = greeting.Icon;
+  const firstName = auth.user?.firstName?.trim();
 
   return (
     <div className="relative min-h-screen">
       <div className="flex flex-col gap-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3.5">
             <div
-              className={`w-10 h-10 rounded-xl bg-gradient-to-br ${rc.gradient} flex items-center justify-center shadow-xs flex-shrink-0`}
+              className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${greeting.badgeClass}`}
+              aria-hidden="true"
             >
-              <RoleIcon className="w-5 h-5 text-white" />
+              <GreetingIcon className="w-5 h-5" strokeWidth={2} />
             </div>
-            <div>
-              <div className="flex items-center gap-2.5">
-                <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
-                  {t("dashboard")}
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2.5">
+                <h1 className="text-[22px] sm:text-2xl leading-tight tracking-[-0.02em] text-slate-900 dark:text-white">
+                  <span className="font-medium text-slate-700 dark:text-slate-300">
+                    {greeting.text}
+                    {firstName ? "," : ""}
+                  </span>
+                  {firstName && (
+                    <span className="font-bold text-slate-950 dark:text-white capitalize tracking-[-0.025em]">
+                      {" "}
+                      {firstName}
+                    </span>
+                  )}
                 </h1>
                 <span
                   className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border text-[11px] font-semibold ${rc.badge}`}
@@ -3588,9 +3723,17 @@ export default function UnifiedDashboardPage() {
                   {t(rc.label)}
                 </span>
               </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                {t("generated")}{" "}
-                {formatDate(data.period.generatedAt, i18n.language)}
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 flex items-center gap-1.5">
+                <span className="font-semibold text-[#01728e] dark:text-cyan-400">
+                  {t("dashboard")}
+                </span>
+                <span aria-hidden="true" className="text-slate-300 dark:text-slate-600">
+                  ·
+                </span>
+                <span>
+                  {t("generated")}{" "}
+                  {formatDate(data.period.generatedAt, i18n.language)}
+                </span>
               </p>
             </div>
           </div>

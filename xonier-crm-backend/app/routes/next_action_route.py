@@ -2,16 +2,24 @@ from datetime import datetime, timezone
 from typing import Literal
 
 from beanie import PydanticObjectId
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Query, Request
 from pydantic import BaseModel, Field, field_validator
 
 from app.utils.record_visibility import live_deal_filter, live_lead_filter
 from app.utils.timezone_utils import resolve_timezone
+from app.utils.validate_admin import validate_admin, validate_company_admin
+from app.utils.get_team_members import GetTeamMembers
 from app.core.dependencies import Dependencies
 from app.core.enums import FEATURE, NOTE_STATUS, NOTE_VISIBILITY, ACTIVITY_ACTION, ACTIVITY_ENTITY_TYPE
+from app.core.notification_enum import (
+    NOTIFICATION_ENTITY_TYPE,
+    NOTIFICATION_PRIORITY,
+    NOTIFICATION_TYPE,
+)
 from app.db.models.deal_model import DealModel
 from app.db.models.lead_model import LeadsModel
 from app.db.models.next_action_model import NextActionModel
+from app.db.models.notification_model import NotificationModel
 from app.db.models.activity_model import ActivityModel
 from app.db.models.notes_model import NoteModel
 from app.db.models.task_model import TaskModel
@@ -109,6 +117,175 @@ def output(action: NextActionModel, owner: UserModel | None = None) -> dict:
         "ownerName": " ".join(filter(None, [owner.firstName, owner.lastName])) if owner else "",
         "completedAt": iso_utc(action.completedAt),
         "createdAt": iso_utc(action.createdAt),
+    }
+
+
+@router.get(
+    "/upcoming",
+    dependencies=[
+        Depends(dependencies.authorized),
+        Depends(dependencies.company_active),
+        Depends(dependencies.company_context),
+        Depends(dependencies.feature_access(FEATURE.CRM)),
+    ],
+)
+async def list_upcoming_actions(
+    request: Request,
+    status: Literal["pending", "completed", "all"] = Query(default="pending"),
+    scope: Literal["mine", "all"] = Query(default="all"),
+    limit: int = Query(default=50, ge=1, le=200),
+):
+    user = request.state.user
+    user_oid = PydanticObjectId(user["_id"])
+    company_id = PydanticObjectId(user["companyId"])
+    roles = user.get("userRole") or []
+
+    is_admin = validate_admin(roles) or validate_company_admin(roles)
+    team_member_ids: list[PydanticObjectId] = []
+    is_manager = False
+    if not is_admin:
+        team_helper = GetTeamMembers()
+        is_manager = await team_helper.validate_manager(str(user_oid))
+        if is_manager:
+            team_member_ids = await team_helper.get_team_members(str(user_oid))
+
+    base_filter: dict = {"companyId": company_id}
+    if scope == "mine" or (not is_admin and not is_manager):
+        base_filter["$or"] = [{"ownerId": user_oid}, {"createdById": user_oid}]
+    elif is_manager:
+        allowed_ids = list({user_oid, *team_member_ids})
+        base_filter["$or"] = [
+            {"ownerId": {"$in": allowed_ids}},
+            {"createdById": {"$in": allowed_ids}},
+        ]
+
+    status_filter = dict(base_filter)
+    if status == "pending":
+        status_filter["completedAt"] = None
+    elif status == "completed":
+        status_filter["completedAt"] = {"$ne": None}
+
+    sort_order = [("dueAt", 1)] if status != "completed" else [("completedAt", -1)]
+    actions = await NextActionModel.find(status_filter).sort(sort_order).limit(limit).to_list()
+
+    lead_ids = list({a.entityId for a in actions if a.entityType == "lead"})
+    deal_ids = list({a.entityId for a in actions if a.entityType == "deal"})
+    owner_ids = list({a.ownerId for a in actions} | {a.createdById for a in actions})
+
+    leads_map: dict[str, dict] = {}
+    if lead_ids:
+        cursor = LeadsModel.get_pymongo_collection().find(
+            live_lead_filter({"_id": {"$in": lead_ids}, "companyId": company_id}),
+            {"fullName": 1, "companyName": 1, "lead_id": 1, "status": 1, "priority": 1},
+        )
+        for doc in await cursor.to_list(length=len(lead_ids)):
+            leads_map[str(doc["_id"])] = doc
+
+    deals_map: dict[str, dict] = {}
+    if deal_ids:
+        cursor = DealModel.get_pymongo_collection().find(
+            live_deal_filter({"_id": {"$in": deal_ids}, "companyId": company_id}),
+            {"dealName": 1, "deal_id": 1, "dealStage": 1, "amount": 1},
+        )
+        for doc in await cursor.to_list(length=len(deal_ids)):
+            deals_map[str(doc["_id"])] = doc
+
+    owners = (
+        {
+            str(u.id): u
+            for u in await UserModel.find({"_id": {"$in": owner_ids}}).to_list()
+        }
+        if owner_ids
+        else {}
+    )
+
+    company_doc = await CompanyModel.get_pymongo_collection().find_one(
+        {"_id": company_id}, {"timezone": 1}
+    )
+    tz_name = (company_doc or {}).get("timezone") or "UTC"
+    zone = resolve_timezone(tz_name)
+    now_utc = datetime.now(timezone.utc)
+    today_local = now_utc.astimezone(zone).date()
+
+    items = []
+    for action in actions:
+        entity_key = str(action.entityId)
+        if action.entityType == "lead":
+            record = leads_map.get(entity_key)
+            if not record:
+                continue
+            entity_name = record.get("fullName") or record.get("companyName") or record.get("lead_id") or "Lead"
+            entity_code = record.get("lead_id") or ""
+            entity_subtext = record.get("companyName") or record.get("status") or ""
+        else:
+            record = deals_map.get(entity_key)
+            if not record:
+                continue
+            entity_name = record.get("dealName") or record.get("deal_id") or "Deal"
+            entity_code = record.get("deal_id") or ""
+            entity_subtext = record.get("dealStage") or ""
+
+        due_utc = action.dueAt.replace(tzinfo=action.dueAt.tzinfo or timezone.utc).astimezone(timezone.utc)
+        is_overdue = action.completedAt is None and due_utc < now_utc
+        is_due_today = action.completedAt is None and due_utc.astimezone(zone).date() == today_local
+
+        base_item = output(action, owners.get(str(action.ownerId)))
+        creator = owners.get(str(action.createdById))
+        items.append({
+            **base_item,
+            "entityName": entity_name,
+            "entityCode": entity_code,
+            "entitySubtext": entity_subtext,
+            "createdByName": " ".join(filter(None, [creator.firstName, creator.lastName])) if creator else "",
+            "isOverdue": is_overdue,
+            "isDueToday": is_due_today,
+        })
+
+    # Summary counts across pending actions for current scope
+    pending_filter = {**base_filter, "completedAt": None}
+    all_pending = await NextActionModel.find(pending_filter).to_list()
+    pending_lead_ids = list({a.entityId for a in all_pending if a.entityType == "lead"})
+    pending_deal_ids = list({a.entityId for a in all_pending if a.entityType == "deal"})
+    live_lead_ids = set()
+    if pending_lead_ids:
+        c = LeadsModel.get_pymongo_collection().find(
+            live_lead_filter({"_id": {"$in": pending_lead_ids}, "companyId": company_id}),
+            {"_id": 1},
+        )
+        live_lead_ids = {str(d["_id"]) for d in await c.to_list(length=len(pending_lead_ids))}
+    live_deal_ids = set()
+    if pending_deal_ids:
+        c = DealModel.get_pymongo_collection().find(
+            live_deal_filter({"_id": {"$in": pending_deal_ids}, "companyId": company_id}),
+            {"_id": 1},
+        )
+        live_deal_ids = {str(d["_id"]) for d in await c.to_list(length=len(pending_deal_ids))}
+
+    total_pending = 0
+    overdue_count = 0
+    due_today_count = 0
+    for a in all_pending:
+        eid = str(a.entityId)
+        if (a.entityType == "lead" and eid not in live_lead_ids) or (
+            a.entityType == "deal" and eid not in live_deal_ids
+        ):
+            continue
+        total_pending += 1
+        d_utc = a.dueAt.replace(tzinfo=a.dueAt.tzinfo or timezone.utc).astimezone(timezone.utc)
+        if d_utc < now_utc:
+            overdue_count += 1
+        elif d_utc.astimezone(zone).date() == today_local:
+            due_today_count += 1
+
+    return {
+        "data": items,
+        "summary": {
+            "totalPending": total_pending,
+            "overdueCount": overdue_count,
+            "dueTodayCount": due_today_count,
+            "timezone": tz_name,
+            "canViewTeam": is_admin or is_manager,
+        },
     }
 
 
@@ -394,25 +571,83 @@ async def create_action(request: Request, entity_type: str, entity_id: str, payl
     })
     if not owner:
         raise AppException(422, "Owner must be an active user in this company")
+    company_doc = await CompanyModel.get_pymongo_collection().find_one(
+        {"_id": company_id}, {"timezone": 1}
+    )
+    zone = resolve_timezone((company_doc or {}).get("timezone"))
     due_at = payload.dueAt
     if payload.localDueAt is not None:
         if payload.localDueAt.tzinfo is not None:
             raise AppException(422, "Local due date must not include a timezone")
-        company = await CompanyModel.get_pymongo_collection().find_one({"_id": PydanticObjectId(request.state.user["companyId"])}, {"timezone": 1})
-        zone = resolve_timezone((company or {}).get("timezone"))
         local = payload.localDueAt.replace(tzinfo=zone)
         due_at = local.astimezone(timezone.utc)
         if due_at.astimezone(zone).replace(tzinfo=None) != payload.localDueAt:
             raise AppException(422, "This local time does not exist in the company timezone")
     if due_at is None or due_at <= datetime.now(timezone.utc):
         raise AppException(422, "Due date must be in the future")
+    creator_id = PydanticObjectId(request.state.user["_id"])
     action = NextActionModel(
         companyId=company_id,
         entityType=entity_type, entityId=record_id, kind=payload.kind,
         title=payload.title, dueAt=due_at, ownerId=owner_id,
-        createdById=PydanticObjectId(request.state.user["_id"]),
+        createdById=creator_id,
     )
     await action.insert()
+
+    # Send in-app notification on next action creation to both owner and creator
+    try:
+        if entity_type == "lead":
+            rec = await LeadsModel.get_pymongo_collection().find_one(
+                {"_id": record_id}, {"fullName": 1, "companyName": 1, "lead_id": 1}
+            )
+            entity_label = (rec or {}).get("fullName") or (rec or {}).get("companyName") or (rec or {}).get("lead_id") or "Lead"
+        else:
+            rec = await DealModel.get_pymongo_collection().find_one(
+                {"_id": record_id}, {"dealName": 1, "deal_id": 1}
+            )
+            entity_label = (rec or {}).get("dealName") or (rec or {}).get("deal_id") or "Deal"
+
+        due_formatted = due_at.astimezone(zone).strftime("%d %b %Y, %I:%M %p")
+        sender_doc = await UserModel.find_one({"_id": creator_id, "deletedAt": None})
+        recipient_ids = list({owner_id, creator_id})
+        recipients = await UserModel.find(
+            {"_id": {"$in": recipient_ids}, "deletedAt": None}
+        ).to_list()
+        owner_name = " ".join(filter(None, [owner.firstName, owner.lastName])) or "Owner"
+
+        for recipient in recipients:
+            is_owner = recipient.id == owner_id
+            body_text = (
+                f"{payload.kind.title()} · '{payload.title}' for {entity_label} scheduled for {due_formatted}."
+                if is_owner
+                else f"{payload.kind.title()} · '{payload.title}' for {entity_label} assigned to {owner_name} for {due_formatted}."
+            )
+            await NotificationModel(
+                companyId=company_id,
+                recipientId=recipient,
+                senderId=sender_doc,
+                type=NOTIFICATION_TYPE.NEXT_ACTION_CREATED,
+                entityType=(
+                    NOTIFICATION_ENTITY_TYPE.LEAD
+                    if entity_type == "lead"
+                    else NOTIFICATION_ENTITY_TYPE.DEAL
+                ),
+                entityId=record_id,
+                title="Next Action Scheduled",
+                body=body_text,
+                priority=NOTIFICATION_PRIORITY.MEDIUM,
+                metadata={
+                    "createdNextActionId": f"{action.id}:{recipient.id}",
+                    "actionId": str(action.id),
+                    "kind": payload.kind,
+                    "dueAt": due_at.isoformat(),
+                    "entityName": entity_label,
+                    "ownerName": owner_name,
+                },
+            ).insert()
+    except Exception as exc:
+        print(f"Failed to create next action notification: {exc}")
+
     return {"data": output(action, owner)}
 
 

@@ -24,6 +24,9 @@ class NOTIFICATION_TYPE(str, Enum):
     LEAD_UPDATED = "lead_updated"
     LEAD_CONVERTED = "lead_converted"
 
+    NEXT_ACTION_CREATED = "next_action_created"
+    NEXT_ACTION_REMINDER = "next_action_reminder"
+
     QUOTATION_CREATED = "quotation_created"
     QUOTATION_SENT = "quotation_sent"
     QUOTATION_ACCEPTED = "quotation_accepted"

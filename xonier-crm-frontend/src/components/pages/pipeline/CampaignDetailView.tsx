@@ -126,6 +126,7 @@ const CampaignDetailView: React.FC<Props> = ({ campaign, onBack, onStatusChange 
   const [total, setTotal] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [engagementFilter, setEngagementFilter] = useState("");
   const pageLimit = 10;
   const leadRequestId = useRef(0);
 
@@ -188,7 +189,8 @@ const CampaignDetailView: React.FC<Props> = ({ campaign, onBack, onStatusChange 
         campaignId,
         pageToFetch,
         pageLimit,
-        debouncedSearch
+        debouncedSearch,
+        engagementFilter
       );
       if (requestId !== leadRequestId.current) return;
       if (res.status === 200) {
@@ -219,7 +221,7 @@ const CampaignDetailView: React.FC<Props> = ({ campaign, onBack, onStatusChange 
     } finally {
       if (requestId === leadRequestId.current) setIsLoading(false);
     }
-  }, [campaign.id, campaign._id, currentPage, debouncedSearch]);
+  }, [campaign.id, campaign._id, currentPage, debouncedSearch, engagementFilter]);
 
   useEffect(() => {
     fetchLeads();
@@ -370,9 +372,25 @@ const CampaignDetailView: React.FC<Props> = ({ campaign, onBack, onStatusChange 
                 </button>
               )}
             </div>
+            <select
+              aria-label="Filter by engagement status"
+              value={engagementFilter}
+              onChange={(e) => {
+                setEngagementFilter(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-1.5 text-xs font-medium text-gray-700 outline-none transition-all focus:border-cyan-500 focus:bg-white focus:ring-2 focus:ring-cyan-500/20 dark:border-gray-600 dark:bg-gray-700/60 dark:text-gray-200 dark:focus:border-cyan-400"
+            >
+              <option value="">All Engagement Status</option>
+              {ENGAGEMENT_STATUSES.map((s) => (
+                <option key={s.value} value={s.value}>
+                  {s.label}
+                </option>
+              ))}
+            </select>
             {!isLoading && (
               <span className="text-xs text-gray-400 dark:text-gray-500">
-                {total} {debouncedSearch ? "matching " : "total "}lead{total !== 1 ? "s" : ""}
+                {total} {debouncedSearch || engagementFilter ? "matching " : "total "}lead{total !== 1 ? "s" : ""}
               </span>
             )}
             {canManageCampaign && <AddLeadsToCampaign

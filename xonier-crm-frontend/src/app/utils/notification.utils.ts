@@ -47,9 +47,9 @@ export const getNotificationLink = (notification: Notification): string | null =
     case NotificationEntityType.TASK:
       return `/task/${notification.entityId}`;
     case NotificationEntityType.DEAL:
-      return `/deals/${notification.entityId}`;
+      return `/deals/view/${notification.entityId}`;
     case NotificationEntityType.LEAD:
-      return `/leads/${notification.entityId}`;
+      return `/leads/view/${notification.entityId}`;
     case NotificationEntityType.QUOTATION:
       return `/quotations/${notification.entityId}`;
     case NotificationEntityType.INVOICE:

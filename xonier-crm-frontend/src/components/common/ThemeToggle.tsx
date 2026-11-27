@@ -2,9 +2,7 @@
 
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
-import { IoSunnyOutline } from "react-icons/io5";
-import { LuSunMoon } from "react-icons/lu";
-import { FiSun, FiMoon, FiMonitor } from "react-icons/fi";
+import { Sun, Moon, Monitor } from "lucide-react";
 
 type ThemeToggleProps = {
   variant?: "icon" | "cards";
@@ -20,25 +18,30 @@ export default function ThemeToggle({
 
   useEffect(() => setMounted(true), []);
 
-  if (!mounted) return null;
+  if (!mounted) {
+    return variant === "icon" ? <div className="h-8 w-8 rounded-lg" aria-hidden="true" /> : null;
+  }
 
   const isDark = resolvedTheme === "dark";
 
   if (variant === "icon") {
     return (
       <button
+        type="button"
         onClick={() => setTheme(isDark ? "light" : "dark")}
-        className="h-10 w-10 flex items-center justify-center text-xl rounded-full border bg-slate-50 dark:bg-[#1a2432] border-[#ecf0f2] dark:border-gray-700 hover:text-cyan-600 hover:border-cyan-600/20 transition-all"
+        aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+        title={isDark ? "Light mode" : "Dark mode"}
+        className="h-8 w-8 inline-flex items-center justify-center rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100/90 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800/80 transition-colors cursor-pointer"
       >
-        {isDark ? <IoSunnyOutline /> : <LuSunMoon />}
+        {isDark ? <Sun size={17} strokeWidth={1.75} /> : <Moon size={17} strokeWidth={1.75} />}
       </button>
     );
   }
 
   const options = [
-    { key: "light", icon: <FiSun />, label: t?.("light") ?? "Light" },
-    { key: "dark", icon: <FiMoon />, label: t?.("dark") ?? "Dark" },
-    { key: "system", icon: <FiMonitor />, label: t?.("system") ?? "System" },
+    { key: "light", icon: <Sun size={18} strokeWidth={1.75} />, label: t?.("light") ?? "Light" },
+    { key: "dark", icon: <Moon size={18} strokeWidth={1.75} />, label: t?.("dark") ?? "Dark" },
+    { key: "system", icon: <Monitor size={18} strokeWidth={1.75} />, label: t?.("system") ?? "System" },
   ] as const;
 
   return (

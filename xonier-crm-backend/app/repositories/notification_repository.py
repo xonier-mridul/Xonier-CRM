@@ -9,11 +9,20 @@ class NotificationRepository(BaseRepository):
     def __init__(self):
         super().__init__(NotificationModel)
 
+    @staticmethod
+    def _recipient_match(recipient_id: PydanticObjectId) -> Dict[str, Any]:
+        return {
+            "$or": [
+                {"recipientId.$id": recipient_id},
+                {"recipientId": recipient_id},
+            ]
+        }
+
     async def mark_as_read(self, notification_ids: List[PydanticObjectId], recipient_id: PydanticObjectId) -> int:
         result = await self.model.find(
             {
                 "_id": {"$in": notification_ids},
-                "recipientId.$id": recipient_id,
+                **self._recipient_match(recipient_id),
             }
         ).update(
             {
@@ -30,7 +39,7 @@ class NotificationRepository(BaseRepository):
     async def mark_all_as_read(self, recipient_id: PydanticObjectId) -> int:
         result = await self.model.find(
             {
-                "recipientId.$id": recipient_id,
+                **self._recipient_match(recipient_id),
                 "isRead": False,
             }
         ).update(
@@ -49,7 +58,7 @@ class NotificationRepository(BaseRepository):
         result = await self.model.find(
             {
                 "_id": notification_id,
-                "recipientId.$id": recipient_id,
+                **self._recipient_match(recipient_id),
             }
         ).update(
             {
@@ -64,7 +73,7 @@ class NotificationRepository(BaseRepository):
     async def get_unread_count(self, recipient_id: PydanticObjectId) -> int:
         return await self.model.find(
             {
-                "recipientId.$id": recipient_id,
+                **self._recipient_match(recipient_id),
                 "isRead": False,
             }
         ).count()
@@ -78,7 +87,7 @@ class NotificationRepository(BaseRepository):
     ) -> Dict[str, Any]:
         import math
 
-        base_filter: Dict[str, Any] = {"recipientId.$id": recipient_id}
+        base_filter: Dict[str, Any] = {**self._recipient_match(recipient_id)}
 
         if filters:
             base_filter.update(filters)
@@ -105,7 +114,7 @@ class NotificationRepository(BaseRepository):
         }
 
     async def delete_all_for_recipient(self, recipient_id: PydanticObjectId) -> int:
-        docs = await self.model.find({"recipientId.$id": recipient_id}).to_list()
+        docs = await self.model.find(self._recipient_match(recipient_id)).to_list()
         count = len(docs)
         for doc in docs:
             await doc.delete()

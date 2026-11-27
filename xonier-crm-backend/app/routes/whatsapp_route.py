@@ -8,8 +8,8 @@ import time
 
 import httpx
 from fastapi import APIRouter, Depends, Query, Request
-from pydantic import BaseModel, Field
-from typing import Literal
+from pydantic import BaseModel, Field, model_validator
+from typing import Literal, Optional
 
 from app.core.config import get_setting
 from app.core.dependencies import Dependencies
@@ -40,7 +40,7 @@ async def bridge(request: Request, method: str, path: str, body=None, params=Non
     ticket = (encoded + b"." + signature).decode()
     started = time.monotonic()
     try:
-        async with httpx.AsyncClient(timeout=25, trust_env=False) as client:
+        async with httpx.AsyncClient(timeout=60, trust_env=False) as client:
             result = await client.request(method, settings.WHATSAPP_BRIDGE_URL.rstrip("/") + path,
                                           headers={"Authorization": f"Bearer {ticket}"}, json=body, params=params)
     except httpx.HTTPError as exc:
@@ -123,12 +123,38 @@ async def messages(request: Request, jid: str = Query(..., max_length=160), owne
     return await bridge(request, "GET", "/messages", params=params)
 
 
+class MediaPayload(BaseModel):
+    data: str = Field(min_length=1)
+    mimeType: str = Field(default="application/octet-stream", max_length=120)
+    fileName: str = Field(default="attachment", max_length=255)
+    kind: Literal["image", "video", "audio", "document"] = "document"
+    fileSize: Optional[int] = None
+
+
 class SendMessage(BaseModel):
     jid: str = Field(min_length=3, max_length=160)
-    text: str = Field(min_length=1, max_length=4096)
+    text: str = Field(default="", max_length=4096)
     requestId: str = Field(pattern=r"^[a-f0-9-]{36}$")
+    media: Optional[MediaPayload] = None
+
+    @model_validator(mode="after")
+    def require_text_or_media(self):
+        if not self.text.strip() and not self.media:
+            raise ValueError("Either message text or a media attachment is required")
+        return self
+
+
+class EditMessage(BaseModel):
+    jid: str = Field(min_length=3, max_length=160)
+    messageId: str = Field(min_length=1, max_length=160)
+    text: str = Field(min_length=1, max_length=4096)
 
 
 @router.post("/messages")
 async def send(request: Request, command: SendMessage):
-    return await bridge(request, "POST", "/messages", body=command.model_dump())
+    return await bridge(request, "POST", "/messages", body=command.model_dump(exclude_none=True))
+
+
+@router.patch("/messages")
+async def edit_message(request: Request, command: EditMessage):
+    return await bridge(request, "PATCH", "/messages", body=command.model_dump())

@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
 import Skeleton from "react-loading-skeleton";
@@ -78,6 +79,10 @@ const getCampaignIconAndBg = (index: number) => {
 
 const PipelineContent = () => {
   const { t } = useTranslation();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const campaignParam = searchParams.get("campaign");
   const { hasPermission } = usePermissions();
   const canCreateCampaign = hasPermission(PERMISSIONS.createCampaign);
   const canUpdateCampaign = hasPermission(PERMISSIONS.updateCampaign);
@@ -120,6 +125,50 @@ const PipelineContent = () => {
     window.addEventListener("app:navigation", handleNav);
     return () => window.removeEventListener("app:navigation", handleNav);
   }, []);
+
+  // Sync URL ?campaign=<id> with selectedCampaign so Back/Forward navigation restores the exact campaign
+  useEffect(() => {
+    if (!campaignParam) {
+      setSelectedCampaign(null);
+      return;
+    }
+    const currentId = selectedCampaign?.id || selectedCampaign?._id;
+    if (currentId === campaignParam) return;
+
+    const fromList = campaigns.find((c) => (c.id || c._id) === campaignParam);
+    if (fromList) {
+      setSelectedCampaign(fromList);
+      return;
+    }
+
+    let cancelled = false;
+    CampaignService.getById(campaignParam)
+      .then((res) => {
+        if (!cancelled && res.status === 200 && res.data?.data) {
+          setSelectedCampaign(res.data.data);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setSelectedCampaign(null);
+          router.replace(pathname);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [campaignParam, campaigns, pathname, router, selectedCampaign]);
+
+  const openCampaign = useCallback(
+    (camp: ICampaign) => {
+      const id = camp.id || camp._id;
+      setSelectedCampaign(camp);
+      if (id) {
+        router.push(`${pathname}?campaign=${encodeURIComponent(id)}`);
+      }
+    },
+    [pathname, router]
+  );
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -229,6 +278,7 @@ const PipelineContent = () => {
         campaign={selectedCampaign}
         onBack={() => {
           setSelectedCampaign(null);
+          router.push(pathname);
           refreshStats();
           void fetchCampaigns();
         }}
@@ -727,7 +777,7 @@ const PipelineContent = () => {
                   return (
                     <div
                       key={camp.id || camp._id}
-                      onClick={() => setSelectedCampaign(camp)}
+                      onClick={() => openCampaign(camp)}
                       className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200/80 dark:border-gray-700 hover:border-[#01728e] dark:hover:border-[#01728e] transition-colors duration-200 cursor-pointer group flex flex-col"
                     >
                       <div className="flex justify-between items-start mb-4">
@@ -844,7 +894,7 @@ const PipelineContent = () => {
                               {style.icon}
                             </div>
                             <div>
-                              <div className="font-bold text-sm text-gray-900 dark:text-white cursor-pointer group-hover:text-[#01728e] transition-colors" onClick={() => setSelectedCampaign(camp)}>
+                              <div className="font-bold text-sm text-gray-900 dark:text-white cursor-pointer group-hover:text-[#01728e] transition-colors" onClick={() => openCampaign(camp)}>
                                 {camp.name}
                               </div>
                               <div className="text-xs text-gray-500 mt-0.5 max-w-[150px] truncate">
@@ -883,7 +933,7 @@ const PipelineContent = () => {
                         <td className="py-4 px-4">
                           <div className="flex items-center justify-center gap-2">
                             <button 
-                              onClick={() => setSelectedCampaign(camp)}
+                              onClick={() => openCampaign(camp)}
                               className="px-4 py-1.5 border border-gray-200 dark:border-gray-600 rounded-lg text-xs font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-sm"
                             >
                               View

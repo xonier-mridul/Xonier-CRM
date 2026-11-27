@@ -923,6 +923,7 @@ class CampaignService:
             page = int(filters.get("page", 1))
             limit = int(filters.get("limit", 20))
             status_filter = filters.get("campaignStatus")
+            connect_status = (filters.get("connectStatus") or "").strip()
             search = (filters.get("search") or "").strip()
             skip = (page - 1) * limit
 
@@ -965,6 +966,25 @@ class CampaignService:
             pipeline = [
                 {"$match": match},
                 *live_campaign_lead_join(PydanticObjectId(user["companyId"])),
+                *(
+                    [
+                        {
+                            "$match": (
+                                {
+                                    "$or": [
+                                        {"lead.connectStatus": "not_reached"},
+                                        {"lead.connectStatus": None},
+                                        {"lead.connectStatus": {"$exists": False}},
+                                    ]
+                                }
+                                if connect_status == "not_reached"
+                                else {"lead.connectStatus": connect_status}
+                            )
+                        }
+                    ]
+                    if connect_status
+                    else []
+                ),
                 {"$addFields": {"assignedOid": {"$ifNull": ["$assignedTo.$id", "$assignedTo"]}}},
                 {
                     "$lookup": {

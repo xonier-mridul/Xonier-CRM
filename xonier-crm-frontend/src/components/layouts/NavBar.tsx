@@ -39,14 +39,24 @@ import {FiHome,FiCalendar,
   FiCreditCard,
   FiBookOpen,
 } from "react-icons/fi";
-import { MdKeyboardArrowRight } from "react-icons/md";
+import {
+  ArrowUpRight,
+  Building2,
+  Calculator as CalculatorIcon,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  Languages,
+  LogOut,
+  Search,
+  Settings,
+  SlidersHorizontal,
+  User as UserIcon,
+  X,
+} from "lucide-react";
 import NotificationBell from "../common/NotificationBell";
-import { FaArrowLeftLong, FaArrowRightLong } from "react-icons/fa6";
-// import { useTranslation } from "react-i18next";
-// import i18n from "../../i18n/index";
 import { useTranslation } from "react-i18next";
 import LanguageSelector from "../common/LanguageSelector";
-import { IoLanguage } from "react-icons/io5";
 
 
 const mockNotifications = [
@@ -141,10 +151,25 @@ const NavBar = () => {
   
   const USER_ID = auth.user?._id;
   const searchRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const  calRef = useRef<HTMLDivElement>(null)
    const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        searchInputRef.current?.focus();
+      } else if (event.key === "Escape" && document.activeElement === searchInputRef.current) {
+        setSearchQuery("");
+        searchInputRef.current?.blur();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -343,157 +368,156 @@ const results = searchableData.filter((item) =>
   : auth?.user?.companyId;
 
   return (
-    <div className="h-14 z-99 fixed top-0 right-0 left-0 lg:left-[288px] bg-white/85 dark:bg-slate-900/50 backdrop-blur-md px-4 flex justify-between items-center my-2 border border-slate-200/80 dark:border-slate-800 rounded-2xl mx-3 shadow-2xs">
+    <header className="h-14 z-99 fixed top-0 right-0 left-0 lg:left-[288px] bg-white/90 dark:bg-slate-900/85 backdrop-blur-md px-3.5 flex justify-between items-center gap-4 my-2 border border-slate-200/75 dark:border-slate-800/90 rounded-xl mx-3 shadow-[0_1px_2px_rgba(15,23,42,0.03)]">
       
-       {
-        calOpen &&(
-      <div className='absolute h-[100vh] w-full top-0 right-0 bg-black/30 backdrop-blur-xs'></div>
+      {calOpen && (
+        <div className="fixed inset-0 bg-slate-950/20 backdrop-blur-[1px] z-40" onClick={() => setCalOpen(false)} />
+      )}
 
-
-        )
-      }
-      {/* LEFT SIDE — Search Bar */}
-      <div
-      ref={searchRef}
-       className="flex relative items-center gap-3 flex-1 max-w-md">
-        <form onSubmit={handleSearch} className="relative w-full group">
-          <FiSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-slate-700 dark:group-focus-within:text-slate-200 transition-colors" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={t("search_menu")}
-            className="w-full pl-10 pr-12 py-1.5 text-xs bg-slate-100/70 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 focus:border-slate-300 dark:focus:border-slate-600 focus:bg-white dark:focus:bg-slate-900 rounded-xl outline-none transition-all placeholder:text-slate-400 text-slate-800 dark:text-white shadow-2xs"
-          />
-          
-        </form>
-
-        {searchDetail.length > 0 && (
-    <div className="absolute max-h-76 overflow-y-scroll o top-full mt-4 left-0 w-full p-2 dark:bg-slate-800 dark:border-slate-700 bg-white border border-slate-100 rounded-lg shadow-lg z-50">
-      {searchDetail.map((item, index) => (
-        <>
-        <Link 
-        href={item.link}>
-          <div className="flex justify-between group px-4 py-3 hover:bg-slate-100 rounded-lg dark:hover:bg-slate-600  gap-4 cursor-pointer items-center"
-          onClick={handleSearchClick}>
-              <div
-          key={index}
-
-          className=" flex gap-4 cursor-pointer items-center  capitalize"
+      {/* LEFT SIDE — History Navigation & Command Search */}
+      <div className="flex items-center gap-2.5 flex-1 min-w-0 max-w-lg">
+        {/* Segmented History Controls */}
+        <div
+          className="hidden sm:inline-flex items-center rounded-lg border border-slate-200/80 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-800/50 p-0.5 shrink-0"
+          role="group"
+          aria-label="Page navigation"
         >
-          <span>
-           {item.icon}
-          </span>
-          {item.title}
+          <button
+            type="button"
+            onClick={() => router.back()}
+            aria-label="Back"
+            title="Go back"
+            className="h-7 w-7 inline-flex items-center justify-center rounded-md text-slate-500 hover:text-slate-900 hover:bg-white dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-700/80 transition-colors cursor-pointer"
+          >
+            <ChevronLeft size={16} strokeWidth={1.85} />
+          </button>
+          <span className="h-3.5 w-px bg-slate-200/90 dark:bg-slate-700/80" aria-hidden="true" />
+          <button
+            type="button"
+            onClick={() => router.forward()}
+            aria-label="Forward"
+            title="Go forward"
+            className="h-7 w-7 inline-flex items-center justify-center rounded-md text-slate-500 hover:text-slate-900 hover:bg-white dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-700/80 transition-colors cursor-pointer"
+          >
+            <ChevronRight size={16} strokeWidth={1.85} />
+          </button>
         </div>
-        <span>
-        <MdKeyboardArrowRight  className="group-hover:rotate-90"/>
 
-        </span>
-        
+        {/* Search Bar */}
+        <div ref={searchRef} className="relative flex-1 min-w-0 max-w-sm">
+          <form onSubmit={handleSearch} className="relative w-full group">
+            <Search
+              size={15}
+              strokeWidth={1.8}
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-slate-600 dark:text-slate-500 dark:group-focus-within:text-slate-300 transition-colors"
+            />
+            <input
+              ref={searchInputRef}
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={t("search_menu")}
+              className="w-full h-9 pl-9 pr-14 text-[13px] bg-slate-50/90 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/70 focus:border-slate-300 dark:focus:border-slate-600 focus:bg-white dark:focus:bg-slate-900 focus:ring-2 focus:ring-slate-900/[0.04] dark:focus:ring-white/[0.06] rounded-lg outline-none transition-colors placeholder:text-slate-400 dark:placeholder:text-slate-500 text-slate-800 dark:text-slate-100"
+            />
+            {searchQuery ? (
+              <button
+                type="button"
+                onClick={handleSearchClick}
+                aria-label="Clear search"
+                className="absolute right-2 top-1/2 -translate-y-1/2 h-5 w-5 inline-flex items-center justify-center rounded text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 dark:hover:text-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+              >
+                <X size={13} strokeWidth={2} />
+              </button>
+            ) : (
+              <kbd className="pointer-events-none hidden sm:inline-flex items-center gap-0.5 absolute right-2.5 top-1/2 -translate-y-1/2 rounded border border-slate-200/90 dark:border-slate-700 bg-white dark:bg-slate-800 px-1.5 py-0.5 font-sans text-[10px] font-medium text-slate-400 dark:text-slate-400">
+                ⌘K
+              </kbd>
+            )}
+          </form>
 
-          </div>
-        
-        </Link>
-        </>
-
-      ))}
-    </div>
-  )}
+          {searchDetail.length > 0 && (
+            <div className="absolute max-h-80 overflow-y-auto top-full mt-2 left-0 w-full p-1.5 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-xl shadow-lg z-50">
+              <div className="px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                Quick navigation
+              </div>
+              <div className="space-y-0.5">
+                {searchDetail.map((item, index) => (
+                  <Link key={`${item.link}-${index}`} href={item.link} onClick={handleSearchClick}>
+                    <div className="flex items-center justify-between gap-3 px-2.5 py-2 rounded-lg text-[13px] font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100/80 dark:hover:bg-slate-800 transition-colors cursor-pointer group">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <span className="h-7 w-7 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white inline-flex items-center justify-center text-sm shrink-0 transition-colors">
+                          {item.icon}
+                        </span>
+                        <span className="truncate capitalize">{item.title}</span>
+                      </div>
+                      <ArrowUpRight
+                        size={14}
+                        strokeWidth={1.75}
+                        className="text-slate-300 group-hover:text-slate-500 dark:text-slate-600 dark:group-hover:text-slate-400 shrink-0 transition-colors"
+                      />
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
-
-{/* <div className="flex gap-2">
-<button className="border text-sm border-slate-200 px-4 py-2.5 rounded-xl cursor-pointer" 
-onClick={() => i18n.changeLanguage("hi")}>
-    {t("hindi")}
-</button>
-
-<button className="border text-sm border-slate-200 px-4 py-2.5 rounded-xl cursor-pointer"  
-onClick={() => i18n.changeLanguage("en")}>
-    {t("english")}
-</button>
-<button className="border text-sm border-slate-200 px-4 py-2.5 rounded-xl cursor-pointer"  
-onClick={() => i18n.changeLanguage("po")}>
-    {t("portuguese")}
-</button>
-</div> */}
-
-
-{/* <div className="w-5 h-5 rounded-full relative">
-<IoLanguage 
-  onClick={() => setIsOpen(!isOpen)} />
-  {isOpen && 
-<LanguageSelector isOpen={isOpen} setIsOpen={setIsOpen} dropdownRef={dropdownRef}/>
-
-
-  }
-
-</div> */}
-
-
-
-
-      {/* RIGHT SIDE — Actions */}
-      <div className="flex items-center gap-2 md:gap-2.5">
-        <div className="flex items-center gap-1">
-          <button 
-            onClick={()=>router.back()} 
-            aria-label="Back"
-            className="h-8.5 w-8.5 flex items-center justify-center text-slate-500 dark:text-slate-400 border rounded-xl dark:bg-slate-800/80 bg-white hover:text-slate-900 dark:hover:text-white hover:border-slate-300 dark:border-slate-700/80 cursor-pointer shadow-2xs transition-all"
-          >
-            <FaArrowLeftLong className="text-xs"/>
-          </button>
-          <button 
-            onClick={()=>router.forward()} 
-            aria-label="Forward"
-            className="h-8.5 w-8.5 flex items-center justify-center text-slate-500 dark:text-slate-400 border rounded-xl dark:bg-slate-800/80 bg-white hover:text-slate-900 dark:hover:text-white hover:border-slate-300 dark:border-slate-700/80 cursor-pointer shadow-2xs transition-all"
-          >
-            <FaArrowRightLong className="text-xs"/>
-          </button>
-        </div>
-        
+      {/* RIGHT SIDE — Unified Utility Toolbar & Account */}
+      <div className="flex items-center gap-1 shrink-0 z-50">
         {/* Theme Toggle */}
         <ThemeToggle />
 
         {/* Notification Bell */}
         <NotificationBell calOpen={calOpen} />
 
-        <div 
-        ref={calRef} 
-        className="relative">
-          <button 
-            onClick={()=>setCalOpen(!calOpen)}
+        {/* Calculator */}
+        <div ref={calRef} className="relative">
+          <button
+            type="button"
+            onClick={() => setCalOpen(!calOpen)}
             aria-label="Calculator"
-            className="relative h-8.5 w-8.5 flex items-center justify-center rounded-xl bg-white dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-300 shadow-2xs transition-all cursor-pointer">
-            <LuCalculator className="text-base" />  
+            title="Calculator"
+            className={`h-8 w-8 inline-flex items-center justify-center rounded-lg transition-colors cursor-pointer ${
+              calOpen
+                ? "bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-100"
+                : "text-slate-500 hover:text-slate-900 hover:bg-slate-100/90 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800/80"
+            }`}
+          >
+            <CalculatorIcon size={17} strokeWidth={1.75} />
           </button>
 
-          <AnimatePresence >
-            {
-              calOpen && (
-                <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 8 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2, ease: "easeOut" }}
-                className="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-900 rounded-xl shadow-xl flex justify-center border border-slate-200/80 dark:border-slate-800"
+          <AnimatePresence>
+            {calOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 6 }}
+                exit={{ opacity: 0, y: -4 }}
+                transition={{ duration: 0.15, ease: "easeOut" }}
+                className="absolute right-0 mt-1.5 w-80 bg-white dark:bg-slate-900 rounded-xl shadow-lg flex justify-center border border-slate-200/80 dark:border-slate-800 z-50"
               >
-                <Calculator setCalOpen={setCalOpen}/>
-            </motion.div>
-              )
-            }
+                <Calculator setCalOpen={setCalOpen} />
+              </motion.div>
+            )}
           </AnimatePresence>
         </div>
 
+        {/* Language Selector */}
         <div className="relative">
           <button
             ref={buttonRef}
+            type="button"
             onClick={() => setIsOpen(!isOpen)}
-            className="relative h-8.5 w-8.5 flex items-center justify-center rounded-xl bg-white dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-300 shadow-2xs transition-all cursor-pointer"
             aria-label="Select Language"
+            title="Language"
+            className={`h-8 w-8 inline-flex items-center justify-center rounded-lg transition-colors cursor-pointer ${
+              isOpen
+                ? "bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-100"
+                : "text-slate-500 hover:text-slate-900 hover:bg-slate-100/90 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800/80"
+            }`}
           >
-            <IoLanguage className="w-4 h-4" />
+            <Languages size={17} strokeWidth={1.75} />
           </button>
 
           <LanguageSelector
@@ -503,7 +527,7 @@ onClick={() => i18n.changeLanguage("po")}>
           />
         </div>
 
-        <span className="border-r border-slate-200 dark:border-slate-800 h-6 mx-1" />
+        <span className="h-5 w-px bg-slate-200/80 dark:bg-slate-800 mx-1.5" aria-hidden="true" />
 
         {/* User Profile */}
         {auth.isAuthenticated && (
@@ -516,40 +540,53 @@ onClick={() => i18n.changeLanguage("po")}>
             <button
               type="button"
               onClick={() => setProfileOpen((open) => !open)}
-              className="flex items-center gap-2.5 cursor-pointer group rounded-xl px-1.5 py-1 focus:outline-none"
+              className={`flex items-center gap-2 cursor-pointer rounded-lg pl-1 pr-2 py-1 transition-colors focus:outline-none ${
+                profileOpen
+                  ? "bg-slate-100 dark:bg-slate-800"
+                  : "hover:bg-slate-100/80 dark:hover:bg-slate-800/70"
+              }`}
               aria-expanded={profileOpen}
               aria-label="Open account menu"
             >
-              <span className="h-8 w-8 rounded-lg bg-slate-800 dark:bg-slate-100 text-white dark:text-slate-900 flex items-center justify-center text-xs font-semibold tracking-tight">
+              <span className="h-7 w-7 rounded-md bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 flex items-center justify-center text-[11px] font-semibold tracking-tight">
                 {getInitials(auth.user?.firstName, auth.user?.lastName)}
               </span>
-              <span className="text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white capitalize text-sm font-medium hidden md:block">
-                {auth.user?.firstName} {auth.user?.lastName}
+              <span className="hidden md:flex flex-col items-start leading-tight text-left">
+                <span className="text-[13px] font-medium text-slate-800 dark:text-slate-100 capitalize max-w-[140px] truncate">
+                  {auth.user?.firstName} {auth.user?.lastName}
+                </span>
               </span>
+              <ChevronDown
+                size={14}
+                strokeWidth={1.8}
+                className={`hidden md:block text-slate-400 transition-transform duration-150 ${
+                  profileOpen ? "rotate-180 text-slate-600 dark:text-slate-300" : ""
+                }`}
+              />
             </button>
 
             <AnimatePresence>
               {profileOpen && (
                 <motion.div
-                  initial={{ opacity: 0, y: -6, scale: 0.98 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -6, scale: 0.98 }}
-                  transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={{ duration: 0.15, ease: "easeOut" }}
                   onMouseEnter={handleProfileMouseEnter}
                   onMouseLeave={handleProfileMouseLeave}
-                  className="absolute right-0 top-full mt-2 w-64 rounded-2xl border border-slate-200/80 bg-white/95 p-1.5 shadow-[0_12px_36px_-6px_rgba(15,23,42,0.12),0_4px_16px_-2px_rgba(15,23,42,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-slate-900/95 dark:shadow-[0_20px_48px_-8px_rgba(0,0,0,0.5)] z-50 before:absolute before:-top-3 before:left-0 before:right-0 before:h-3 before:content-['']"
+                  className="absolute right-0 top-full mt-2 w-60 rounded-xl border border-slate-200/80 bg-white p-1.5 shadow-lg dark:border-slate-800 dark:bg-slate-900 z-50 before:absolute before:-top-3 before:left-0 before:right-0 before:h-3 before:content-['']"
                 >
                   {/* User Badge & Email Header */}
                   {(auth?.user?.userRole?.length || auth?.user?.email) && (
-                    <div className="rounded-xl bg-slate-50/80 px-3 py-2.5 dark:bg-slate-800/50 border border-slate-100/80 dark:border-slate-800/60 mb-1">
+                    <div className="rounded-lg bg-slate-50/90 px-3 py-2.5 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 mb-1">
                       <div className="flex items-center justify-between gap-2">
-                        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-cyan-50 text-cyan-700 dark:bg-cyan-950/50 dark:text-cyan-300 ring-1 ring-cyan-500/20">
-                          <span className="w-1.5 h-1.5 rounded-full bg-cyan-500" />
+                        <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-slate-700 dark:text-slate-200">
+                          <span className="w-1.5 h-1.5 rounded-full bg-teal-500" />
                           {auth?.user?.userRole?.[0]?.name || "User"}
                         </span>
                       </div>
                       {auth?.user?.email && (
-                        <p className="mt-1.5 truncate text-[12px] font-medium text-slate-500 dark:text-slate-400">
+                        <p className="mt-1 truncate text-xs text-slate-500 dark:text-slate-400">
                           {auth.user.email}
                         </p>
                       )}
@@ -561,26 +598,20 @@ onClick={() => i18n.changeLanguage("po")}>
                     <Link
                       href={`/users/${auth?.user?._id || auth?.user?.id}`}
                       onClick={() => setProfileOpen(false)}
-                      className="group flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-[13px] font-medium text-slate-600 transition-all duration-150 hover:bg-slate-100/70 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800/60 dark:hover:text-white"
+                      className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] font-medium text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800/70 dark:hover:text-white transition-colors"
                     >
-                      <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-100 text-slate-500 transition-all duration-150 group-hover:bg-cyan-50 group-hover:text-cyan-600 dark:bg-slate-800 dark:text-slate-400 dark:group-hover:bg-cyan-950/50 dark:group-hover:text-cyan-400">
-                        <FiUser className="text-sm" />
-                      </span>
+                      <UserIcon size={15} strokeWidth={1.75} className="text-slate-400" />
                       <span className="flex-1">My Profile</span>
-                      <FiChevronRight className="text-xs text-slate-300 transition-transform duration-150 group-hover:translate-x-0.5 group-hover:text-slate-500 dark:text-slate-600 dark:group-hover:text-slate-400" />
                     </Link>
 
                     {!isAdmin && companyId && (
                       <Link
                         href={`/companies/${companyId}`}
                         onClick={() => setProfileOpen(false)}
-                        className="group flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-[13px] font-medium text-slate-600 transition-all duration-150 hover:bg-slate-100/70 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800/60 dark:hover:text-white"
+                        className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] font-medium text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800/70 dark:hover:text-white transition-colors"
                       >
-                        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-100 text-slate-500 transition-all duration-150 group-hover:bg-indigo-50 group-hover:text-indigo-600 dark:bg-slate-800 dark:text-slate-400 dark:group-hover:bg-indigo-950/50 dark:group-hover:text-indigo-400">
-                          <FaBuilding className="text-xs" />
-                        </span>
+                        <Building2 size={15} strokeWidth={1.75} className="text-slate-400" />
                         <span className="flex-1">Organization Overview</span>
-                        <FiChevronRight className="text-xs text-slate-300 transition-transform duration-150 group-hover:translate-x-0.5 group-hover:text-slate-500 dark:text-slate-600 dark:group-hover:text-slate-400" />
                       </Link>
                     )}
 
@@ -588,39 +619,32 @@ onClick={() => i18n.changeLanguage("po")}>
                       <Link
                         href="/companySetting"
                         onClick={() => setProfileOpen(false)}
-                        className="group flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-[13px] font-medium text-slate-600 transition-all duration-150 hover:bg-slate-100/70 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800/60 dark:hover:text-white"
+                        className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] font-medium text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800/70 dark:hover:text-white transition-colors"
                       >
-                        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-100 text-slate-500 transition-all duration-150 group-hover:bg-sky-50 group-hover:text-sky-600 dark:bg-slate-800 dark:text-slate-400 dark:group-hover:bg-sky-950/50 dark:group-hover:text-sky-400">
-                          <FiSettings className="text-sm" />
-                        </span>
+                        <Settings size={15} strokeWidth={1.75} className="text-slate-400" />
                         <span className="flex-1">Organization Settings</span>
-                        <FiChevronRight className="text-xs text-slate-300 transition-transform duration-150 group-hover:translate-x-0.5 group-hover:text-slate-500 dark:text-slate-600 dark:group-hover:text-slate-400" />
                       </Link>
                     )}
 
                     <Link
                       href="/setting"
                       onClick={() => setProfileOpen(false)}
-                      className="group flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-[13px] font-medium text-slate-600 transition-all duration-150 hover:bg-slate-100/70 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800/60 dark:hover:text-white"
+                      className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] font-medium text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800/70 dark:hover:text-white transition-colors"
                     >
-                      <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-100 text-slate-500 transition-all duration-150 group-hover:bg-amber-50 group-hover:text-amber-600 dark:bg-slate-800 dark:text-slate-400 dark:group-hover:bg-amber-950/50 dark:group-hover:text-amber-400">
-                        <FiSliders className="text-sm" />
-                      </span>
+                      <SlidersHorizontal size={15} strokeWidth={1.75} className="text-slate-400" />
                       <span className="flex-1">Preferences</span>
-                      <FiChevronRight className="text-xs text-slate-300 transition-transform duration-150 group-hover:translate-x-0.5 group-hover:text-slate-500 dark:text-slate-600 dark:group-hover:text-slate-400" />
                     </Link>
                   </nav>
 
                   {/* Log Out */}
-                  <div className="mt-1 border-t border-slate-100/80 pt-1 dark:border-slate-800/60">
+                  <div className="mt-1 border-t border-slate-100 pt-1 dark:border-slate-800">
                     <button
+                      type="button"
                       onClick={handleLogout}
-                      className="group flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-[13px] font-medium text-rose-600 transition-all duration-150 hover:bg-rose-50/80 dark:text-rose-400 dark:hover:bg-rose-950/40 cursor-pointer"
+                      className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] font-medium text-rose-600 hover:bg-rose-50/80 dark:text-rose-400 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
                     >
-                      <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-rose-50 text-rose-500 transition-all duration-150 group-hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-400 dark:group-hover:bg-rose-900/50">
-                        <FiLogOut className="text-sm" />
-                      </span>
-                      <span className="flex-1 text-left font-semibold">Log Out</span>
+                      <LogOut size={15} strokeWidth={1.75} />
+                      <span className="flex-1 text-left">Log Out</span>
                     </button>
                   </div>
                 </motion.div>
@@ -629,7 +653,7 @@ onClick={() => i18n.changeLanguage("po")}>
           </div>
         )}
       </div>
-    </div>
+    </header>
   );
 };
 

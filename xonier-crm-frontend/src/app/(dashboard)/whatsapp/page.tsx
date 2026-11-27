@@ -8,15 +8,42 @@ import { useSearchParams } from "next/navigation";
 import { RootState } from "@/src/store";
 import api from "@/src/lib/axios";
 import { FaWhatsapp } from "react-icons/fa";
-import { ArrowLeft, Check, CheckCheck, Info, Loader2, MessageCircle, Phone, RefreshCw, Send, Unplug, Search, X } from "lucide-react";
+import { ArrowLeft, Check, CheckCheck, Download, FileText, Film, Image as ImageIcon, Info, Loader2, MessageCircle, Music, Paperclip, Pencil, Phone, RefreshCw, Send, Unplug, Search, X } from "lucide-react";
 import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
 
 type Connection = { owner?: string; ownerName?: string; phone?: string; status: string; error?: string; qr?: string; qrExpiresAt?: number };
 type Chat = { jid: string; name: string; preview?: string; timestamp: number; phone?: string | null; unreadCount?: number; profilePicUrl?: string | null };
 type Contact = { jid: string; name: string | null; phone: string | null; profilePicUrl?: string | null };
 type ContactProfile = { jid: string; name: string; phone: string | null; profilePicUrl?: string | null; about?: string | null };
-type Message = { messageId: string; text: string; type: string; fromMe: boolean; timestamp: number; status: number };
+type Message = {
+  messageId: string;
+  text: string;
+  type: string;
+  fromMe: boolean;
+  timestamp: number;
+  status: number;
+  edited?: boolean;
+  editedAt?: number;
+  fileName?: string | null;
+  mimeType?: string | null;
+  fileSize?: number | null;
+  mediaUrl?: string | null;
+};
+type PendingAttachment = {
+  data: string;
+  dataUrl: string;
+  mimeType: string;
+  fileName: string;
+  fileSize: number;
+  kind: "image" | "video" | "audio" | "document";
+};
 type Overview = { admin: boolean; currentUser: string; connections: Connection[] };
+const formatBytes = (bytes?: number | null) => {
+  if (!bytes || bytes <= 0) return "";
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+};
 const errorMessage = (error: unknown) => axios.isAxiosError(error)
   ? error.response?.data?.message || "WhatsApp service is unavailable. Please try again." : "Unable to complete this action.";
 const time = (value: number) => value ? new Date(value * 1000).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "";
@@ -60,6 +87,13 @@ function WhatsAppInbox() {
   const [contactsLoaded, setContactsLoaded] = useState(false);
   const [busy, setBusy] = useState(false);
   const [sending, setSending] = useState(false);
+  const [attachment, setAttachment] = useState<PendingAttachment | null>(null);
+  const [attachMenuOpen, setAttachMenuOpen] = useState(false);
+  const [editingMessage, setEditingMessage] = useState<Message | null>(null);
+  const mediaInputRef = useRef<HTMLInputElement>(null);
+  const docInputRef = useRef<HTMLInputElement>(null);
+  const audioInputRef = useRef<HTMLInputElement>(null);
+  const messageInputRef = useRef<HTMLTextAreaElement>(null);
   const [consent, setConsent] = useState(false);
   const [clock, setClock] = useState(() => Date.now());
   const [loading, setLoading] = useState(true);
@@ -68,7 +102,7 @@ function WhatsAppInbox() {
   const messageCache = useRef(new Map<string, Message[]>());
   const messageKey = (jid: string) => JSON.stringify([owner, jid]);
   const sendLock = useRef(false);
-  const sendAttempt = useRef<{ jid: string; text: string; requestId: string } | null>(null);
+  const sendAttempt = useRef<{ jid: string; signature: string; requestId: string } | null>(null);
   const generation = useRef(0);
   const openedLeadChat = useRef("");
   const bottom = useRef<HTMLDivElement>(null);
@@ -76,7 +110,14 @@ function WhatsAppInbox() {
   const viewedConnection = own ? connection : overview?.connections.find(item => item.owner === owner);
   const params = owner ? { owner } : {};
 
-  useEffect(() => { setProfileOpen(false); setProfileAbout(null); setProfileError(""); }, [selected?.jid]);
+  useEffect(() => {
+    setProfileOpen(false);
+    setProfileAbout(null);
+    setProfileError("");
+    setAttachment(null);
+    setAttachMenuOpen(false);
+    setEditingMessage(null);
+  }, [selected?.jid]);
 
   useEffect(() => {
     const phone = (searchParams.get("phone") || "").replace(/\D/g, "");
@@ -247,17 +288,141 @@ function WhatsAppInbox() {
       await refreshConnection();
     } catch (err) { setError(errorMessage(err)); } finally { setBusy(false); }
   };
+  const handleFileSelect = (
+    event: React.ChangeEvent<HTMLInputElement>,
+    forcedKind?: "document" | "audio"
+  ) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    setAttachMenuOpen(false);
+    if (!file) return;
+    if (file.size > 16 * 1024 * 1024) {
+      setError("File size exceeds 16 MB limit. Please choose a smaller file.");
+      return;
+    }
+    const mimeType = file.type || "application/octet-stream";
+    let kind: PendingAttachment["kind"] = "document";
+    if (forcedKind) {
+      kind = forcedKind;
+    } else if (mimeType.startsWith("image/")) {
+      kind = "image";
+    } else if (mimeType.startsWith("video/")) {
+      kind = "video";
+    } else if (mimeType.startsWith("audio/")) {
+      kind = "audio";
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = typeof reader.result === "string" ? reader.result : "";
+      const base64 = dataUrl.includes(",") ? dataUrl.split(",")[1] : dataUrl;
+      if (!base64) {
+        setError("Could not read the selected file.");
+        return;
+      }
+      setEditingMessage(null);
+      setAttachment({
+        data: base64,
+        dataUrl,
+        mimeType,
+        fileName: file.name,
+        fileSize: file.size,
+        kind,
+      });
+      setError("");
+      requestAnimationFrame(() => messageInputRef.current?.focus());
+    };
+    reader.onerror = () => setError("Could not read the selected file.");
+    reader.readAsDataURL(file);
+  };
+
+  const startEdit = (message: Message) => {
+    if (!message.fromMe || !canSend) return;
+    setAttachment(null);
+    setAttachMenuOpen(false);
+    setEditingMessage(message);
+    setText(message.text || "");
+    setError("");
+    requestAnimationFrame(() => messageInputRef.current?.focus());
+  };
+
+  const cancelEdit = () => {
+    setEditingMessage(null);
+    setText("");
+  };
+
   const send = async () => {
-    if (!selected || !text.trim() || sendLock.current || !own) return;
+    if (!selected || sendLock.current || !own) return;
+    const jid = selected.jid;
+    const value = text.trim();
+
+    // Edit existing sent message
+    if (editingMessage) {
+      if (!value) return;
+      if (value === editingMessage.text) {
+        cancelEdit();
+        return;
+      }
+      sendLock.current = true;
+      setSending(true);
+      setError("");
+      const version = generation.current;
+      const targetMsgId = editingMessage.messageId;
+      try {
+        await api.patch("/whatsapp/messages", {
+          jid,
+          messageId: targetMsgId,
+          text: value,
+        });
+        if (generation.current !== version) return;
+        setEditingMessage(null);
+        setText("");
+        setMessages((prev) => {
+          const updated = prev.map((m) =>
+            m.messageId === targetMsgId
+              ? { ...m, text: value, edited: true, editedAt: Math.floor(Date.now() / 1000) }
+              : m
+          );
+          messageCache.current.set(messageKey(jid), updated);
+          return updated;
+        });
+      } catch (err) {
+        if (generation.current === version) setError(errorMessage(err));
+      } finally {
+        sendLock.current = false;
+        setSending(false);
+      }
+      return;
+    }
+
+    // Send new text or media message
+    if (!value && !attachment) return;
     sendLock.current = true; setSending(true); setError("");
     const version = generation.current;
-    const jid = selected.jid; const value = text.trim();
-    if (sendAttempt.current?.jid !== jid || sendAttempt.current.text !== value) sendAttempt.current = { jid, text: value, requestId: crypto.randomUUID() };
+    const signature = attachment ? `${attachment.kind}:${attachment.fileName}:${value}` : value;
+    if (sendAttempt.current?.jid !== jid || sendAttempt.current.signature !== signature) {
+      sendAttempt.current = { jid, signature, requestId: crypto.randomUUID() };
+    }
     try {
-      await api.post("/whatsapp/messages", sendAttempt.current);
+      await api.post("/whatsapp/messages", {
+        jid,
+        text: value,
+        requestId: sendAttempt.current.requestId,
+        ...(attachment
+          ? {
+              media: {
+                data: attachment.data,
+                mimeType: attachment.mimeType,
+                fileName: attachment.fileName,
+                fileSize: attachment.fileSize,
+                kind: attachment.kind,
+              },
+            }
+          : {}),
+      });
       sendAttempt.current = null;
       if (generation.current !== version) return;
       setText("");
+      setAttachment(null);
       const result = await api.get<Message[]>("/whatsapp/messages", { params: { jid } });
       if (generation.current === version) {
         messageCache.current.set(messageKey(jid), result.data);
@@ -388,12 +553,338 @@ function WhatsAppInbox() {
               </div>
             </div>
           </div> : selected ? <><div className="flex h-[72px] shrink-0 items-center gap-3 border-b border-[#e9edef] bg-[#f0f2f5] px-4 dark:border-slate-700 dark:bg-slate-800"><button onClick={() => { generation.current += 1; setSelected(null); }} className="rounded-full p-1 text-[#54656f] md:hidden" aria-label="Back to chats"><ArrowLeft size={20} /></button><button type="button" onClick={() => void openProfile()} title="View contact profile" className="flex min-w-0 flex-1 items-center gap-3 rounded-lg text-left transition-colors hover:bg-white/60 dark:hover:bg-slate-700"><ChatAvatar name={selected.name} src={selected.profilePicUrl} /><span className="min-w-0"><span className="block truncate text-[15px] font-semibold">{selected.name}</span><span className="block truncate text-xs text-[#667781] dark:text-slate-400">{selected.phone || (selected.jid.endsWith("@g.us") ? "Group conversation" : selected.jid.split("@")[0])}</span></span></button>{!own && <span className="text-xs text-slate-500">Admin view</span>}</div>
-            <div className="flex-1 space-y-2 overflow-y-auto bg-[#efeae2] px-4 py-5 sm:px-8 dark:bg-[#111b21]" style={{ backgroundImage: "radial-gradient(rgba(120,110,95,0.08) 0.7px, transparent 0.7px)", backgroundSize: "20px 20px" }}>{messages.map(message => <div key={message.messageId} className={`flex ${message.fromMe ? "justify-end" : "justify-start"}`}><div className={`max-w-[88%] rounded-lg px-3 py-2 shadow-[0_1px_1px_rgba(0,0,0,0.08)] sm:max-w-[72%] ${message.fromMe ? "rounded-tr-sm bg-[#d9fdd3] dark:bg-[#005c4b]" : "rounded-tl-sm bg-white dark:bg-[#202c33]"}`}><p className="whitespace-pre-wrap break-words text-[14px] leading-[1.45]">{message.text || `[${message.type} — open on your phone]`}</p><div className="mt-1 flex items-center justify-end gap-1 text-[10px] text-[#667781] dark:text-slate-400"><span>{time(message.timestamp)}</span>{message.fromMe && (message.status >= 3 ? <CheckCheck size={14} className={message.status >= 4 ? "text-[#53bdeb]" : ""} /> : message.status >= 2 ? <Check size={14} /> : <span>{message.status === 0 ? "Failed" : "Pending"}</span>)}</div></div></div>)}<div ref={bottom} /></div>
-            <form onSubmit={event => { event.preventDefault(); void send(); }} className="flex shrink-0 items-center gap-3 bg-[#f0f2f5] px-3 py-3 dark:bg-[#202c33]"><input aria-label="Message" maxLength={4096} disabled={!canSend || sending} value={text} onChange={event => setText(event.target.value)} placeholder={!own ? "Admin view: replies are sent by the account owner" : selected.jid.endsWith("@g.us") ? "Group conversations are read only" : connection.status !== "connected" ? "Reconnect WhatsApp to reply" : "Type a message"} className="min-w-0 flex-1 rounded-lg bg-white px-4 py-3 text-[14px] outline-none placeholder:text-[#667781] focus:ring-1 focus:ring-[#00a884] dark:bg-[#2a3942] disabled:opacity-60" /><button aria-label="Send message" disabled={!canSend || !text.trim() || sending} className="rounded-full p-2.5 text-[#00a884] transition-colors hover:bg-[#e1e7e9] disabled:opacity-40 dark:hover:bg-slate-700">{sending ? <Loader2 size={21} className="animate-spin" /> : <Send size={21} />}</button></form>
+            <div className="flex-1 space-y-2 overflow-y-auto bg-[#efeae2] px-4 py-5 sm:px-8 dark:bg-[#111b21]" style={{ backgroundImage: "radial-gradient(rgba(120,110,95,0.08) 0.7px, transparent 0.7px)", backgroundSize: "20px 20px" }}>
+              {messages.map(message => {
+                const canEditThis = canSend && message.fromMe && (message.type === "text" || Boolean(message.text));
+                return (
+                  <div key={message.messageId} className={`group flex ${message.fromMe ? "justify-end" : "justify-start"}`}>
+                    <div className={`relative max-w-[88%] rounded-lg px-3 py-2 shadow-[0_1px_1px_rgba(0,0,0,0.08)] sm:max-w-[72%] ${message.fromMe ? "rounded-tr-sm bg-[#d9fdd3] dark:bg-[#005c4b]" : "rounded-tl-sm bg-white dark:bg-[#202c33]"}`}>
+                      {canEditThis && (
+                        <button
+                          type="button"
+                          onClick={() => startEdit(message)}
+                          title="Edit message"
+                          aria-label="Edit message"
+                          className="absolute -left-8 top-1.5 hidden rounded-full bg-white/90 p-1.5 text-slate-600 shadow-xs transition hover:bg-white hover:text-[#008069] group-hover:inline-flex dark:bg-slate-800 dark:text-slate-300 dark:hover:text-emerald-400"
+                        >
+                          <Pencil size={13} />
+                        </button>
+                      )}
+
+                      {/* Media / File Attachment Rendering */}
+                      {message.type === "image" && (
+                        <div className="mb-1.5 overflow-hidden rounded-lg">
+                          {message.mediaUrl ? (
+                            <div className="relative">
+                              <img
+                                src={message.mediaUrl}
+                                alt={message.fileName || "Image attachment"}
+                                className="max-h-64 w-auto rounded-lg object-cover"
+                              />
+                              <a
+                                href={message.mediaUrl}
+                                download={message.fileName || "whatsapp-image"}
+                                className="mt-1 inline-flex items-center gap-1 text-[11px] font-medium text-[#008069] hover:underline dark:text-emerald-300"
+                              >
+                                <Download size={12} /> Download{message.fileSize ? ` (${formatBytes(message.fileSize)})` : ""}
+                              </a>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-2 rounded-lg bg-black/5 px-3 py-2 text-xs dark:bg-white/10">
+                              <ImageIcon size={16} className="shrink-0 text-[#008069] dark:text-emerald-300" />
+                              <span className="truncate">{message.fileName || "Image"}</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {message.type === "video" && (
+                        <div className="mb-1.5 overflow-hidden rounded-lg">
+                          {message.mediaUrl ? (
+                            <video controls src={message.mediaUrl} className="max-h-64 rounded-lg" />
+                          ) : (
+                            <div className="flex items-center gap-2 rounded-lg bg-black/5 px-3 py-2 text-xs dark:bg-white/10">
+                              <Film size={16} className="shrink-0 text-[#008069] dark:text-emerald-300" />
+                              <span className="truncate">{message.fileName || "Video"}</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {message.type === "audio" && (
+                        <div className="mb-1.5">
+                          {message.mediaUrl ? (
+                            <audio controls src={message.mediaUrl} className="h-9 max-w-[240px]" />
+                          ) : (
+                            <div className="flex items-center gap-2 rounded-lg bg-black/5 px-3 py-2 text-xs dark:bg-white/10">
+                              <Music size={16} className="shrink-0 text-[#008069] dark:text-emerald-300" />
+                              <span className="truncate">{message.fileName || "Audio message"}</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {message.type === "document" && (
+                        <div className="mb-1.5 flex items-center justify-between gap-3 rounded-lg bg-black/5 px-3 py-2.5 dark:bg-white/10">
+                          <div className="flex min-w-0 items-center gap-2.5">
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#008069]/15 text-[#008069] dark:bg-emerald-500/20 dark:text-emerald-300">
+                              <FileText size={18} />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="truncate text-xs font-semibold">
+                                {message.fileName || "Document"}
+                              </p>
+                              <p className="text-[10px] text-[#667781] dark:text-slate-400">
+                                {[formatBytes(message.fileSize), message.mimeType?.split("/")[1]?.toUpperCase()].filter(Boolean).join(" · ") || "File"}
+                              </p>
+                            </div>
+                          </div>
+                          {message.mediaUrl && (
+                            <a
+                              href={message.mediaUrl}
+                              download={message.fileName || "document"}
+                              title="Download file"
+                              className="rounded-lg bg-white/80 p-1.5 text-[#008069] transition hover:bg-white dark:bg-slate-800 dark:text-emerald-300"
+                            >
+                              <Download size={15} />
+                            </a>
+                          )}
+                        </div>
+                      )}
+
+                      {(message.text || message.type === "text" || message.type === "unsupported") && (
+                        <p className="whitespace-pre-wrap break-words text-[14px] leading-[1.45]">
+                          {message.text || (message.type === "text" ? "" : `[${message.type} — open on your phone]`)}
+                        </p>
+                      )}
+
+                      <div className="mt-1 flex items-center justify-end gap-1 text-[10px] text-[#667781] dark:text-slate-400">
+                        {message.edited && <span className="italic">Edited ·</span>}
+                        <span>{time(message.timestamp)}</span>
+                        {message.fromMe && canEditThis && (
+                          <button
+                            type="button"
+                            onClick={() => startEdit(message)}
+                            className="ml-1 inline-flex items-center gap-0.5 text-[10px] font-medium text-[#008069] opacity-75 hover:opacity-100 hover:underline dark:text-emerald-300 sm:hidden"
+                          >
+                            Edit
+                          </button>
+                        )}
+                        {message.fromMe && (message.status >= 3 ? <CheckCheck size={14} className={message.status >= 4 ? "text-[#53bdeb]" : ""} /> : message.status >= 2 ? <Check size={14} /> : <span>{message.status === 0 ? "Failed" : "Pending"}</span>)}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+              <div ref={bottom} />
+            </div>
+
+            {/* Editing Banner */}
+            {editingMessage && (
+              <div className="flex items-center justify-between gap-3 border-t border-slate-200 bg-emerald-50/90 px-4 py-2 text-xs dark:border-slate-700 dark:bg-emerald-950/60">
+                <div className="flex min-w-0 items-center gap-2">
+                  <Pencil size={14} className="shrink-0 text-[#008069] dark:text-emerald-400" />
+                  <div className="min-w-0">
+                    <p className="font-semibold text-[#008069] dark:text-emerald-300">Editing message</p>
+                    <p className="truncate text-slate-600 dark:text-slate-300">{editingMessage.text}</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={cancelEdit}
+                  aria-label="Cancel editing"
+                  className="rounded-full p-1 text-slate-500 hover:bg-black/5 dark:text-slate-300 dark:hover:bg-white/10"
+                >
+                  <X size={15} />
+                </button>
+              </div>
+            )}
+
+            {/* Selected Attachment Preview Bar */}
+            {attachment && (
+              <div className="flex items-center justify-between gap-3 border-t border-slate-200 bg-white px-4 py-2.5 dark:border-slate-700 dark:bg-slate-800">
+                <div className="flex min-w-0 items-center gap-3">
+                  {attachment.kind === "image" ? (
+                    <img
+                      src={attachment.dataUrl}
+                      alt={attachment.fileName}
+                      className="h-12 w-12 shrink-0 rounded-lg border border-slate-200 object-cover dark:border-slate-700"
+                    />
+                  ) : (
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-[#e7f8ef] text-[#008069] dark:bg-emerald-950 dark:text-emerald-300">
+                      {attachment.kind === "video" ? (
+                        <Film size={20} />
+                      ) : attachment.kind === "audio" ? (
+                        <Music size={20} />
+                      ) : (
+                        <FileText size={20} />
+                      )}
+                    </div>
+                  )}
+                  <div className="min-w-0">
+                    <p className="truncate text-xs font-semibold">{attachment.fileName}</p>
+                    <div className="mt-0.5 flex items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400">
+                      <span>{formatBytes(attachment.fileSize)}</span>
+                      <span>·</span>
+                      <span className="capitalize">{attachment.kind}</span>
+                      {(attachment.mimeType.startsWith("image/") || attachment.mimeType.startsWith("video/")) && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setAttachment((prev) =>
+                              prev
+                                ? {
+                                    ...prev,
+                                    kind:
+                                      prev.kind === "document"
+                                        ? prev.mimeType.startsWith("image/")
+                                          ? "image"
+                                          : "video"
+                                        : "document",
+                                  }
+                                : null
+                            )
+                          }
+                          className="font-medium text-[#008069] hover:underline dark:text-emerald-400"
+                        >
+                          {attachment.kind === "document" ? "Send as media" : "Send as document"}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setAttachment(null)}
+                  aria-label="Remove attachment"
+                  className="rounded-full p-1.5 text-slate-500 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            )}
+
+            <form onSubmit={event => { event.preventDefault(); void send(); }} className="relative flex shrink-0 items-center gap-2 bg-[#f0f2f5] px-3 py-3 dark:bg-[#202c33]">
+              {/* Hidden file inputs */}
+              <input
+                ref={mediaInputRef}
+                type="file"
+                accept="image/*,video/*"
+                className="hidden"
+                onChange={(e) => handleFileSelect(e)}
+              />
+              <input
+                ref={docInputRef}
+                type="file"
+                accept="*/*"
+                className="hidden"
+                onChange={(e) => handleFileSelect(e, "document")}
+              />
+              <input
+                ref={audioInputRef}
+                type="file"
+                accept="audio/*"
+                className="hidden"
+                onChange={(e) => handleFileSelect(e, "audio")}
+              />
+
+              {/* Attachment Menu Button */}
+              <div className="relative">
+                <button
+                  type="button"
+                  disabled={!canSend || sending || Boolean(editingMessage)}
+                  onClick={() => setAttachMenuOpen((open) => !open)}
+                  aria-label="Attach media or file"
+                  title="Attach media or file"
+                  className="rounded-full p-2.5 text-[#54656f] transition-colors hover:bg-[#e1e7e9] disabled:opacity-40 dark:text-slate-300 dark:hover:bg-slate-700"
+                >
+                  <Paperclip size={20} />
+                </button>
+
+                {attachMenuOpen && (
+                  <div className="absolute bottom-13 left-0 z-30 w-48 rounded-xl border border-slate-200 bg-white p-1.5 shadow-xl dark:border-slate-700 dark:bg-slate-800">
+                    <button
+                      type="button"
+                      onClick={() => mediaInputRef.current?.click()}
+                      className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-700"
+                    >
+                      <ImageIcon size={16} className="text-emerald-600" />
+                      Photos &amp; Videos
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => docInputRef.current?.click()}
+                      className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-700"
+                    >
+                      <FileText size={16} className="text-indigo-600" />
+                      Document / File
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => audioInputRef.current?.click()}
+                      className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-700"
+                    >
+                      <Music size={16} className="text-amber-600" />
+                      Audio
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <textarea
+                ref={messageInputRef}
+                aria-label="Message"
+                rows={1}
+                maxLength={4096}
+                disabled={!canSend || sending}
+                value={text}
+                onChange={event => {
+                  setText(event.target.value);
+                  const el = event.target;
+                  el.style.height = "auto";
+                  el.style.height = `${Math.min(el.scrollHeight, 128)}px`;
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" && !event.shiftKey) {
+                    event.preventDefault();
+                    void send();
+                  } else if (event.key === "Escape" && editingMessage) {
+                    cancelEdit();
+                  }
+                }}
+                placeholder={
+                  !own
+                    ? "Admin view: replies are sent by the account owner"
+                    : selected.jid.endsWith("@g.us")
+                    ? "Group conversations are read only"
+                    : connection.status !== "connected"
+                    ? "Reconnect WhatsApp to reply"
+                    : editingMessage
+                    ? "Edit your message…"
+                    : attachment
+                    ? "Add a caption (optional)…"
+                    : "Type a message"
+                }
+                className="min-w-0 flex-1 resize-none overflow-y-auto rounded-lg bg-white px-4 py-3 text-[14px] leading-[1.4] outline-none placeholder:text-[#667781] focus:ring-1 focus:ring-[#00a884] dark:bg-[#2a3942] disabled:opacity-60 max-h-32"
+              />
+              <button
+                aria-label={editingMessage ? "Save edited message" : "Send message"}
+                disabled={!canSend || (!text.trim() && !attachment) || sending}
+                className="rounded-full p-2.5 text-[#00a884] transition-colors hover:bg-[#e1e7e9] disabled:opacity-40 dark:hover:bg-slate-700"
+              >
+                {sending ? (
+                  <Loader2 size={21} className="animate-spin" />
+                ) : editingMessage ? (
+                  <Check size={21} />
+                ) : (
+                  <Send size={21} />
+                )}
+              </button>
+            </form>
           </> : <div className="flex h-full flex-col items-center justify-center border-b-[5px] border-[#25d366] bg-[#f8faf9] p-8 text-center dark:bg-[#111b21]"><span className="mb-5 flex h-24 w-24 items-center justify-center rounded-full bg-[#e7f8ef] text-[#008069] dark:bg-emerald-950"><FaWhatsapp size={51} /></span><h2 className="text-2xl font-light text-[#41525d] dark:text-slate-200">WhatsApp for your team</h2><p className="mt-3 max-w-sm text-sm leading-6 text-[#667781] dark:text-slate-400">Select a chat to see your synced conversation and reply from your connected number.</p><p className="mt-8 text-xs text-[#8696a0]">Recent synced chats · Up to 100 messages per conversation</p></div>}
         </div>
       </section>
-      <p className="text-xs text-slate-500 dark:text-slate-400">This connection uses WhatsApp Linked devices. WhatsApp changes can require reconnecting, and unofficial clients can cause account restrictions. Media sending and downloads are not available yet.</p>
+      <p className="text-xs text-slate-500 dark:text-slate-400">This connection uses WhatsApp Linked devices. WhatsApp changes can require reconnecting, and unofficial clients can cause account restrictions.</p>
     </div>
   );
 }

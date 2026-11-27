@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "react-toastify";
 import api from "@/src/lib/axios";
 import CompanyService from "@/src/services/company.service";
 
@@ -100,6 +101,10 @@ export default function NextActions({ entityType, entityId, canEdit, defaultOwne
       setTitle("");
       setDueAt("");
       setPromptNext(false);
+      toast.success("Next action scheduled");
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("xonier:notifications-updated"));
+      }
       onActionCreated?.();
       await load();
     } catch (error) {

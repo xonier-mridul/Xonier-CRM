@@ -98,7 +98,7 @@ async function authState(sid) {
     },
   } }, save: () => write('creds', creds) };
 }
-async function saveMessages(sid, batch) {
+async function saveMessages(sid, batch, extrasByMsgId = new Map()) {
   const rows = [];
   const previews = new Map();
   const mappings = new Map();
@@ -107,15 +107,51 @@ async function saveMessages(sid, batch) {
     if (!safeJid(jid) || !message.key?.id || !message.message) continue;
     if (jid.endsWith('@lid') && message.key.remoteJidAlt?.endsWith('@s.whatsapp.net')) mappings.set(jid, message.key.remoteJidAlt);
     const content = normalizeMessageContent(message.message) || {};
+    if (content.protocolMessage?.type === proto.Message.ProtocolMessage.Type.MESSAGE_EDIT && content.protocolMessage?.key?.id) {
+      const editedInner = normalizeMessageContent(content.protocolMessage.editedMessage) || {};
+      const editedText = editedInner.conversation
+        || editedInner.extendedTextMessage?.text
+        || editedInner.imageMessage?.caption
+        || editedInner.videoMessage?.caption
+        || editedInner.documentMessage?.caption
+        || '';
+      if (editedText) {
+        const editTs = Number(message.messageTimestamp || Math.floor(Date.now() / 1000));
+        await messages.updateMany(
+          { sid, jid, messageId: content.protocolMessage.key.id },
+          { $set: { text: editedText.slice(0, 65536), edited: true, editedAt: editTs } },
+        );
+      }
+      continue;
+    }
     // Respect disappearing/view-once content: don't copy it into the CRM.
     if (message.message.viewOnceMessage || message.message.viewOnceMessageV2 || message.message.viewOnceMessageV2Extension
       || message.message.ephemeralMessage || Object.values(content).some(value => value?.contextInfo?.expiration || value?.viewOnce)) continue;
-    const text = content.conversation || content.extendedTextMessage?.text || content.imageMessage?.caption || content.videoMessage?.caption || '';
-    const type = content.conversation || content.extendedTextMessage ? 'text' : content.imageMessage ? 'image' : content.videoMessage ? 'video' : content.audioMessage ? 'audio' : content.documentMessage ? 'document' : 'unsupported';
+    const docMsg = content.documentMessage || content.documentWithCaptionMessage?.message?.documentMessage;
+    const imgMsg = content.imageMessage;
+    const vidMsg = content.videoMessage;
+    const audMsg = content.audioMessage;
+    const text = content.conversation || content.extendedTextMessage?.text || imgMsg?.caption || vidMsg?.caption || docMsg?.caption || '';
+    const type = content.conversation || content.extendedTextMessage ? 'text' : imgMsg ? 'image' : vidMsg ? 'video' : audMsg ? 'audio' : docMsg ? 'document' : 'unsupported';
     if (type === 'unsupported' && !text) continue;
     const timestamp = Number(message.messageTimestamp || Math.floor(Date.now() / 1000));
-    rows.push({ sid, jid, messageId: message.key.id, text: text.slice(0, 65536), type, timestamp, fromMe: Boolean(message.key.fromMe), status: message.status ?? 1 });
-    if (!previews.has(jid) || previews.get(jid).timestamp <= timestamp) previews.set(jid, { sid, jid, timestamp, preview: text.slice(0, 160) || `[${type}]` });
+    const extra = extrasByMsgId.get(message.key.id) || {};
+    const mediaObj = imgMsg || vidMsg || audMsg || docMsg || {};
+    const fileName = docMsg?.fileName || extra.fileName || null;
+    const mimeType = mediaObj.mimetype || extra.mimeType || null;
+    const rawLen = Number(mediaObj.fileLength?.low ?? mediaObj.fileLength ?? extra.fileSize ?? 0);
+    const fileSize = Number.isFinite(rawLen) && rawLen > 0 ? rawLen : null;
+    const mediaUrl = extra.mediaUrl || null;
+    rows.push({
+      sid, jid, messageId: message.key.id, text: text.slice(0, 65536), type, timestamp,
+      fromMe: Boolean(message.key.fromMe), status: message.status ?? 1,
+      ...(fileName ? { fileName: String(fileName).slice(0, 255) } : {}),
+      ...(mimeType ? { mimeType: String(mimeType).slice(0, 120) } : {}),
+      ...(fileSize ? { fileSize } : {}),
+      ...(mediaUrl ? { mediaUrl } : {}),
+    });
+    const previewLabel = text.slice(0, 160) || (fileName ? `[${type}: ${fileName}]`.slice(0, 160) : `[${type}]`);
+    if (!previews.has(jid) || previews.get(jid).timestamp <= timestamp) previews.set(jid, { sid, jid, timestamp, preview: previewLabel });
   }
   for (let offset = 0; offset < rows.length; offset += 200) {
     await messages.bulkWrite(rows.slice(offset, offset + 200).map(({ status, ...row }) => ({
@@ -333,8 +369,7 @@ async function connect(sid, company, owner, attempt = 0) {
     }));
     socket.ev.on('messages.update', guarded(async batch => {
       for (const { key, update } of batch) {
-        const status = update.status;
-        if (!safeJid(key.remoteJid) || !key.id || !Number.isInteger(status) || status < 0 || status > 5 || status === 1) continue;
+        if (!safeJid(key.remoteJid) || !key.id) continue;
         const jid = jidNormalizedUser(key.remoteJid);
         const aliases = new Set([key.remoteJid, ...await directory.conversationAliases(sid, jid)]);
         if (directJid(jid)) {
@@ -344,6 +379,24 @@ async function connect(sid, company, owner, attempt = 0) {
           if (directJid(key.remoteJidAlt)) aliases.add(jidNormalizedUser(key.remoteJidAlt));
         }
         const filter = { sid, jid: { $in: [...aliases] }, messageId: key.id, fromMe: Boolean(key.fromMe) };
+        if (update.message) {
+          const editedContent = normalizeMessageContent(update.message) || {};
+          const docMsg = editedContent.documentMessage || editedContent.documentWithCaptionMessage?.message?.documentMessage;
+          const editedText = editedContent.conversation
+            || editedContent.extendedTextMessage?.text
+            || editedContent.imageMessage?.caption
+            || editedContent.videoMessage?.caption
+            || docMsg?.caption
+            || '';
+          if (editedText) {
+            const editTs = Number(update.messageTimestamp || Math.floor(Date.now() / 1000));
+            await messages.updateMany(filter, {
+              $set: { text: editedText.slice(0, 65536), edited: true, editedAt: editTs },
+            });
+          }
+        }
+        const status = update.status;
+        if (!Number.isInteger(status) || status < 0 || status > 5 || status === 1) continue;
         if (status === 0) {
           await messages.updateMany({ ...filter, status: { $lte: 1 } }, { $set: { status } });
         } else {
@@ -364,9 +417,9 @@ function limit(key, max) {
   if (!row || row.until < now) { rates.set(key, { count: 1, until: now + 60000 }); return; }
   if (++row.count > max) throw fail(429, 'Too many requests. Please wait a minute.');
 }
-async function readBody(req) {
+async function readBody(req, maxBytes = 20000) {
   let size = 0; const parts = [];
-  for await (const chunk of req) { size += chunk.length; if (size > 20000) throw fail(413, 'Message too large'); parts.push(chunk); }
+  for await (const chunk of req) { size += chunk.length; if (size > maxBytes) throw fail(413, 'Message or attachment is too large (max 16 MB)'); parts.push(chunk); }
   try { return JSON.parse(Buffer.concat(parts).toString() || '{}'); } catch { throw fail(400, 'Invalid JSON'); }
 }
 function connectionView(row, own = false) {
@@ -511,8 +564,46 @@ const server = http.createServer(async (req, res) => {
     } else if (req.method === 'POST' && url.pathname === '/messages') {
       // Replies always use the caller's connection. Admin oversight does not grant impersonation.
       const own = scope(actor);
-      const body = await readBody(req);
-      if (!directJid(body.jid) || typeof body.text !== 'string' || !body.text.trim() || body.text.length > 4096 || !/^[a-f0-9-]{36}$/.test(body.requestId || '')) throw fail(400, 'Invalid message');
+      const body = await readBody(req, 25 * 1024 * 1024);
+      const caption = typeof body.text === 'string' ? body.text.trim() : '';
+      const hasMedia = body.media && typeof body.media === 'object';
+      if (!directJid(body.jid) || caption.length > 4096 || (!caption && !hasMedia) || !/^[a-f0-9-]{36}$/.test(body.requestId || '')) {
+        throw fail(400, 'Invalid message');
+      }
+      let mediaBuffer = null;
+      let mediaKind = 'document';
+      let mimeType = 'application/octet-stream';
+      let fileName = 'attachment';
+      let mediaUrl = null;
+      if (hasMedia) {
+        const b64 = typeof body.media.data === 'string' ? body.media.data.replace(/^data:[^;]+;base64,/, '') : '';
+        if (!b64) throw fail(400, 'Attachment data is required');
+        mediaBuffer = Buffer.from(b64, 'base64');
+        if (!mediaBuffer.length || mediaBuffer.length > 16 * 1024 * 1024) {
+          throw fail(413, 'Attachment size must be up to 16 MB');
+        }
+        mimeType = typeof body.media.mimeType === 'string' && body.media.mimeType.trim()
+          ? body.media.mimeType.trim().slice(0, 120)
+          : 'application/octet-stream';
+        fileName = typeof body.media.fileName === 'string' && body.media.fileName.trim()
+          ? body.media.fileName.trim().slice(0, 255)
+          : 'attachment';
+        const requestedKind = body.media.kind;
+        if (requestedKind === 'document') {
+          mediaKind = 'document';
+        } else if (requestedKind === 'image' || mimeType.startsWith('image/')) {
+          mediaKind = 'image';
+        } else if (requestedKind === 'video' || mimeType.startsWith('video/')) {
+          mediaKind = 'video';
+        } else if (requestedKind === 'audio' || mimeType.startsWith('audio/')) {
+          mediaKind = 'audio';
+        } else {
+          mediaKind = 'document';
+        }
+        if (mediaBuffer.length <= 4 * 1024 * 1024) {
+          mediaUrl = `data:${mimeType};base64,${b64}`;
+        }
+      }
       limit(`${own}:send`, 30);
       data = await serialized(own, async () => {
         const state = live.get(own);
@@ -534,19 +625,82 @@ const server = http.createServer(async (req, res) => {
           await directory.absorb(own, [{ id: recipientJid, phoneNumber: recipientJid }]);
         }
         const id = `${own}:${body.requestId}`;
+        const signatureText = hasMedia ? `${mediaKind}:${fileName}:${caption}` : caption;
         const existing = await sends.findOne({ _id: id });
         if (existing) {
-          if (existing.jid !== body.jid || existing.text !== body.text) throw fail(409, 'Request ID already used');
+          if (existing.jid !== body.jid || existing.text !== signatureText) throw fail(409, 'Request ID already used');
           if (existing.messageId) return { messageId: existing.messageId };
           throw fail(409, 'Previous send outcome is uncertain. Check your WhatsApp before sending again.');
         }
-        await sends.insertOne({ _id: id, sid: own, jid: body.jid, text: body.text, createdAt: new Date() });
+        await sends.insertOne({ _id: id, sid: own, jid: body.jid, text: signatureText, createdAt: new Date() });
+        let waContent;
+        if (hasMedia) {
+          if (mediaKind === 'image') {
+            waContent = { image: mediaBuffer, mimetype: mimeType, ...(caption ? { caption } : {}) };
+          } else if (mediaKind === 'video') {
+            waContent = { video: mediaBuffer, mimetype: mimeType, ...(caption ? { caption } : {}) };
+          } else if (mediaKind === 'audio') {
+            waContent = { audio: mediaBuffer, mimetype: mimeType };
+          } else {
+            waContent = { document: mediaBuffer, mimetype: mimeType, fileName, ...(caption ? { caption } : {}) };
+          }
+        } else {
+          waContent = { text: caption };
+        }
         let sent;
-        try { sent = await state.socket.sendMessage(recipientJid, { text: body.text }); }
+        try { sent = await state.socket.sendMessage(recipientJid, waContent); }
         catch { throw fail(502, 'Send outcome is uncertain. Check your WhatsApp before sending again.'); }
         await sends.updateOne({ _id: id }, { $set: { messageId: sent.key.id } });
-        if (await checkSessionAccess(own)) await saveMessages(own, [sent]);
+        const extras = new Map();
+        if (hasMedia) {
+          extras.set(sent.key.id, { fileName, mimeType, fileSize: mediaBuffer.length, mediaUrl });
+        }
+        if (await checkSessionAccess(own)) await saveMessages(own, [sent], extras);
         return { messageId: sent.key.id };
+      });
+    } else if (req.method === 'PATCH' && url.pathname === '/messages') {
+      const own = scope(actor);
+      const body = await readBody(req);
+      const newText = typeof body.text === 'string' ? body.text.trim() : '';
+      const messageId = typeof body.messageId === 'string' ? body.messageId.trim() : '';
+      if (!directJid(body.jid) || !messageId || !newText || newText.length > 4096) {
+        throw fail(400, 'Invalid message edit request');
+      }
+      limit(`${own}:send`, 30);
+      data = await serialized(own, async () => {
+        const state = live.get(own);
+        if (state?.status !== 'connected') throw fail(409, 'WhatsApp is disconnected. Link it again before editing.');
+        if (!await checkSessionAccess(own)) throw fail(403, 'An active company account is required');
+        const aliases = await conversationAliases(own, body.jid);
+        const original = await messages.findOne({
+          sid: own,
+          jid: { $in: aliases },
+          messageId,
+          fromMe: true,
+        });
+        if (!original) throw fail(404, 'Message not found or cannot be edited');
+        try {
+          await state.socket.sendMessage(original.jid, {
+            text: newText,
+            edit: {
+              remoteJid: original.jid,
+              fromMe: true,
+              id: original.messageId,
+            },
+          });
+        } catch {
+          throw fail(502, 'Could not edit this message on WhatsApp. Please try again.');
+        }
+        const editedAt = Math.floor(Date.now() / 1000);
+        await messages.updateMany(
+          { sid: own, jid: { $in: aliases }, messageId: original.messageId, fromMe: true },
+          { $set: { text: newText, edited: true, editedAt } },
+        );
+        await chats.updateMany(
+          { sid: own, jid: { $in: aliases }, timestamp: { $lte: (original.timestamp || editedAt) + 5 } },
+          { $set: { preview: newText.slice(0, 160) } },
+        );
+        return { messageId: original.messageId, text: newText, edited: true, editedAt };
       });
     } else throw fail(404, 'Not found');
     res.end(JSON.stringify(data));
@@ -555,7 +709,7 @@ const server = http.createServer(async (req, res) => {
     res.end(JSON.stringify({ message: error.status ? error.message : 'WhatsApp operation failed. Please try again.' }));
   }
 });
-server.requestTimeout = 30000;
+server.requestTimeout = 60000;
 // Also close idle sockets. Event handlers check access before processing new data.
 let checkingSessions = false;
 const sessionTimer = setInterval(async () => {

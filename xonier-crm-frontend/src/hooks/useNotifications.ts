@@ -69,6 +69,9 @@ export const useNotifications = (autoFetch = true) => {
             autoClose: 4000,
           });
         }
+        if (currentCount !== previousCountRef.current) {
+          void fetchNotifications();
+        }
 
         previousCountRef.current = currentCount;
         setUnreadCount(currentCount);
@@ -76,7 +79,7 @@ export const useNotifications = (autoFetch = true) => {
     } catch (error) {
       console.error("Failed to fetch unread count");
     }
-  }, []);
+  }, [fetchNotifications]);
 
   const markAsRead = useCallback(
     async (notificationIds: string[]) => {
@@ -183,10 +186,17 @@ if(isConfirmed){
       fetchUnreadCount();
     }, POLL_INTERVAL_MS);
 
+    const handleRefreshEvent = () => {
+      void fetchNotifications();
+      void fetchUnreadCount();
+    };
+    window.addEventListener("xonier:notifications-updated", handleRefreshEvent);
+
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
+      window.removeEventListener("xonier:notifications-updated", handleRefreshEvent);
     };
   }, [autoFetch, isAuthenticated, fetchNotifications, fetchUnreadCount]);
 

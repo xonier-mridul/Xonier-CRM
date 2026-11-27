@@ -84,6 +84,16 @@ NOTIFICATION_TEMPLATES: dict[NOTIFICATION_TYPE, NotificationTemplate] = {
         body="Lead '{title}' has been converted to a deal.",
         priority=NOTIFICATION_PRIORITY.HIGH,
     ),
+    NOTIFICATION_TYPE.NEXT_ACTION_CREATED: NotificationTemplate(
+        title="Next Action Scheduled",
+        body="{kind} action '{title}' scheduled for {entity} on {due_at}.",
+        priority=NOTIFICATION_PRIORITY.MEDIUM,
+    ),
+    NOTIFICATION_TYPE.NEXT_ACTION_REMINDER: NotificationTemplate(
+        title="Next Action Reminder",
+        body="Reminder: {kind} action '{title}' for {entity} is due ({due_at}).",
+        priority=NOTIFICATION_PRIORITY.HIGH,
+    ),
     NOTIFICATION_TYPE.QUOTATION_SENT: NotificationTemplate(
         title="Quotation Sent",
         body="Quotation '{title}' has been sent to the client.",
